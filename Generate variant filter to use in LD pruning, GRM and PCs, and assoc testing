@@ -1,3 +1,22 @@
+#The genrates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
+#both filters follows suggested filters from: https://gatk.broadinstitute.org/hc/en-us/articles/360035531112 (see:[C] Hard-filter SNPs on multiple expressions using VariantFiltration)
+#My gds file already excldues the X chromosome
+#
+#moderate filter also excludes:
+# MAF < 0.01
+# SNPs and indels that don't pass VQSR filters (index.snvPASS = FALSE | index.indelPASS = FALSE)
+#
+#
+#stringent filter also excludes:
+# MAF < 0.05
+# missingness by variant > 0.05
+# indels
+# anything not biallelic
+# SNPs that don't pass VQSR filters (index.snvPASS = FALSE)
+#
+#Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
+
+
 library(SeqVarTools)
 
 gds <- seqOpen("/home/hkings/DATA/CFF_5134_onlyGT.gds")
