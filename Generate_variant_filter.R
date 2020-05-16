@@ -1,4 +1,4 @@
-#The genrates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
+#This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
 #both filters follows suggested filters from: https://gatk.broadinstitute.org/hc/en-us/articles/360035531112 (see:[C] Hard-filter SNPs on multiple expressions using VariantFiltration)
 #My gds file already excldues the X chromosome
 #
