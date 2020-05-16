@@ -1,3 +1,5 @@
+#This generates a vector of sample IDs to be used as a filter in LD pruning, PC and GRM generation, and association testing 
+
 library(SeqVarTools)
 
 gds <- seqOpen("/home/hkings/DATA/CFF_5134_onlyGT.gds")
