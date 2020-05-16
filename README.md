@@ -1,9 +1,9 @@
-Contents:
+# CFF_analysis_via_GENESIS
+
+### Contents:
 dd_key_expanded_cffwgs.tsv - Data dictionary for Key table (including all aliases) dd_samples_cffwgs.tsv - Data dictionary for Samples table key_expanded_cffwgs.tsv - Key table, including all aliases (Warning: contains eDWID) samples_cffwgs.tsv - Samples table dd_key_cffwgs.tsv - Data dictionary for Key table (simple version) dd_participants_cffwgs.tsv - Data dictionary for Participants table key_cffwgs.tsv - Key table, simplified version
 participants_cffwgs.tsv - Participants table
 tables_cffwgs.RData - R workspace containing all tables (with object types set)
-
-# CFF_analysis_via_GENESIS
 
 
 ## merge_ind_chr_files.R
@@ -45,6 +45,18 @@ stringent filter also excludes:
 Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
 ## LD_prune.R
+Generate a list of pruned SNPs to include in PC and GRM analyses
+
+## PC_and_GRM_Script2.R
+Arguments:
+1. gds_file: the file path to the gds file (with .vcf.gds extension)
+2. LD-pruning R object (a list of variants to incldue)
+3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
+4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+5. text to uniquely identify plots and figures
+
+ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_var_stringent.rds" "keep_samples.rds" "LDsqrt0.1" #include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
+
 
 
 
