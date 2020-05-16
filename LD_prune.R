@@ -1,11 +1,10 @@
 #Arguments:
 #1. gds_file: the file path to the gds file (with .vcf.gds extension)
-#1. threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned)
-#2. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
-#3. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
-#4. text to uniquely identify plots and figures
+#2. threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned)
+#3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
+#4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
 
-#ex. run with command: Rscript PC_and_grm_script.R CFF_5134_onlyGT.gds 0.316227766 "keep_variants.rds" "keep_samples.rds" "LDsqrt0.1" & > LDsqrt0.1_PCs_grm_script.out
+#ex. run with command: Rscript PC_and_grm_script.R CFF_5134_onlyGT.gds 0.316227766 "keep_variants.rds" "keep_samples.rds" & > LDsqrt0.1_PCs_grm_script.out
 
 args <- commandArgs(trailingOnly = TRUE)
 print(args)
