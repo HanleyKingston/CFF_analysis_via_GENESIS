@@ -5,11 +5,12 @@
 samples_flag.txt - samples to flag (extracted from samples_flag_or_exclude.txt)
 samples_excldue.txt - sampels to exclude (extracted from samples_flag_or_exclude.txt)
 participants_cffwgs.tsv - participant phenotype data (note: not uploaded yet, need to make directory private first)
-flag_excldue_in_particiapnts.R - a list of samples to flag or exclude
+samples_flag_or_exclude.txt - a list of samples to flag or exclude (note:not uploaded yet)
 keep_samples.rds - a vector of sample IDs to include in PC/GRM creation and assoc. testing
 keep_var_stringent.rds - vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing... based on stringent QC and pruning criteria (see below)
   
 ### scripts
+flag_exclude_in_particiapnts.R - annotate participants phenotype data based on sampels to flag or excldue
 Generate_sample_filter.R - script to create a vector of sample IDs to include in PC/GRM creation and assoc. testing
 Generate_variant_filter.R - script to create a vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing
 LD_prune.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
