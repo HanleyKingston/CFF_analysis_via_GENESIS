@@ -1,9 +1,11 @@
 # CFF_analysis_via_GENESIS
 
-### Contents:
+## Contents:
+### tables:
 dd_key_expanded_cffwgs.tsv - Data dictionary for Key table (including all aliases) dd_samples_cffwgs.tsv - Data dictionary for Samples table key_expanded_cffwgs.tsv - Key table, including all aliases (Warning: contains eDWID) samples_cffwgs.tsv - Samples table dd_key_cffwgs.tsv - Data dictionary for Key table (simple version) dd_participants_cffwgs.tsv - Data dictionary for Participants table key_cffwgs.tsv - Key table, simplified version
 participants_cffwgs.tsv - Participants table
 tables_cffwgs.RData - R workspace containing all tables (with object types set)
+### scripts
 
 
 ## merge_ind_chr_files.R
@@ -47,7 +49,7 @@ Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chos
 ## LD_prune.R
 Generate a list of pruned SNPs to include in PC and GRM analyses
 
-## PC_and_GRM_Script2.R
+## PC_and_grm_script2.R
 Arguments:
 1. gds_file: the file path to the gds file (with .vcf.gds extension)
 2. LD-pruning R object (a list of variants to incldue)
