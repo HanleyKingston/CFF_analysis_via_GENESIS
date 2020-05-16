@@ -20,7 +20,6 @@
 library(SeqVarTools)
 
 gds <- seqOpen("/home/hkings/DATA/CFF_5134_onlyGT.gds")
-gds.id <- seqGetData(gds, "sample.id")
 
 #To reset filter on gds, use
 seqResetFilter(gds)
