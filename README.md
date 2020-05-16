@@ -2,10 +2,19 @@
 
 ## Contents:
 ### tables:
-dd_key_expanded_cffwgs.tsv - Data dictionary for Key table (including all aliases) dd_samples_cffwgs.tsv - Data dictionary for Samples table key_expanded_cffwgs.tsv - Key table, including all aliases (Warning: contains eDWID) samples_cffwgs.tsv - Samples table dd_key_cffwgs.tsv - Data dictionary for Key table (simple version) dd_participants_cffwgs.tsv - Data dictionary for Participants table key_cffwgs.tsv - Key table, simplified version
-participants_cffwgs.tsv - Participants table
-tables_cffwgs.RData - R workspace containing all tables (with object types set)
+samples_flag.txt - samples to flag (extracted from samples_flag_or_exclude.txt)
+samples_excldue.txt - sampels to exclude (extracted from samples_flag_or_exclude.txt)
+participants_cffwgs.tsv - participant phenotype data (note: not uploaded yet, need to make directory private first)
+flag_excldue_in_particiapnts.R - a list of samples to flag or exclude
+keep_samples.rds - a vector of sample IDs to include in PC/GRM creation and assoc. testing
+keep_var_stringent.rds - vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing... based on stringent QC and pruning criteria (see below)
+  
 ### scripts
+Generate_sample_filter.R - script to create a vector of sample IDs to include in PC/GRM creation and assoc. testing
+Generate_variant_filter.R - script to create a vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing
+LD_prune.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
+PC_and_grm_script2.R - generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
+
 
 
 ## merge_ind_chr_files.R
@@ -48,6 +57,13 @@ Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chos
 
 ## LD_prune.R
 Generate a list of pruned SNPs to include in PC and GRM analyses
+Takes Arguments:
+1. gds_file: the file path to the gds file (with .vcf.gds extension)
+2. threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned)
+3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
+4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+
+#ex. run with command: Rscript LD_prune.R CFF_5134_onlyGT.gds 0.316227766 "keep_variants.rds" "keep_samples.rds" & > LDsqrt0.1_PCs_grm_script.out
 
 ## PC_and_grm_script2.R
 Arguments:
