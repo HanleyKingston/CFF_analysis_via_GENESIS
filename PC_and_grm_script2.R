@@ -1,13 +1,12 @@
 #Arguments:
 #1. gds_file: the file path to the gds file (with .vcf.gds extension)
-#2. LD-pruning R object (a list of variants to incldue)
-#3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
-#4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
-#5. text to uniquely identify plots and figures
+#2. pruned_snps: LD-pruning R object (a list of variants to incldue)
+#3. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+#4. text to uniquely identify plots and figures
 
-#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_var_stringent.rds" "keep_samples.rds" "LDsqrt0.1"
+#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_samples.rds" "LDsqrt0.1"
 
-#to test: args <- c("CFF_5134_onlyGT.gds", "0.316227766", "keep_var_stringent.rds", "keep_samples.rds", "LDsqrt0.1")
+#to test: args <- c("CFF_5134_onlyGT.gds", "pruned.rds", "keep_samples.rds", "LDsqrt0.1")
 
 library(SeqArray)
 library(SNPRelate)
@@ -26,9 +25,8 @@ gds <- seqOpen(gdsfile)
 #Note: can access gds with (ex.): seqGetData(gds, "sample.id")
 
 pruned <- readRDS(file = args[2])
-keep_vars <- readRDS(file = args[3])
-keep_samples <- readRDS(file = args[4])
-text <- args[5]
+keep_samples <- readRDS(file = args[3])
+text <- args[4]
 
 cat(
 "This generates 2 files and 4 plots:
@@ -58,7 +56,7 @@ dev.off()
 #Generate King reatedness matrix
 print(paste("LD applied at threshold:", text))
 #get initial relatedness estimates with KING:
-king <- snpgdsIBDKING(gds, snp.id=intersect(pruned, keep_vars), sample.id = keep_samples)
+king <- snpgdsIBDKING(gds, snp.id=pruned, sample.id = keep_samples)
 #Working space: 3,547 samples, 109,292 SNVs
 
 #Put kinship estimates in a matrix
@@ -68,38 +66,39 @@ colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
 ##Develop PC-matrix with PC-Air
 print(paste("1st iteration PC-Air: LD applied at threshold:", text))
-mypcair <- pcair(gds, kinobj = kingMat, kin.thresh=2^(-11/2), divobj = kingMat, snp.include = intersect(pruned, keep_vars)) #This includes the filtered set of samples without having to give it the keep_smaples object
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh=2^(-11/2), divobj = kingMat, snp.include = pruned) #This includes the filtered set of samples without having to give it the keep_smaples object
 
 #Save a copy of 1st iteration pc object:
 saveRDS(mypcair, paste("pcair_", text, "_temp.rds", sep = ""))
 
 
 ##Generate relatedness estimation adjusted for PCs using PC_Relate
-#filter gds file by keep_samples and keep_vars vectors and (for LD pruning) by pruned SNPs
-seqResetFilter(gds)
-seqSetFilter(seqData, variant.id=keep_vars, sample.id=keep_samples)
+#filter gds file by keep_samples and pruned vectors and (for LD pruning) by pruned SNPs
+seqSetFilter(gds, variant.id=pruned, sample.id=keep_samples)
 seqData <- SeqVarData(gds)
 
-print("1st iteration PC-relate")
+#Generate iterator
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
+
+print("1st iteration PC-relate")
 mypcrel <- pcrelate(iterator, pcs=mypcair$vectors[,1:3], training.set=mypcair$unrels)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = 2^(-11/2)) #default = NULL, 2^(-11/2) suggested by bioconductor... should this be NULL for the first iteration???, scaleKin multiplies by 2 so average person's kinship with self is 1
 #note:thresh appears to be applies after scalekin
 #For some reason, there is one pair of individuals that are not coerced to 0 despite a kinship estimate of 3.689586e-07 in the LD pruning at sqrt(0.1) case... no idea why!
 
 #Save a copy of 1st iteration PCrelate object
-saveRDS(pcrel2, paste("pcr_grm_",text,"_temp.rds", sep = ""))
+saveRDS(mypcrel, paste("pcr_grm_",text,"_temp.rds", sep = ""))
 
 
 #Generate 2nd iteration PCs
 print(paste("2nd iteration PC-Air: LD applied at threshold:", text))
-pca <- pcair(seqData, kinobj=pcrelate_matrix, kin.thresh=2^(-11/2), divobj=kingMat, snp.include= intersect(pruned, keep_vars))
+pca <- pcair(seqData, kinobj=pcrelate_matrix, kin.thresh=2^(-11/2), divobj=kingMat, snp.include= pruned)
 
 #Generate 2nd iteration kinship estimates
-resetIterator(iterator, verbose = TRUE) #This doesn't seem necissary here. Included just in case???
+resetIterator(iterator, verbose = TRUE)
+iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 
 print("2nd iteration PC-relate")
-iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 pcrel2 <- pcrelate(iterator, pcs=pca$vectors[,1:3], training.set=pca$unrels)
 
 pcrelate_matrix <- pcrelateToMatrix(pcrel2, scaleKin=2, thresh = 2^(-11/2)) #Thresh is the threshold below which kinship values are coerced to 0
@@ -122,13 +121,13 @@ write.matrix(pcrelate_matrix, file = paste("grm_",text,".txt", sep = ""), sep=",
 
 
 ##Plot second iteration PCs
-#Read in merged_phen2 and subset by keep_samples
-merged_phen2 <-read.table("merged_phen2", header=TRUE)
-merged_phen2$SUBJ_NO <- merged_phen2$SUBJ_NO<-paste(merged_phen2$X.FAM_NO,merged_phen2$SUBJ_NO, sep = "_")
-merged_phen2 <- merged_phen2[merged_phen2$SUBJ_NO %in% keep_samples,]
+#Read in phenotype and subset by keep_samples
+phenotype <-read.table("phenotype_pruned.txt", header=TRUE)
+phenotype$SUBJ_NO <- phenotype$SUBJ_NO<-paste(phenotype$X.FAM_NO,phenotype$SUBJ_NO, sep = "_")
+phenotype <- phenotype[phenotype$SUBJ_NO %in% keep_samples,]
 pcs.df <- as.data.frame(pcs)
 pcs.df$SUBJ_NO <- rownames(pcs)
-pcs.df <- merge(pcs.df, merged_phen2[,c("SUBJ_NO","CaucCode")], by="SUBJ_NO")
+pcs.df <- merge(pcs.df, phenotype[,c("SUBJ_NO","CaucCode")], by="SUBJ_NO")
 
 rels_V <- mypcair$rels
 pcs.df$relate <- ifelse(pcs.df$SUBJ_NO %in% rels_V, "related", "unrelated")
