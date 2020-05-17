@@ -75,6 +75,8 @@ table(phenotype_pruned$include_in_analysis)
 #flag keep   NA
 #  39 4975  120
 
+phenotype_pruned$site <- ifelse("UW" %in% phenotype_pruned$vcf_id, "UW", ifelse("JHU" %in% phenotype_pruned$vcf_id, "JHU", "UNC"))
+
 colnames(phenotype_pruned)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
