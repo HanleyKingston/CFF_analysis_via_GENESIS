@@ -70,12 +70,12 @@ sum(phenotype_pruned$vcf_id %notin% gds.id)
 #[1] 0
 
 
-phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% duplicates | phenotype_pruned$vcf_id %in% exclude, "NA", ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
-table(phenotype_pruned$include_in_analysis)
-#flag keep   NA
-#  39 4975  120
 
-phenotype_pruned$site <- ifelse("UW" %in% phenotype_pruned$vcf_id, "UW", ifelse("JHU" %in% phenotype_pruned$vcf_id, "JHU", "UNC"))
+phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
+table(phenotype_pruned[!is.na(phenotype$pruned$include_in_analysis),"site"])
+# JHU  UNC   UW
+#1859 1774 1381
+
 
 colnames(phenotype_pruned)
 
