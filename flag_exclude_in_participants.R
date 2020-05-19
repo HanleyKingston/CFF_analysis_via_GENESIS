@@ -87,8 +87,6 @@ phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508de
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
 
 #Plot count of deltaF508 per study site:
-library(ggplot2)
-
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
 
 pdf("F508_count_by_study.pdf")
