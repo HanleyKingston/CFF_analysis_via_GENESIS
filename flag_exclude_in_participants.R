@@ -1,4 +1,5 @@
-d.delim("key_cffwgs.tsv", sep = "\t", header = TRUE)
+participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
+key <- read.delim("key_cffwgs.tsv", sep = "\t", header = TRUE)
 nrow(key)
 #[1] 5199
 flag <- scan("samples_flag.txt", "character", sep = "\n")
@@ -69,17 +70,16 @@ nrow(phenotype_pruned)
 sum(phenotype_pruned$vcf_id %notin% gds.id)
 #[1] 0
 
-
+phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% duplicates | phenotype_pruned$vcf_id %in% exclude, NA, ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
 
 phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
-table(phenotype_pruned[!is.na(phenotype$pruned$include_in_analysis),"site"])
+table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 # JHU  UNC   UW
 #1859 1774 1381
-
 
 colnames(phenotype_pruned)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
 phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis")]
 
-write.table(phenotype_pruned, "phenotype.txt", sep = "\t")
+write.table(phenotype_pruned_temp, "phenotype.txt", sep = "\t")
