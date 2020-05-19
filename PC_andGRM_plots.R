@@ -51,14 +51,15 @@ pcrel2 <- readRDS(file = "pcr_grm_LDsqrt0.1.rds")
 kinship <- pcrel2$kinBtwn
 
 #plot 2nd iteration kinship:
+kinship$site  <- sub("_.*", "", kinship$ID1) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
+
 png("kinship.png")
 ggplot(kinship, aes(k0, kin)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.5) +
     ylab("kinship estimate") +
-    ggtitle("kinship")
+    ggtitle("kinship") + 
 dev.off()
-#How to add color to this plot?
 
 #Plot percent variance explained by each pc:
 pcs.df2 <- as.data.frame(pca$vectors[pca$unrels,])
