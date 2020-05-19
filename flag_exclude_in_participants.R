@@ -78,6 +78,23 @@ table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 #1859 1774 1381
 
 colnames(phenotype_pruned)
+nrow(phenotype_pruned)
+nrow(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),])
+#[1] 5014
+
+#Create column of deltaF508 count
+phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
+                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
+
+#Plot count of deltaF508 per study site:
+library(ggplot2)
+
+counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
+
+pdf("F508_count_by_study.pdf")
+barplot(counts, main="Count of DeltaF508 per study Site",
+  xlab="Study", legend = rownames(counts), beside = TRUE)
+dev.off()
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
 phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis")]
