@@ -1,6 +1,5 @@
+#Generate PCs plots, percent variance explained (scree) plots, and relatedness plots
 
-
-##Plot second iteration PCs
 library(SeqArray)
 library(SNPRelate)
 library(SeqVarTools)
@@ -15,8 +14,6 @@ keep_samples <- readRDS(file = "keep_samples.rds")
 phenotype <- phenotype[phenotype$vcf_id %in% keep_samples,]
 pca <- readRDS("pcair_LDsqrt0.1.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:4])
-
-
 
 pcs.df$vcf_id <- rownames(pcs.df)
 pcs.df <- merge(pcs.df, phenotype[,c("vcf_id","site")], by="vcf_id")
