@@ -22,15 +22,28 @@ rels_V <- pca$rels
 pcs.df$relate <- ifelse(pcs.df$vcf_id %in% rels_V, "related", "unrelated")
 
 pdf("/home/hkings/DATA/PC1and2.pdf")
-plot(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$site), pch = pcs.df$relate, xlab="PC1", ylab="PC2")
+ggplot() +
+   geom_point(aes(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$site), pch = pcs.df$relate)) +
+   xlab("PC 1") + ylab("PC 2") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Study", shape="PC set")
 dev.off()
 
 pdf("/home/hkings/DATA/PC2and3.pdf")
-plot(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$site), pch = pcs.df$relate, xlab="PC2", ylab="PC3")
+ggplot() +
+   geom_point(aes(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$site), pch = pcs.df$relate)) +
+   xlab("PC 2") + ylab("PC 3") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Study", shape="PC set")
 dev.off()
 
+
 pdf("/home/hkings/DATA/PC3and4.pdf")
-plot(pcs.df[,4], pcs.df[,5], col = factor(pcs.df$site), pch = pcs.df$relate, xlab="PC3", ylab="PC4")
+ggplot() +
+   geom_point(aes(pcs.df[,4], pcs.df[,5], col = factor(pcs.df$site), pch = pcs.df$relate)) +
+   xlab("PC 3") + ylab("PC 4") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Study", shape="PC set")
 dev.off()
 
 #plot second iteration kinship estimates:
@@ -41,10 +54,9 @@ kinship <- pcrel2$kinBtwn
 png("kinship.png")
 ggplot(kinship, aes(k0, kin)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
-    geom_point(alpha=0.5) + #alpha doesn't work with Xming
+    geom_point(alpha=0.5) +
     ylab("kinship estimate") +
-    ggtitle("kinship") +
-    theme_bw()
+    ggtitle("kinship")
 dev.off()
 #How to add color to this plot?
 
