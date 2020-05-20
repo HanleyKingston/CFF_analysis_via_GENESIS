@@ -12,7 +12,6 @@ library(ggplot2)
 phenotype <- read.table("phenotype.txt", header = TRUE)
 keep_samples <- readRDS(file = "keep_samples.rds")
 phenotype <- phenotype[phenotype$vcf_id %in% keep_samples,]
-pca <- readRDS("pcair_LDsqrt0.1.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:4])
 
 pcs.df$vcf_id <- rownames(pcs.df)
@@ -54,14 +53,16 @@ kinship <- pcrel2$kinBtwn
 kinship$site  <- sub("_.*", "", kinship$ID1) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
 
 png("kinship.png")
-ggplot(kinship, aes(k0, kin)) +
+ggplot(kinship, aes(k0, kin, col = factor(kinship$site))) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
-    geom_point(alpha=0.5) +
+    geom_point(alpha=0.2) +
     ylab("kinship estimate") +
-    ggtitle("kinship") + 
+    ggtitle("kinship")
 dev.off()
 
 #Plot percent variance explained by each pc:
+pca <- readRDS("pcair_LDsqrt0.1.rds")
+
 pcs.df2 <- as.data.frame(pca$vectors[pca$unrels,])
 names(pcs.df2) <- paste0("PC", 1:ncol(pcs.df2))
 pcs.df2$sample.id <- rownames(pcs.df2)
