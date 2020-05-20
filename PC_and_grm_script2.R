@@ -103,15 +103,18 @@ pcrel2 <- pcrelate(iterator, pcs=pca$vectors[,1:3], training.set=pca$unrels)
 
 pcrelate_matrix <- pcrelateToMatrix(pcrel2, scaleKin=2, thresh = 2^(-11/2)) #Thresh is the threshold below which kinship values are coerced to 0
 
+#Get percent variance from each PC:
+saveRDS(pca$varprop, "PC_varprop.rds")
+
 #Save entire pc object
-saveRDS(mypcair, paste("pcair_", text, ".rds", sep = ""))
+saveRDS(pca, paste("pcair_", text, ".rds", sep = ""))
 
 #save eigenvectors 1-3
 pcs <- pca$vectors
 write.table(pcs[,1:3], file = paste("pcs_",text,".txt", sep = ""), sep = "\t")
 
 #Save entire relatedness object:
-saveRDS(pcrel2, paste("pcr_grm_",text,".rds", sep = ""))
+saveRDS(pcrel2, paste("pcr_",text,".rds", sep = ""))
 
 #Save GRM matrix
 write.matrix(pcrelate_matrix, file = paste("grm_",text,".txt", sep = ""), sep=",")
