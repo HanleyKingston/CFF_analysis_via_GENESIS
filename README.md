@@ -57,6 +57,7 @@ stringent filter also excludes:
 Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
 ## LD_prune.R
+
 Generate a list of pruned SNPs to include in PC and GRM analyses
 Takes Arguments:
 1. gds_file: the file path to the gds file (with .vcf.gds extension)
