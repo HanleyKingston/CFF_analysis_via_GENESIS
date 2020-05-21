@@ -11,6 +11,14 @@ gds.id <- scan("sample_id_gds.txt", "character", sep = "\n")
 identical(as.character(phenotype$vcf_id), as.character(gds.id))
 #[1] FALSE #No idea why this is false, but everything else I checked suggests they are identical
 
+df <-data.frame(gds.id = NA, phenotype.id = NA)
+for(i in 1:length(gds.id)){
+  if(as.character(gds.id[i]) != as.character(phenotype$vcf_id[i])){
+  df[i,] <- c(gds.id, phenotype$vcf.id)
+    }}
+   
+
+
 add.gdsn(gds, "sample.id", phenotype$pid, replace=TRUE, compress="LZMA_RA", closezip=TRUE)
 closefn.gds(gds)
 
