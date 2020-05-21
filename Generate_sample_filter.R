@@ -32,7 +32,7 @@ table(sample_QC)
 seqResetFilter(gds)
 
 sample_filter <- seqGetData(gds, "sample.id")[sample_QC]
-sample_filter <- as.vector(sample_filter)
+#sample_filter <- as.vector(sample_filter)
 
 saveRDS(sample_filter, file = "keep_samples.rds")
 
