@@ -95,6 +95,6 @@ barplot(counts, main="Count of DeltaF508 per study Site",
 dev.off()
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count")]
+phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count")]
 
 write.table(phenotype_pruned_temp, "phenotype.txt", sep = "\t")
