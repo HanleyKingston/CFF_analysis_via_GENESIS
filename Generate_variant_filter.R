@@ -99,7 +99,7 @@ gds.var <- seqGetData(gds, "variant.id")
 length(gds.var)
 #[1] 115537943
 nrow(flag.metric.df)
-[1] 120139844
+#[1] 120139844
 sum(gds.var %in% flag.metric.df$variant.id)
 #[1] 115537943
 sum(flag.metric.df$variant.id %in% gds.var)
@@ -109,24 +109,23 @@ sum(flag.metric.df$variant.id %in% gds.var)
 
 var_filter_moderate.temp <- flag.metric.df$variant.id[RankSum & MQ & FS & SOR & qual & QD & (snvPASS | indelPASS)]
 var_filter_moderate <- intersect(seqGetData(gds, "variant.id")[maf > 0.01], var_filter_moderate.temp)
-#var_filter_moderate <- as.vector(var_filter_moderate)
 length(var_filter_moderate)
 #[1] 11864290
 
 var_filter_stringent.temp <- flag.metric.df$variant.id[RankSum & MQ & FS & SOR & qual & QD & snvPASS & missByVar & biAllelic]
 var_filter_stringent <- intersect(seqGetData(gds, "variant.id")[maf > 0.05], var_filter_stringent.temp)
-#var_filter_stringent <- as.vector(var_filter_stringent)
 length(var_filter_stringent)
 #[1] 6829196
 
 #Note: not filtering by HW (should have already been done and I don't have the family info to control for relatedness yet)
 
 
-saveRDS(var_filter_moderate, file = "keep_var_moderate2.rds")
-saveRDS(var_filter_stringent, file = "keep_var_stringent2.rds")
+saveRDS(var_filter_moderate, file = "keep_var_moderate.rds")
+saveRDS(var_filter_stringent, file = "keep_var_stringent.rds")
 
 #To test filter:
 seqSetFilter(gds, variant.id = var_filter_stringent)
+## of selected variants: 6,829,196
 
 
 
