@@ -1,6 +1,6 @@
 ##Run with:
 #Rscript ld_pruning.R CFF_pid.gds \
---sample_id keep_samples.rds --variant_id keep_variants.rds --window_size 1
+#--sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
 
 
 library(SeqArray)
