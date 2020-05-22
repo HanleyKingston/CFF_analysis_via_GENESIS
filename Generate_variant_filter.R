@@ -19,7 +19,7 @@
 
 library(SeqVarTools)
 
-gds <- seqOpen("/home/hkings/DATA/CFF_pid.gds")
+gds <- seqOpen("/home/hkings/DATA/CFF_sid_onlyGT.gds")
 
 #To reset filter on gds, use
 seqResetFilter(gds)
