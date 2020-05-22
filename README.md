@@ -22,11 +22,12 @@ PC_and_grm_script2.R - generate PCs and GRM through 2 iteratons of PCair and PCr
 Merge gds files (excluding X chromosome)
 
 ## Save gds sample ids as a vector:
+### in R:
 library(SeqArray)
-gdsfile <- "/labdata12/CF_WGS2/Variants/CFF_5134_GDSs/seqArray_onlyGT/CFF_5134_chr21_onlyGT.gds"
-gds <- seqOpen(gdsfile)
+gds <- seqOpen("CFF_5134_onlyGT.gds")
 gds.id <- seqGetData(gds, "sample.id")
 write(gds.id, "/home/hkings/DATA/sample_id_gds.txt")
+seqClose(gds)
 
 ## flag_exclude_in_participants.R
 Trims participants pheotype file to excldue anyone not in gds, add a column for flagging or excluding indiviuals not in corresponding flag and exclude lists (also exclude duplicated samples)
