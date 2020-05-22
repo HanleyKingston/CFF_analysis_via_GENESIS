@@ -13,11 +13,12 @@ sum(phen$sid %in% gds.id)
 sum(gds.id %in% phen$sid)
 #[1] 5134
 
-#Mine were not in the same order!, so must do this (can only do if the %in% checks are both equal):
-phenotype <- phenotype[match(gds.id, phenotype$sid),]
+
 #THIS MUST BE TRUE
 identical(as.character(phenotype$sid), as.character(gds.id))
 
+#These should be in the same order from the last script, but if not, must do this (can only do if the %in% checks are both equal):
+phenotype <- phenotype[match(gds.id, phenotype$sid),]
 
 #Get a boolean vector of samples to exclude based on QC in phenotype data
 #Must make sure to exclude all individuals who whould be excluded based on phenotype QC
