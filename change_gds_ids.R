@@ -11,20 +11,23 @@ gds.id <- scan("sample_id_gds.txt", "character", sep = "\n")
 
 sum(as.character(phenotype$vcf_id) %in% as.character(gds.id))
 #[1] 5134
-phenotype <- phenotype[match(gds.id, phenotype$vcf_id),]
+
 identical(as.character(phenotype$vcf_id), as.character(gds.id)) #This must be TRUE!
 #[1] TRUE
+phenotype <- phenotype[match(gds.id, phenotype$vcf_id),]
+
+sid <- as.character(phenotype$sid)
 
 #Save re-ordered phenotype file:
 write.table(phenotype, "phenotype.txt", sep = "\t")
 
-add.gdsn(gds, "sample.id", phenotype$sid, replace=TRUE, compress="LZMA_RA", closezip=TRUE)
+add.gdsn(gds, "sample.id", sid, replace=TRUE, compress="LZMA_RA", closezip=TRUE)
 closefn.gds(gds)
 
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 head(seqGetData(gds, "sample.id"))
 
 #check:
-identical(as.character(seqGetData(gds, "sample.id")), as.character(phenotype$sid)) #must be TRUE!
+identical(seqGetData(gds, "sample.id"), as.character(phenotype$sid)) #must be TRUE!
 
 seqClose(gds)
