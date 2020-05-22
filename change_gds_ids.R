@@ -16,7 +16,7 @@ identical(as.character(phenotype$vcf_id), as.character(gds.id)) #This must be TR
 #[1] TRUE
 
 #Save re-ordered phenotype file:
-write.table("phenotype.txt", header = TRUE, sep = "\t")
+write.table(phenotype, "phenotype.txt", sep = "\t")
 
 add.gdsn(gds, "sample.id", phenotype$sid, replace=TRUE, compress="LZMA_RA", closezip=TRUE)
 closefn.gds(gds)
