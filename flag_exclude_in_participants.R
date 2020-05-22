@@ -11,11 +11,7 @@ gds.id <- scan("sample_id_gds.txt", "character", sep = "\n")
 
 "%notin%" <- Negate("%in%")
 
-sum(key$vcf_id %notin% gds.id)
-#[1] 65
-in_key_not_gds <- key[key$vcf_id %notin% gds.id,"vcf_id"]
-#These should be removed!
-
+#Key has pid, sid, and vcf_id, participants only has pid... I will use the sid in analysis
 sum(participants$pid %in% key$pid)
 #[1] 5161 #All participants are in the key
 sum(key$pid %in% participants$pid)
@@ -53,7 +49,7 @@ gds.id <- sort(gds.id)
 
 sum(phenotype$vcf_id %notin% gds.id)
 #[1] 65
-not_shared_in_phenotype <- phenotype[phenotype$vcf_id %notin% gds.id,"vcf_id"]
+not_shared_in_phenotype <- phenotype[phenotype$vcf_id %notin% gds.id, "vcf_id"]
 sum(exclude %in% not_shared_in_phenotype)
 #[1] 0
 sum(flag %in% not_shared_in_phenotype)
@@ -67,20 +63,28 @@ sum(gds.id %notin% phenotype$vcf_id)
 phenotype_pruned <- phenotype[phenotype$vcf_id %in% gds.id,]
 nrow(phenotype_pruned)
 #[1] 5134
-sum(phenotype_pruned$vcf_id %notin% gds.id)
-#[1] 0
+identical(as.character(phenotype_pruned$vcf_id), as.character(gds.id))
+#[1] TRUE
 
-phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% duplicates | phenotype_pruned$vcf_id %in% exclude, NA, ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
+#find participants without necissary phenotype info
+nrow(phenotype_pruned[is.na(phenotype_pruned$cftr_var_1_wgs) | is.na(phenotype_pruned$cftr_var_2_wgs),]) #Note: 609 people are missing a knorma value
+#[1] 57
+missing_F508 <- phenotype_pruned[is.na(phenotype_pruned$cftr_var_1_wgs) | is.na(phenotype_pruned$cftr_var_2_wgs), "vcf_id"] #Note: 609 people are missing a knorma value
+sum(missing_F508 %in% exclude)
+#[1] 14
+
+phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% duplicates | phenotype_pruned$vcf_id %in% exclude | phenotype_pruned$vcf_id %in% missing_F508,
+                                               NA, ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
 
 phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
 table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 # JHU  UNC   UW
-#1859 1774 1381
+#1841 1772 1381
 
 colnames(phenotype_pruned)
 nrow(phenotype_pruned)
 nrow(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),])
-#[1] 5014
+#[1] 5971
 
 #Create column of deltaF508 count
 phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
