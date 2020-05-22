@@ -1,3 +1,5 @@
+#Must be in the directory "/labdata12/CF_WGS2/Variants/CFF_5134_GDSs/seqArray_onlyGT/" (ie. where the gds fiels are)
+
 library(SeqArray)
 
 gds_list = list.files(path = "/labdata12/CF_WGS2/Variants/CFF_5134_GDSs/seqArray_onlyGT/",
