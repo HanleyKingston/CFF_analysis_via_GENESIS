@@ -2,30 +2,29 @@
 
 library(SeqVarTools)
 
-gds <- seqOpen("/home/hkings/DATA/CFF_pid.gds")
+gds <- seqOpen("/home/hkings/DATA/CFF_sid_onlyGT.gds")
 gds.id <- seqGetData(gds, "sample.id")
 
-phen <- read.table("phenotype.txt", header = TRUE)
+phenotype <- read.table("phenotype.txt", header = TRUE)
 
-sum(phen$pid %in% gds.id)
+##Both data frames must have all the same smaple IDs
+sum(phen$sid %in% gds.id)
 #[1] 5134
-sum(gds.id %in% phen$pid)
+sum(gds.id %in% phen$sid)
 #[1] 5134
-#Both columns must have all the same smaple IDs
-#Check that they are also in the same order... THIS MUST BE TRUE
-identical(as.character(phen$pid), as.character(gds.id))
 
 #Mine were not in the same order!, so must do this (can only do if the %in% checks are both equal):
-phen <- phen[match(gds.id, phen$pid),]
-identical(as.character(phen$pid), as.character(gds.id))
+phenotype <- phenotype[match(gds.id, phenotype$sid),]
+#THIS MUST BE TRUE
+identical(as.character(phenotype$sid), as.character(gds.id))
 
 
 #Get a boolean vector of samples to exclude based on QC in phenotype data
 #Must make sure to exclude all individuals who whould be excluded based on phenotype QC
-sample_QC <- !is.na(phen$include_in_analysis)
+sample_QC <- !is.na(phenotype$include_in_analysis)
 table(sample_QC)
 #FALSE  TRUE
-#  120  5014
+#  165  4971
 
 
 #To reset filter on gds, use
