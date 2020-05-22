@@ -1,6 +1,5 @@
 ##Run with:
-#Rscript ld_pruning.R CFF_pid.gds \
-#--sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
+#Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
 
 
 library(SeqArray)
@@ -32,7 +31,7 @@ gds <- seqOpen(gds.file)
 
 # run LD pruning
 snpset <- snpgdsLDpruning(gds,
-                          sample.id = sample.id,
+                          sample.id = factor(sample.id),
                           snp.id = variant.id,
                           maf = argv$maf,
                           missing.rate = argv$missing,
