@@ -63,7 +63,7 @@ sum(gds.id %notin% phenotype$vcf_id)
 phenotype_pruned <- phenotype[phenotype$vcf_id %in% gds.id,]
 nrow(phenotype_pruned)
 #[1] 5134
-identical(as.character(phenotype_pruned$vcf_id), as.character(gds.id))
+identical(as.character(phenotype_pruned$vcf_id), gds.id)
 #[1] TRUE
 
 #find participants without necissary phenotype info
