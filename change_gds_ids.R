@@ -15,6 +15,9 @@ phenotype <- phenotype[match(gds.id, phenotype$vcf_id),]
 identical(as.character(phenotype$vcf_id), as.character(gds.id)) #This must be TRUE!
 #[1] TRUE
 
+#Save re-ordered phenotype file:
+write.table("phenotype.txt", header = TRUE, sep = "\t")
+
 add.gdsn(gds, "sample.id", phenotype$sid, replace=TRUE, compress="LZMA_RA", closezip=TRUE)
 closefn.gds(gds)
 
