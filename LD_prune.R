@@ -4,7 +4,7 @@
 #3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
 #4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
 
-#args <- c("CFF_sid_onlyGT.gds", "0.316227766", "keep_var_stringent.rds", "keep_samples.rds")
+#To test: args <- c("CFF_sid_onlyGT.gds", "0.316227766", "keep_var_stringent.rds", "keep_samples.rds")
 #ex. run with command: Rscript LD_prune.R CFF_pid.gds 0.316227766 "keep_var_stringent.rds" "keep_samples.rds" &
 
 args <- commandArgs(trailingOnly = TRUE)
