@@ -117,7 +117,7 @@ for(line in 1:nrow(phenotype_pruned)){
       }else if(!is.na(phenotype_pruned[line,]$hispanic) & phenotype_pruned[line,]$hispanic == 1){
         race_or_ethnicity <- "hispanic"
       }else{
-        race_or_ethnicity <- "admixed or other"
+        race_or_ethnicity <- "admixed_or_other"
         }
   phenotype_pruned$race_or_ethnicity[line] <- race_or_ethnicity
   }
