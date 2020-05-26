@@ -22,6 +22,7 @@ library(SeqArray)
 library(GENESIS)
 library(SeqVarTools)
 library(SNPRelate)
+library(MASS)
 
 sessionInfo()
 
