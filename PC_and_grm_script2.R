@@ -4,9 +4,9 @@
 #3. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
 #4. text to uniquely identify plots and figures
 
-#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned_snps.rds" "keep_samples.rds" "LDsqrt0.1" &
+#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_samples.rds" "LDsqrt0.1"
 
-#to test: args <- c("CFF_5134_onlyGT.gds", "pruned_snps.rds", "keep_samples.rds", "LDsqrt0.1")
+#to test: args <- c("CFF_5134_onlyGT.gds", "pruned.rds", "keep_samples.rds", "LDsqrt0.1")
 
 library(SeqArray)
 library(SNPRelate)
@@ -103,21 +103,19 @@ pcrel2 <- pcrelate(iterator, pcs=pca$vectors[,1:3], training.set=pca$unrels)
 
 pcrelate_matrix <- pcrelateToMatrix(pcrel2, scaleKin=2, thresh = 2^(-11/2)) #Thresh is the threshold below which kinship values are coerced to 0
 
-#Get percent variance from each PC:
-saveRDS(pca$varprop, "PC_varprop.rds")
-
 #Save entire pc object
-saveRDS(pca, paste("pcair_", text, ".rds", sep = ""))
+saveRDS(mypcair, paste("pcair_", text, ".rds", sep = ""))
 
 #save eigenvectors 1-3
 pcs <- pca$vectors
 write.table(pcs[,1:3], file = paste("pcs_",text,".txt", sep = ""), sep = "\t")
 
 #Save entire relatedness object:
-saveRDS(pcrel2, paste("pcr_",text,".rds", sep = ""))
+saveRDS(pcrel2, paste("pcr_grm_",text,".rds", sep = ""))
 
 #Save GRM matrix
 write.matrix(pcrelate_matrix, file = paste("grm_",text,".txt", sep = ""), sep=",")
 
 #To read in, use:
 #myGRM <- as.matrix(read.csv("grm_LDsqrt0.2.txt", header=T, na.strings="NA"))
+
