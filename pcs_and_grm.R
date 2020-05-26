@@ -1,5 +1,5 @@
 #Run with:
-#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.0 --div_thresh 4.0
+#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.5 --div_thresh 4.5
 
 #! /usr/bin/env Rscript
 library(argparser)
