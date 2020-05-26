@@ -79,7 +79,7 @@ phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% dupl
 phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
 table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 # JHU  UNC   UW
-#1841 1772 1381
+#1841 1772 1358
 
 colnames(phenotype_pruned)
 nrow(phenotype_pruned)
@@ -89,6 +89,41 @@ nrow(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),])
 #Create column of deltaF508 count
 phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
+
+#Create a column of self-reported race:
+phenotype_pruned$race_or_ethnicity <- NA
+
+for(line in 1:nrow(phenotype_pruned)){
+  if(rowSums(phenotype_pruned[line,c(6:12)], na.rm = TRUE) != 1){
+      if(is.na(phenotype_pruned[line,]$race_white)){
+        race_or_ethnicity <- NA
+        }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$race_natAm == 1){
+          race_or_ethnicity <- "natAm" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
+        }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$hispanic == 1){
+          race_or_ethnicity <- "hispanic" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
+        }else(phenotype_pruned[line,][phenotype_pruned$race_white == 1 & phenotype_pruned$hispanic == 1){
+          race_or_ethnicity <- "admixed_or other"
+          }
+      }else if(phenotype_pruned[line,]$race_white == 1){
+        race_or_ethnicity <- "white"
+      }else if(phenotype_pruned[line,]$race_black == 1){
+        race_or_ethnicity <- "black"
+      }else if(phenotype_pruned[line,]$race_natAm == 1){
+        race_or_ethnicity <- "natAm"
+      }else if(phenotype_pruned[line,]$race_asian == 1){
+        race_or_ethnicity <- "asian"
+      }else if(phenotype_pruned[line,]$race_pac == 1){
+        race_or_ethnicity <- "pac"
+      }else if(phenotype_pruned[line,]$race_other == 1){
+        race_or_ethnicity <- "admixed or other"
+      }else(phenotype_pruned[line,]$hispanic == 1){
+        race_or_ethnicity <- "hispanic"
+  phenotype_pruned$race_or_ethnicity <- race_or_ethnicity
+  }
+
+sum(phenotype_pruned$race_white 
+phenotype_pruned$race <- ifelse(phenotype_pruned$race_white == 1, black, ifelse()
+
 
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
