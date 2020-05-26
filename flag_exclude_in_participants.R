@@ -77,7 +77,8 @@ phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% dupl
                                                NA, ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
 
 #Create a column for site (This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed)
-phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
+phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id)
+table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 # JHU  UNC   UW
 #1841 1772 1358
 
@@ -137,8 +138,8 @@ barplot(counts, main="Count of DeltaF508 per study Site",
 dev.off()
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity")]
 
-saveRDS(phenotype_pruned_temp, "phenotype.rds")
-write.table(phenotype_pruned_temp, "phenotype.txt", sep = "\t")
+saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
+write.table(phenotype_pruned_selectCol, "phenotype.txt", sep = "\t")
 
