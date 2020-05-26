@@ -1,5 +1,5 @@
 #Run with:
-#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds
+#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.0 --div_thresh 4.0
 
 #! /usr/bin/env Rscript
 library(argparser)
@@ -14,6 +14,8 @@ argp <- arg_parser("Generate PCs and GRM") %>%
   add_argument("--sample_id", help = "File with vector of sample IDs") %>%
   add_argument("--kin_thresh", default = 5.5,
                help = "Kinship threshold for pcair (2 ^ -kin_thresh)") %>%
+  add_argument("--div_thresh", default = 5.5,
+               help = "threshold for deciding if pairs are ancestrally divergent(2 ^ -div_thresh)") %>%
   add_argument("--n_pcs", default = 3,
                "Number of PCs to pass to pcrelate") %>%
   add_argument("--keep_king", flag = TRUE, help = "Save KING-robust GRM")
@@ -38,6 +40,7 @@ if (!is.na(argv$variant_id)) {
   sample_id <- NULL
 }
 kin_thresh <- 2 ^ (-argv$kin_thresh)
+div_thresh <- 2 ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
 print(argv)
@@ -54,7 +57,7 @@ if (argv$keep_king) {
   rm(kingMat_temp)
 }
 
-mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh,
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh, div.thresh = div_thresh,
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id)
 
@@ -66,7 +69,7 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
                     training.set = mypcair$unrels)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
 
-pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh,
+pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
              divobj = kingMat, snp.include = variant_id,
              sample.include = sample_id)
 
