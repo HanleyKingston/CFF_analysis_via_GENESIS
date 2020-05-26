@@ -76,8 +76,8 @@ sum(missing_F508 %in% exclude)
 phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$vcf_id %in% duplicates | phenotype_pruned$vcf_id %in% exclude | phenotype_pruned$vcf_id %in% missing_F508,
                                                NA, ifelse(phenotype_pruned$vcf_id %in% flag, "flag", "keep"))
 
-phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
-table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
+#Create a column for site (This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed)
+phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id) table(phenotype_pruned[!is.na(phenotype_pruned$include_in_analysis),"site"])
 # JHU  UNC   UW
 #1841 1772 1358
 
@@ -123,7 +123,11 @@ for(line in 1:nrow(phenotype_pruned)){
   }
               
 table(phenotype_pruned$race_or_ethnicity)
-
+#admixed_or_other            asian            black         hispanic
+#              65               13               95              147
+#           natAm            white
+#              25             4750
+        
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
 
