@@ -102,7 +102,7 @@ for(line in 1:nrow(phenotype_pruned)){
         }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$hispanic == 1){
           race_or_ethnicity <- "hispanic" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
         }else{
-          race_or_ethnicity <- "admixed_or other"
+          race_or_ethnicity <- "admixed_or_other"
           }                    
       }else if(phenotype_pruned[line,]$race_white == 1){
         race_or_ethnicity <- "white"
@@ -121,12 +121,8 @@ for(line in 1:nrow(phenotype_pruned)){
         }
   phenotype_pruned$race_or_ethnicity[line] <- race_or_ethnicity
   }
-        
-        
-
-sum(phenotype_pruned$race_white 
-phenotype_pruned$race <- ifelse(phenotype_pruned$race_white == 1, black, ifelse()
-
+              
+table(phenotype_pruned$race_or_ethnicity)
 
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
@@ -137,6 +133,8 @@ barplot(counts, main="Count of DeltaF508 per study Site",
 dev.off()
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count")]
+phenotype_pruned_temp  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "cftr_addl_vars_wgs", "cftr_gt_category_wgs", "age_dx", "year_dx", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity")]
 
+saveRDS(phenotype_pruned_temp, "phenotype.rds")
 write.table(phenotype_pruned_temp, "phenotype.txt", sep = "\t")
+
