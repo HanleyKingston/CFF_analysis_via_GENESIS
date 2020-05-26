@@ -15,7 +15,7 @@ argp <- arg_parser("Generate PCs and GRM") %>%
   add_argument("--kin_thresh", default = 5.5,
                help = "Kinship threshold for pcair (2 ^ -kin_thresh)") %>%
   add_argument("--div_thresh", default = 5.5,
-               help = "threshold for deciding if pairs are ancestrally divergent(2 ^ -div_thresh)") %>%
+               help = "threshold for deciding if pairs are ancestrally divergent(-2 ^ -div_thresh)") %>%
   add_argument("--n_pcs", default = 3,
                "Number of PCs to pass to pcrelate") %>%
   add_argument("--keep_king", flag = TRUE, help = "Save KING-robust GRM")
@@ -40,7 +40,7 @@ if (!is.na(argv$variant_id)) {
   sample_id <- NULL
 }
 kin_thresh <- 2 ^ (-argv$kin_thresh)
-div_thresh <- 2 ^ (-argv$div_thresh)
+div_thresh <- -2 ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
 print(argv)
