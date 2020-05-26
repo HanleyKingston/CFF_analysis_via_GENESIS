@@ -24,7 +24,6 @@ library(SeqVarTools)
 library(SNPRelate)
 
 sessionInfo()
-print(argv)
 
 argv <- parse_args(argp)
 if (!is.na(argv$variant_id)) {
@@ -40,6 +39,7 @@ if (!is.na(argv$variant_id)) {
 kin_thresh <- 2 ^ (-argv$kin_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
+print(argv)
 
 king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
 kingMat <- king$kinship
