@@ -4,9 +4,9 @@
 #3. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
 #4. text to uniquely identify plots and figures
 
-#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_samples.rds" "LDsqrt0.1"
+#ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned_snps.rds" "keep_samples.rds" "LDsqrt0.1" &
 
-#to test: args <- c("CFF_5134_onlyGT.gds", "pruned.rds", "keep_samples.rds", "LDsqrt0.1")
+#to test: args <- c("CFF_5134_onlyGT.gds", "pruned_snps.rds", "keep_samples.rds", "LDsqrt0.1")
 
 library(SeqArray)
 library(SNPRelate)
