@@ -1,5 +1,5 @@
 #Run with:
-#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id keep_var_stringent.rds --sample_id keep_samples.rds
+#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds
 
 #! /usr/bin/env Rscript
 library(argparser)
