@@ -11,14 +11,16 @@ library(ggplot2)
 #Read in phenotype and subset by keep_samples
 phenotype <- read.table("phenotype.txt", header = TRUE)
 keep_samples <- readRDS(file = "keep_samples.rds")
-phenotype <- phenotype[phenotype$vcf_id %in% keep_samples,]
-pcs.df <- as.data.frame(pca$vectors[,1:4])
+phenotype <- phenotype[phenotype$sid %in% keep_samples,]
 
-pcs.df$vcf_id <- rownames(pcs.df)
-pcs.df <- merge(pcs.df, phenotype[,c("vcf_id","site")], by="vcf_id")
+
+pca <- readRDS("CFF_LDsqrt0.1pcair.rds")
+pcs.df <- as.data.frame(pca$vectors[,1:4])
+pcs.df$sid <- rownames(pcs.df)
+pcs.df <- merge(pcs.df, phenotype[,c("sid","site")], by="sid")
 
 rels_V <- pca$rels
-pcs.df$relate <- ifelse(pcs.df$vcf_id %in% rels_V, "related", "unrelated")
+pcs.df$relate <- ifelse(pcs.df$sid %in% rels_V, "related", "unrelated")
 
 pdf("/home/hkings/DATA/PC1and2.pdf")
 ggplot() +
@@ -46,8 +48,8 @@ ggplot() +
 dev.off()
 
 #plot second iteration kinship estimates:
-pcrel2 <- readRDS(file = "pcr_grm_LDsqrt0.1.rds")
-kinship <- pcrel2$kinBtwn
+pcrel <- readRDS(file = "CFF_LDsqrt0.1pcr_grm.rds")
+kinship <- pcrel$kinBtwn
 
 #plot 2nd iteration kinship:
 kinship$site  <- sub("_.*", "", kinship$ID1) #This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed
