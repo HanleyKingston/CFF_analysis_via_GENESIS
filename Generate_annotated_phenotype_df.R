@@ -5,30 +5,21 @@ phenotype <- read.table("phenotype.txt", sep = "\t", header = TRUE)
 ##The null model requires a sample ID column:
 phenotype$sample.id <- as.character(phenotype$sid)
 
-##Check that columns match gds file
-library(SeqVarTools)
-gdsfmt::showfile.gds(closeall=TRUE)
-gds <- seqOpen("CFF_sid_onlyGT.gds")
-gds.id <- seqGetData(gds, "sample.id")
-sum(gds.id %in% phenotype$sample.id) == sum(phenotype$sample.id %in% gds.id) #phenotype file isn't fitlered so will have more total samples
-keep_samples <- readRDS("keep_samples.rds")
-
-#phenotype <- phenotype[match(gds.id, phenotype$sample.id),]
-
-identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), gds.id)
-
+##Read in PCA covariates
 pca <- readRDS("CFF_LDsqrt0.1pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:6])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
 
 pcs.df$sample.id <- row.names(pcs.df)
+identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), gds.id)
+
+##Check that phenotype sample ids match pc IDs (after applying filter to samples)
+#phenotype <- phenotype[match(pcs.df$sample.id, phenotype$sample.id),]
+identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), pcs.df$sample.id)
 
 
 #Add PCA covariates to phenotype data by subject nomber
-merged_phen <- merge(merged_phen, pca_noLD, by = "SUBJ_NO", all.x=TRUE, all.y = FALSE)
-merged_phen <- merge(merged_phen, pca_LDsqrt0.2, by = "SUBJ_NO", all.x=TRUE, all.y = FALSE)
-merged_phen <- merge(merged_phen, pca_LDsqrt0.1, by = "SUBJ_NO", all.x=TRUE, all.y = FALSE)
-
+merged_phen <- merge(phenotype, pcs.df, by = "sample.id", all.x=TRUE)
 
 ##annotate data:
 library(Biobase)
