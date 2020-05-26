@@ -101,9 +101,9 @@ for(line in 1:nrow(phenotype_pruned)){
           race_or_ethnicity <- "natAm" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
         }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$hispanic == 1){
           race_or_ethnicity <- "hispanic" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
-        }else(phenotype_pruned[line,][phenotype_pruned$race_white == 1 & phenotype_pruned$hispanic == 1){
+        }else{
           race_or_ethnicity <- "admixed_or other"
-          }
+          }                    
       }else if(phenotype_pruned[line,]$race_white == 1){
         race_or_ethnicity <- "white"
       }else if(phenotype_pruned[line,]$race_black == 1){
@@ -114,12 +114,15 @@ for(line in 1:nrow(phenotype_pruned)){
         race_or_ethnicity <- "asian"
       }else if(phenotype_pruned[line,]$race_pac == 1){
         race_or_ethnicity <- "pac"
-      }else if(phenotype_pruned[line,]$race_other == 1){
-        race_or_ethnicity <- "admixed or other"
-      }else(phenotype_pruned[line,]$hispanic == 1){
+      }else if(phenotype_pruned[line,]$hispanic == 1){
         race_or_ethnicity <- "hispanic"
+      }else{
+        race_or_ethnicity <- "admixed or other"
+        }
   phenotype_pruned$race_or_ethnicity <- race_or_ethnicity
   }
+        
+        
 
 sum(phenotype_pruned$race_white 
 phenotype_pruned$race <- ifelse(phenotype_pruned$race_white == 1, black, ifelse()
