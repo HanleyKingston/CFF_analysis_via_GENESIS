@@ -77,5 +77,7 @@ pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
                    training.set = pca$unrels)
 
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
+
 saveRDS(pca, paste0(out_prefix, "pcair.rds"))
-saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
+write.matrix(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
+saveRDS(pcrel2, paste(out_prefix, "pcr_obj.rds"))
