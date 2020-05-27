@@ -1,6 +1,6 @@
 #Run with:
-#Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count --out_file CFF_LDsqrt0.1_assoc.rds \
-#--covars PC1 PC2 PC3 --variant_id keep_var_stringent.rds --sample_id keep_samples_noTwins.rds
+#Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count gaussian \
+#--out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples_noTwins.rds
   
 
 
