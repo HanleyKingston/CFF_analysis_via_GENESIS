@@ -66,7 +66,7 @@ seqData <- SeqVarData(gds)
 print("1st iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
-                    training.set = mypcair$unrels)
+                    training.set = mypcair$unrels, scan.block.size = 6000)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
 
 pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
@@ -78,7 +78,7 @@ resetIterator(iterator, verbose = TRUE)
 print("2nd iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose = FALSE)
 pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
-                   training.set = pca$unrels)
+                   training.set = pca$unrels, scan.block.size = 6000)
 
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
 
