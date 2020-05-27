@@ -73,7 +73,7 @@ kinship$site  <- sub("_.*", "", kinship$ID1) #This may not be perfectly accurate
 kinship$race_or_ethnicity  <- phenotype$race_or_ethnicity
 
 png("kinship.png")
-ggplot(kinship, aes(k0, kin, col = kinship$race_or_ethnicity, shape = factor(kinship$site))) +
+ggplot(kinship, aes(k0, kin, col = kinship$race_or_ethnicity, shape = kinship$site)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) +
     ylab("kinship estimate") +
