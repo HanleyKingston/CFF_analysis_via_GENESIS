@@ -26,7 +26,7 @@ Merge gds files (excluding X chromosome)
 library(SeqArray)  
 gds <- seqOpen("CFF_5134_onlyGT.gds")  
 gds.id <- seqGetData(gds, "sample.id")  
-write(gds.id, "/home/hkings/DATA/sample_id_gds.txt")  
+saveRDS(gds.id, "sample_id_gds.rds")  
 seqClose(gds)
 
 ## flag_exclude_in_participants.R
