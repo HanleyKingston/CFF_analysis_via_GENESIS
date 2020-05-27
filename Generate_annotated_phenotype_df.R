@@ -10,6 +10,7 @@ pca <- readRDS("CFF_LDsqrt0.1pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:6])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
 
+keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
 identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), gds.id)
 
@@ -56,3 +57,6 @@ annot <- AnnotatedDataFrame(merged_phen, metadata)
 
 #Save annot as an R object
 saveRDS(annot, file = "annot.rds")
+
+library(dplyr)
+head(pData(annot))
