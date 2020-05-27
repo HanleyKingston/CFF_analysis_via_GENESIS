@@ -1,13 +1,16 @@
 # CFF_analysis_via_GENESIS
 
 ## Contents:
-### tables:
+### files and tables (not all of these are uploaded but all are needed to run analysis)
 samples_flag.txt - samples to flag (extracted from samples_flag_or_exclude.txt)
 samples_excldue.txt - sampels to exclude (extracted from samples_flag_or_exclude.txt)
 participants_cffwgs.tsv - participant phenotype data (note: not uploaded yet, need to make directory private first)
 samples_flag_or_exclude.txt - a list of samples to flag or exclude (note:not uploaded yet)
-keep_samples.rds - a vector of sample IDs to include in PC/GRM creation and assoc. testing
+CFF_sid_onlyGT.gds - gds file with sid as sample IDs
+keep_samples.rds - a vector of sample IDs to include in PC/GRM creation and association testing
 keep_var_stringent.rds - vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing... based on stringent QC and pruning criteria (see below)
+pc_grm_output.txt - manually saved command line output from generating PCs and GRMs
+keep_sample_noTwins.rds - a vector of sample IDs to include in association testing
   
 ### scripts
 flag_exclude_in_particiapnts.R - annotate participants phenotype data based on sampels to flag or excldue
@@ -61,16 +64,21 @@ stringent filter also excludes:
 
 Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
-## LD_prune.R
+## ld_pruning.R
+generate a vector of SNPs pruned by LD to include in PC and GRM creation
 
-Generate a list of pruned SNPs to include in PC and GRM analyses
 Takes Arguments:
-1. gds_file: the file path to the gds file (with .vcf.gds extension)
-2. threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned)
-3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
-4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
+2. opt: out_file (default="pruned_snps.rds")
+3. opt: sample_id: a vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+4. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - saved as an R object
+5. opt: maf: minimum MAF for variants to include (default=0.05)
+6. opt: missing: maximum missing call rate for variants to include, (default=0.05)
+7. opt: threshold: threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned) (default=sqrt(0.1))
+8. opt: window_size (default = 1)
 
-#ex. run with command: Rscript LD_prune.R CFF_5134_onlyGT.gds 0.316227766 "keep_variants.rds" "keep_samples.rds" & > LDsqrt0.1_PCs_grm_script.out
+### script ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id \ keep_var_stringent.rds --window_size 1
+
 
 ## PC_and_grm_script2.R
 Arguments:
@@ -80,10 +88,19 @@ Arguments:
 4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
 5. text to uniquely identify plots and figures
 
-ex. run with command: Rscript PC_and_grm_script2.R CFF_5134_onlyGT.gds "pruned.rds" "keep_var_stringent.rds" "keep_samples.rds" "LDsqrt0.1" #include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
+
+
+#include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## PC_and_GRM_plots.R
 Generate PCs plots, percent variance explained (scree) plots, and relatedness plots
 
 
+ld_pruning.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
+pcs_and_grm.R - generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
+PC_andGRM_plots.R - plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Takes PC-AiR and PC-Relate .rds objects
+Generate_annotated_phenotype_df.R - Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
+pca_plots.R - plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs
+Exclude_identical_twin_from_samples.R - Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
+assoc_test.R
 
