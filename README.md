@@ -13,9 +13,13 @@ keep_var_stringent.rds - vector of variant IDs to include in LD-pruning, PC/GRM 
 flag_exclude_in_particiapnts.R - annotate participants phenotype data based on sampels to flag or excldue
 Generate_sample_filter.R - script to create a vector of sample IDs to include in PC/GRM creation and assoc. testing
 Generate_variant_filter.R - script to create a vector of variant IDs to include in LD-pruning, PC/GRM creation, and association testing
-LD_prune.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
-PC_and_grm_script2.R - generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
-
+ld_pruning.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
+pcs_and_grm.R - generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
+PC_andGRM_plots.R - plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Takes PC-AiR and PC-Relate .rds objects
+Generate_annotated_phenotype_df.R - Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
+pca_plots.R - plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs
+Exclude_identical_twin_from_samples.R - Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
+assoc_test.R
 
 
 ## merge_ind_chr_files.R
