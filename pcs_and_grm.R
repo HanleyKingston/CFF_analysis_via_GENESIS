@@ -1,5 +1,5 @@
 #Run with:
-#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.5 --div_thresh 4.5
+#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5
 
 #! /usr/bin/env Rscript
 library(argparser)
@@ -66,7 +66,7 @@ seqData <- SeqVarData(gds)
 print("1st iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
-                    training.set = mypcair$unrels, scan.block.size = 6000)
+                    training.set = mypcair$unrels, sample.block.size = 6000)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
 
 pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
@@ -78,7 +78,7 @@ resetIterator(iterator, verbose = TRUE)
 print("2nd iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose = FALSE)
 pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
-                   training.set = pca$unrels, scan.block.size = 6000)
+                   training.set = pca$unrels, sample.block.size = 6000)
 
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
 
