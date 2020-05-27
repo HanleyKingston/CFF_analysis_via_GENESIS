@@ -23,10 +23,10 @@ Merge gds files (excluding X chromosome)
 
 ## Save gds sample ids as a vector:
 ### in R:
-library(SeqArray)
-gds <- seqOpen("CFF_5134_onlyGT.gds")
-gds.id <- seqGetData(gds, "sample.id")
-write(gds.id, "/home/hkings/DATA/sample_id_gds.txt")
+library(SeqArray)  
+gds <- seqOpen("CFF_5134_onlyGT.gds")  
+gds.id <- seqGetData(gds, "sample.id")  
+write(gds.id, "/home/hkings/DATA/sample_id_gds.txt")  
 seqClose(gds)
 
 ## flag_exclude_in_participants.R
