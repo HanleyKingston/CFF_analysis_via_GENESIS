@@ -13,7 +13,9 @@ sum(as.character(phenotype$vcf_id) %in% as.character(gds.id))
 #[1] 5134
 
 identical(as.character(phenotype$vcf_id), as.character(gds.id)) #This must be TRUE!
-#[1] TRUE
+#[1] FALSE
+
+#Can coerce to same order (if all the same IDs are shared) with this:
 phenotype <- phenotype[match(gds.id, phenotype$vcf_id),]
 
 sid <- as.character(phenotype$sid)
