@@ -1,6 +1,6 @@
 
 #Load phenotype data:
-phenotype <- read.table("phenotype.txt", sep = "\t", header = TRUE)
+phenotype <- readRDS("phenotype.rds")
 
 ##The null model requires a sample ID column:
 phenotype$sample.id <- as.character(phenotype$sid)
@@ -32,10 +32,6 @@ metadata <- data.frame(labelDescription = c(
   "birthdate year",
   "fist CFTR variant - for deltaF508 carriers, F508del is listed first",
   "second CFTR variant",
-  "cftr_addl_vars_wgs",
-  "cftr_gt_category_wgs",
-  "age_dx",
-  "year_dx",
   "age at death",
   "knorma score",
   "VCF ID - don't use",
