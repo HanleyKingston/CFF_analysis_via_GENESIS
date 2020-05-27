@@ -70,37 +70,48 @@ generate a vector of SNPs pruned by LD to include in PC and GRM creation
 Takes Arguments:
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
 2. opt: out_file (default="pruned_snps.rds")
-3. opt: sample_id: a vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
+3. opt: sample_id: a cahracter vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object
 4. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - saved as an R object
 5. opt: maf: minimum MAF for variants to include (default=0.05)
 6. opt: missing: maximum missing call rate for variants to include, (default=0.05)
 7. opt: threshold: threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned) (default=sqrt(0.1))
 8. opt: window_size (default = 1)
 
-### script ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id \ keep_var_stringent.rds --window_size 1
+### script ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
 
 
-## PC_and_grm_script2.R
+## pcs_and_grm.R
+generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
+
 Arguments:
-1. gds_file: the file path to the gds file (with .vcf.gds extension)
-2. LD-pruning R object (a list of variants to incldue)
-3. keep_variants: a file path to a list of variants to keep (must match corresponding rownames in phenotype and gds - saved as an R object
-4. keep_samples: a file path to a list of samples to keep (must match corresponding smaple IDs in phenotype and gds files - default is familyID_SUBJID) - saved as an R object
-5. text to uniquely identify plots and figures
+1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
+2. opt : out_prefix
+3. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - use pruned_snps.rds from LD pruning step - saved as an R object
+4. opt: sample_id: a cahracter vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
+5. opt: kin_thresh: Kinship threshold for pcair (2 ^ -kin_thresh) (default = 5.5)
+6. opt: div_thresh: threshold for deciding if pairs are ancestrally divergent (-2 ^ -kin_thresh) (default = 5.5)
+7. opt: n_pcs: number of PCs to pass to PC-Relate (default = 3)
+8. opt: text to uniquely identify plots and figures
+9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
-
-
+### Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.5 --div_thresh 4.5
 #include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
+
 ## PC_and_GRM_plots.R
-Generate PCs plots, percent variance explained (scree) plots, and relatedness plots
+plots PCs w/ more features, simple plot of percent variance explained and relatedness plot.
 
+## Generate_annotated_phenotype_df.R
+Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
 
-ld_pruning.R - generate a vector of SNPs pruned by LD to include in PC and GRM creation
-pcs_and_grm.R - generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
-PC_andGRM_plots.R - plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Takes PC-AiR and PC-Relate .rds objects
-Generate_annotated_phenotype_df.R - Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
-pca_plots.R - plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs
-Exclude_identical_twin_from_samples.R - Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
+## pca_plots.R
+Plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs. and phenotype file as an annotated data frame. Takes PC-AiR and PC-Relate .rds objects and phenotype file as an annotated data frame
+
+## Exclude_identical_twin_from_samples.R
+Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
 assoc_test.R
+
+## assoc_test.R
+
+
 
