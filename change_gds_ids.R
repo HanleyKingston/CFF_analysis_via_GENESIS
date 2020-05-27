@@ -5,9 +5,7 @@ gds <- openfn.gds("CFF_sid_onlyGT.gds", readonly=FALSE)
 
 phenotype <- read.table("phenotype.txt", header = TRUE)
 
-gds.id <- scan("sample_id_gds.txt", "character", sep = "\n")
-#Read 5134 items
-
+gds.id <- readRDS("sample_id_gds.rds")
 
 sum(as.character(phenotype$vcf_id) %in% as.character(gds.id))
 #[1] 5134
