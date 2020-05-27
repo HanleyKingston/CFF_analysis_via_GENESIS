@@ -56,13 +56,12 @@ ggplot() +
 dev.off()
 
 #Plot percent variance explained by each pc:
-pcs.df2 <- as.data.frame(pca$vectors[pca$unrels,])
-names(pcs.df2) <- paste0("PC", 1:ncol(pcs.df2))
-pcs.df2$sample.id <- rownames(pcs.df2)
-dat <- data.frame(pc=1:(ncol(pcs.df2)-1), varprop = pca$varprop[1:(ncol(pcs.df2)-1)])
+pca.df <- as.data.frame(pca$vectors[pca$unrels,])
+var_prop_vect <- pca.df$varprop
+PC_labs <- 1:length(var_prop_vect)
 
 pdf("percent_var.pdf")
-ggplot(dat, aes(x=factor(pc), y = 100*varprop)) +
+ggplot(dat, aes(x=PC_labs, y = 100*var_prop_vect)) +
     geom_point() + theme_bw() +
     xlab("PC") + ylab("percent variance accounted for")
 dev.off()
