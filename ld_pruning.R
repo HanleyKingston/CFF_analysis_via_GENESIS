@@ -31,7 +31,7 @@ gds <- seqOpen(gds.file)
 
 # run LD pruning
 snpset <- snpgdsLDpruning(gds,
-                          sample.id = factor(sample.id),
+                          sample.id = sample.id,
                           snp.id = variant.id,
                           maf = argv$maf,
                           missing.rate = argv$missing,
