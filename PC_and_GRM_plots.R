@@ -30,18 +30,6 @@ ggplot() +
    labs(col= "Race or Ethnicity", shape="PC set")
 dev.off()
 
-#Zoom in:
-pdf("/home/hkings/DATA/PC1and2_zoomed.pdf")
-ggplot() +
-   geom_point(aes(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
-   xlab("PC 1") + ylab("PC 2") +
-   scale_shape(solid = FALSE) +
-   labs(col= "Race or Ethnicity", shape="PC set") +
-   ylim(c(-0.1,0.1)) +
-   xlim(c(-0.1,0.1))
-dev.off()
-
-
 pdf("/home/hkings/DATA/PC2and3.pdf")
 ggplot() +
    geom_point(aes(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
@@ -67,7 +55,20 @@ ggplot() +
    labs(col= "Study", shape="PC set")
 dev.off()
 
-#plot second iteration kinship estimates:
+#Plot percent variance explained by each pc:
+pcs.df2 <- as.data.frame(pca$vectors[pca$unrels,])
+names(pcs.df2) <- paste0("PC", 1:ncol(pcs.df2))
+pcs.df2$sample.id <- rownames(pcs.df2)
+dat <- data.frame(pc=1:(ncol(pcs.df2)-1), varprop = pca$varprop[1:(ncol(pcs.df2)-1)])
+
+pdf("percent_var.pdf")
+ggplot(dat, aes(x=factor(pc), y = 100*varprop)) +
+    geom_point() + theme_bw() +
+    xlab("PC") + ylab("percent variance accounted for")
+dev.off()
+
+
+#plotkinship estimates:
 pcrel <- readRDS(file = "CFF_LDsqrt0.1pcr_obj.rds")
 kinship <- pcrel$kinBtwn
 
@@ -76,23 +77,11 @@ kinship$site  <- sub("_.*", "", kinship$ID1) #This may not be perfectly accurate
 kinship$race_or_ethnicity  <- phenotype$race_or_ethnicity
 
 png("kinship.png")
-ggplot(kinship, aes(k0, kin, col = kinship$race_or_ethnicity)) + #shape = factor(kinship$site),
+ggplot(kinship, aes(k0, kin, col = kinship$race_or_ethnicity, shape = factor(kinship$site))) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) +
     ylab("kinship estimate") +
     ggtitle("kinship")
-dev.off()
-
-#Plot percent variance explained by each pc:
-pcs.df2 <- as.data.frame(pca$vectors[pca$unrels,])
-names(pcs.df2) <- paste0("PC", 1:ncol(pcs.df2))
-pcs.df2$sample.id <- rownames(pcs.df2)
-dat <- data.frame(pc=1:(ncol(pcs.df2)-1), varprop = pca$varprop)
-
-pdf("percent_var.pdf")
-ggplot(dat, aes(x=factor(pc), y = 100*varprop)) +
-    geom_point() + theme_bw() +
-    xlab("PC") + ylab("percent variance accounted for")
 dev.off()
 
 
