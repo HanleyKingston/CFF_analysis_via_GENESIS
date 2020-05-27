@@ -50,11 +50,6 @@ if (!is.na(argv$phenotype_file) & !is.na(argv$group)) {
     pcs$group <- "NA"
 }
 
-p <- ggplot(pcs, aes_string("PC1", "PC2", color=group)) + geom_point(alpha=0.5) +
-    guides(colour=guide_legend(override.aes=list(alpha=1)))
-ggsave(paste0(out_prefix, "pc12.png"), plot=p, width=7, height=6)
-
-
 npr <- min(argv$n_pairs, n)
 p <- ggpairs(pcs, mapping=aes_string(color=group), columns=1:npr,
              lower=list(continuous=wrap("points", alpha=0.5)),
