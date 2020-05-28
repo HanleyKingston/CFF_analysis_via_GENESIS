@@ -37,6 +37,11 @@ sum(participants$pid %in% dups_df$pid)
 sum(participants$pid %in% sample_key$pid)
 #[1] 5097
 
+participants$pid <- ifelse(participants$pid %in% dups_df$pid, NA, as.character(participants$pid))
+sum(is.na(participants$pid))
+#[1] 33
+
+
 #This only works because participants file has no duplicates
 participants2 <- merge(participants, sample_key, by = "pid", all.x = FALSE, all.y = TRUE)
 nrow(participants2)
