@@ -1,8 +1,17 @@
 participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
+nrow(participants)
+#[1] 5161
 
+#Read in sample_key and completely remove any samples without matching VCF_IDs
+library(SeqArray)
+gds.id <- seqGetData(seqOpen("CFF_5134_onlyGT.gds"), "sample.id")
+nrow(participants[participants$VCF_ID %in% gds.id,])
 
 #Filter based on sid_pid_to_keep list
 sample_key <- read.table("sample_names_key.txt", header = TRUE)
+sample_key <- sample_key[sample_key$vcf_id %in% gds.id,]
+nrow(sample_key)
+#[1] 5134
 
 nrow(sample_key)
 #[1] 5199
@@ -10,13 +19,11 @@ nrow(sample_key)
 sum(participants$pid %in% sample_key$pid)
 #[1] 5161
 
-participants <- merge(participants, sample_key, by = "pid")
-#[1] 5161
+participants2 <- merge(participants, sample_key, by = "pid", all.x = TRUE, all.y = FALSE)
+nrow(participants2)
+#[1] 5199
 
-completely remove anyone from participants not in gds file
-library(SeqArray)
-gds.id <- seqGetData(seqOpen("CFF_5134_onlyGT.gds"), "sample.id")
-nrow(participants[participants$VCF_ID %in% gds.id,])
+
 
 #Save sample filter
 keep_samples <- as.vector(sample_key$sid)
