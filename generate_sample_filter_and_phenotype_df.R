@@ -4,28 +4,15 @@ participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
 nrow(participants)
 #[1] 5161
 
-
-#Read in sample_key and completely remove any samples without matching VCF_IDs
-gds.id <- readRDS("gds_id.rds")
-length(gds.id)
-#[1] 5134
-
-sample_key <- read.table("sample_names_key.txt", header = TRUE)
-nrow(sample_key)
-#[1] 5199
-sum(sample_key$sid %in% gds.id)
-#[1] 5134
-sample_key <- sample_key[sample_key$sid %in% gds.id,]
-#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df
-nrow(sample_key)
-#[1] 5134
-
 sum(duplicated(sample_key$pid))
 #[1] 37
 #Because sample key has duplicated pids, must remove the coroect duplicate (based on VCF) before mergeing with participants file based on pid
 dups <- as.matrix(read.table("dups.txt", header = TRUE))
 sample_key[sample_key$vcf_id %in% dups[,1:3], c("pid", "sid", "vcf_id")]
 dups_df <- sample_key[sample_key$vcf_id %in% dups[,1:3] & sample_key$vcf_id %notin% dups[,5], c("vcf_id", "sid", "pid")]
+
+sample_key <- sample_key[sample_key$vcf_id %notin% dups_df$vcf_id,]
+sum(sample_key$sid %in% gds.id)
 
 sample_key$pid <- ifelse(sample_key$vcf_id %in% dups_df$vcf_id, NA, as.character(sample_key$pid))
 sum(is.na(sample_key$pid))
@@ -48,6 +35,28 @@ nrow(participants2)
 #[1] 5134
 sum(is.na(participants$pid))
 
+sum(participants2$sid %in% gds.id)
+
+
+#Read in sample_key and completely remove any samples without matching VCF_IDs
+gds.id <- readRDS("gds_id.rds")
+length(gds.id)
+#[1] 5134
+
+sample_key <- read.table("sample_names_key.txt", header = TRUE)
+
+sample_key[duplicated(sample_key$pid),c("sid", "pid", "vcf_id")]
+sample_key[duplicated(sample_key$pid,fromLast=TRUE),c("sid", "pid", "vcf_id")]
+
+
+nrow(sample_key)
+#[1] 5199
+sum(sample_key$sid %in% gds.id)
+#[1] 5134
+sample_key <- sample_key[sample_key$sid %in% gds.id,]
+#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df
+nrow(sample_key)
+#[1] 5134
 
 
 
