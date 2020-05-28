@@ -20,25 +20,17 @@ sample_key <- sample_key[sample_key$sid %in% gds.id,]
 nrow(sample_key)
 #[1] 5134
 
+sum(duplicated(sample_key$pid))
+#[1] 37
+#Because sample key has duplicated pids, must remove the coroect duplicate (based on VCF) before mergeing with participants file based on pid
 dups <- as.matrix(read.table("dups.txt", header = TRUE))
-dups_list <- sample_key[sample_key$vcf_id %in% dups[,1:3], c("pid", "sid", "vcf_id")]
-sample_key[sample_key$vcf_id %in% dups[,1:3] & sample_key$vcf_id %notin% dups[,5], c("vcf_id", "sid", "pid")]
+sample_key[sample_key$vcf_id %in% dups[,1:3], c("pid", "sid", "vcf_id")]
+dups_df <- sample_key[sample_key$vcf_id %in% dups[,1:3] & sample_key$vcf_id %notin% dups[,5], c("vcf_id", "sid", "pid")]
+sum(sample_key$vcf_id %notin% dups_df$vcf_id)
+#[1] 5097
 
-
-#Filter based on sid_pid_to_keep list
-drop_dups <- read.table("drop_dups.txt", header = TRUE)
-#Check all drop identities are in sample_key and remove them
-sum(drop_dups$sid %in% sample_key$sid) == nrow(drop_dups)
-#[1] TRUE
-sample_key_temp <- sample_key[sample_key$sid %notin% drop_dups$sid,]
-nrow(sample_key_temp)
-#[1] 5162
-sum(duplicated(sample_key_temp$vcf_id)) #Must be 0!
-#[1] 0
-
-
-participants[participants$pid %notin% sample_key$pid,]
-
+sum(participants$pid %in% dups_df$pid)
+#[1] 33
 
 sum(participants$pid %in% sample_key$pid)
 #[1] 5161
@@ -119,4 +111,18 @@ phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "bir
 
 saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
 write.table(phenotype_pruned_selectCol, "phenotype.txt", sep = "\t")
+    
+    
+    
+#Filter based on sid_pid_to_keep list
+#drop_dups <- read.table("drop_dups.txt", header = TRUE)
+#Check all drop identities are in sample_key and remove them
+#sum(drop_dups$sid %in% sample_key$sid) == nrow(drop_dups)
+#[1] TRUE
+#sample_key_temp <- sample_key[sample_key$sid %notin% drop_dups$sid,]
+#nrow(sample_key_temp)
+#[1] 5162
+#sum(duplicated(sample_key_temp$vcf_id)) #Must be 0!
+#[1] 0
+
 
