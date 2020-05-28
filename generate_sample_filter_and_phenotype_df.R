@@ -1,19 +1,38 @@
+"%notin%" <- Negate("%in%")
+
 participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
 nrow(participants)
 #[1] 5161
 
 #Read in sample_key and completely remove any samples without matching VCF_IDs
 gds.id <- readRDS("gds_id.rds")
-nrow(participants[participants$VCF_ID %in% gds.id,])
+length(gds.id)
+#[1] 5134
 
-#Filter based on sid_pid_to_keep list
 sample_key <- read.table("sample_names_key.txt", header = TRUE)
-sample_key <- sample_key[sample_key$vcf_id %in% gds.id,]
+nrow(sample_key)
+#[1] 5199
+sum(sample_key$sid %in% gds.id)
+#[1] 5134
+sample_key <- sample_key[sample_key$sid %in% gds.id,]
+#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df
 nrow(sample_key)
 #[1] 5134
 
-nrow(sample_key)
-#[1] 5199
+#Filter based on sid_pid_to_keep list
+drop_dups <- read.table("drop_dups.txt", header = TRUE)
+#Check all drop identities are in sample_key and remove them
+sum(drop_dups$sid %in% sample_key$sid) == nrow(drop_dups)
+#[1] TRUE
+sample_key_temp <- sample_key[sample_key$sid %notin% drop_dups$sid,]
+nrow(sample_key_temp)
+#[1] 5162
+sum(duplicated(sample_key_temp$vcf_id)) #Must be 0!
+#[1] 0
+
+
+participants[participants$pid %notin% sample_key$pid,]
+
 
 sum(participants$pid %in% sample_key$pid)
 #[1] 5161
