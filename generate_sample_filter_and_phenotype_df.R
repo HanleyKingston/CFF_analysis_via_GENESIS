@@ -26,18 +26,23 @@ sum(duplicated(sample_key$pid))
 dups <- as.matrix(read.table("dups.txt", header = TRUE))
 sample_key[sample_key$vcf_id %in% dups[,1:3], c("pid", "sid", "vcf_id")]
 dups_df <- sample_key[sample_key$vcf_id %in% dups[,1:3] & sample_key$vcf_id %notin% dups[,5], c("vcf_id", "sid", "pid")]
-sum(sample_key$vcf_id %notin% dups_df$vcf_id)
-#[1] 5097
+
+sample_key$pid <- ifelse(sample_key$vcf_id %in% dups_df$vcf_id, NA, as.character(sample_key$pid))
+sum(is.na(sample_key$pid))
+#[1] 37
 
 sum(participants$pid %in% dups_df$pid)
 #[1] 33
 
 sum(participants$pid %in% sample_key$pid)
-#[1] 5161
+#[1] 5097
 
-participants2 <- merge(participants, sample_key, by = "pid", all.x = TRUE, all.y = FALSE)
+#This only works because participants file has no duplicates
+participants2 <- merge(participants, sample_key, by = "pid", all.x = FALSE, all.y = TRUE)
 nrow(participants2)
-#[1] 5199
+#[1] 5134
+sum(is.na(participants$pid))
+
 
 
 
