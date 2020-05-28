@@ -1,7 +1,3 @@
-##Run with:
-#Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
-
-
 library(SeqArray)
 library(SNPRelate)
 library(argparser)
@@ -37,8 +33,7 @@ snpset <- snpgdsLDpruning(gds,
                           missing.rate = argv$missing,
                           method = "corr",
                           slide.max.bp = argv$window_size * 1e6, 
-                          ld.threshold = argv$r_threshold,
-                          num.thread = 25
+                          ld.threshold = argv$r_threshold
                           )
 
 # convert list with one element per chrom to vector
