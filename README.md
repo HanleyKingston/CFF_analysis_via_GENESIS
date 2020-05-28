@@ -28,13 +28,8 @@ assoc_test.R
 ## merge_ind_chr_files.R
 Merge gds files (excluding X chromosome)
 
-## Save gds sample ids as a vector:
-### in R:
-library(SeqArray)  
-gds <- seqOpen("CFF_5134_onlyGT.gds")  
-gds.id <- seqGetData(gds, "sample.id")  
-saveRDS(gds.id, "sample_id_gds.rds")  
-seqClose(gds)
+## save_gds_IDs_as_vector.R
+Save gds sample ids as a vector:
 
 ## flag_exclude_in_participants.R
 Trims participants pheotype file to excldue anyone not in gds, add a column for flagging or excluding indiviuals not in corresponding flag and exclude lists (also exclude duplicated samples)
