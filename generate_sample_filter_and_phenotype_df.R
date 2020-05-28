@@ -3,8 +3,7 @@ nrow(participants)
 #[1] 5161
 
 #Read in sample_key and completely remove any samples without matching VCF_IDs
-library(SeqArray)
-gds.id <- seqGetData(seqOpen("CFF_5134_onlyGT.gds"), "sample.id")
+gds.id <- readRDS("gds_id.rds")
 nrow(participants[participants$VCF_ID %in% gds.id,])
 
 #Filter based on sid_pid_to_keep list
