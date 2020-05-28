@@ -28,18 +28,18 @@ assoc_test.R
 ## merge_ind_chr_files.R
 Merge gds files (excluding X chromosome)
 
-## save_gds_IDs_as_vector.R
-Save gds sample ids as a vector:
-
-## flag_exclude_in_participants.R
-Trims participants pheotype file to excldue anyone not in gds, add a column for flagging or excluding indiviuals not in corresponding flag and exclude lists (also exclude duplicated samples)
-(note: flag and exclude lsits were extracted manually from the info in sample_flag.txt
-
 ## change_gds_ids.R
-Convert gds_ids (currently match VCF_ids from participants file) to pids from participants file
+1. Convert gds_ids (currently match VCF_ids from participants file) to sids from based on sample_names_key.txt (taken from SampleDropandFlag.tsv)
+2. Save gds IDs as a vector
 
-## Generate_sample_filter.R
-This generates a vector of sample IDs to be used as a filter in LD pruning, PC and GRM generation, and association testing 
+## genrate_sample_filter_and_phenotype_df.R
+1. Trims participants pheotype file to excldue anyone not in gds
+2. Add columns:
+include_in_analysis: marks indiviuals "exclude" based on SampleDropandFlag file.
+(note: flag and exclude lsits were extracted manually from the info in sample_flag.txt
+site: based on VCF_ID (likely to have some errors due to duplicate samples)
+F508_count: based on CFTR genotype column
+race_or_ethnicity: extracted based on binary race and ethnicity measures (note: hispanic white people are labeled hispanic and Native American white people are labeled Native American. Anyone else with mutliple races or ethnicities is labeled admixed_or_other
 
 ## Generate_variant_filter.R
 This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
