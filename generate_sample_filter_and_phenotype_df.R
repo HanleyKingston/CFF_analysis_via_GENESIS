@@ -4,6 +4,7 @@ participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
 nrow(participants)
 #[1] 5161
 
+
 #Read in sample_key and completely remove any samples without matching VCF_IDs
 gds.id <- readRDS("gds_id.rds")
 length(gds.id)
@@ -18,6 +19,11 @@ sample_key <- sample_key[sample_key$sid %in% gds.id,]
 #Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df
 nrow(sample_key)
 #[1] 5134
+
+dups <- as.matrix(read.table("dups.txt", header = TRUE))
+dups_list <- sample_key[sample_key$vcf_id %in% dups[,1:3], c("pid", "sid", "vcf_id")]
+sample_key[sample_key$vcf_id %in% dups[,1:3] & sample_key$vcf_id %notin% dups[,5], c("vcf_id", "sid", "pid")]
+
 
 #Filter based on sid_pid_to_keep list
 drop_dups <- read.table("drop_dups.txt", header = TRUE)
