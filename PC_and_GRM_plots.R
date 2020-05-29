@@ -76,4 +76,20 @@ ggplot(kinship, aes(k0, kin)) +
     ggtitle("kinship")
 dev.off()
 
+#For KING plot:
+KingRel <- readRDS(file = "king_obj.rds")
+
+kinship <- snpgdsIBDSelection(KingRel)
+head(kinship)
+
+pdf("king_plot.pdf")
+ggplot(kinship, aes(IBS0, kinship)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    theme_bw()
+dev.off()
+
+
+plot(KingRel$IBSO, KingRel$kinship)
 
