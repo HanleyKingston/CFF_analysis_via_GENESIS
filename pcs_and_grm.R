@@ -1,6 +1,3 @@
-#Run with:
-#Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.5 --div_thresh 4.5
-
 #! /usr/bin/env Rscript
 library(argparser)
 library(magrittr)
@@ -40,7 +37,7 @@ if (!is.na(argv$variant_id)) {
   sample_id <- NULL
 }
 kin_thresh <- 2 ^ (-argv$kin_thresh)
-div_thresh <- -2 ^ (-argv$div_thresh)
+div_thresh <- (-2) ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
 print(argv)
