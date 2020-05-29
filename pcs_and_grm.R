@@ -9,9 +9,9 @@ argp <- arg_parser("Generate PCs and GRM") %>%
                default = "") %>%
   add_argument("--variant_id", help = "File with vector of variant IDs") %>%
   add_argument("--sample_id", help = "File with vector of sample IDs") %>%
-  add_argument("--kin_thresh", default = 5.5,
+  add_argument("--kin_thresh", default = 4.5,
                help = "Kinship threshold for pcair (2 ^ -kin_thresh)") %>%
-  add_argument("--div_thresh", default = 5.5,
+  add_argument("--div_thresh", default = 4.5,
                help = "threshold for deciding if pairs are ancestrally divergent(-2 ^ -div_thresh)") %>%
   add_argument("--n_pcs", default = 3,
                "Number of PCs to pass to pcrelate") %>%
