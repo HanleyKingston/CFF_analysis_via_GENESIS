@@ -43,6 +43,7 @@ gds <- seqOpen(argv$gds_file)
 print(argv)
 
 king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
+saveRDS(king, "king_obj.rds")
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
