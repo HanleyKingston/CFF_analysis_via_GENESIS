@@ -1,0 +1,12 @@
+#find max and min kinship from king output:
+
+max.kin <- data.frame(max = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  max.kin[i, "ID"] <- as.character(ID)
+  max1 <- max(kinship[kinship$ID1 == ID, "kinship"])
+  max2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
+  i <- i + 1
+  }
