@@ -10,3 +10,19 @@ for(ID in unique(kinship$ID1)){
   max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
   i <- i + 1
   }
+
+max.kin2 <- max.kin[order(max.kin$max),]
+
+sum(max.kin2$max <= (2^(-4.5)))
+
+min.kin <- data.frame(min = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  min1 <- min(kinship[kinship$ID1 == ID, "kinship"])
+  min2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  min.kin[i, "min"] <- ifelse(min1 < min2, min1, min2)
+  i <- i + 1
+  }
+  
+rownames(min.kin) <- unique(kinship$ID1)
