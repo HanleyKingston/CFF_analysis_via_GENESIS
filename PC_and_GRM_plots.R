@@ -9,7 +9,7 @@ library(ggplot2)
 
 
 #Read in phenotype and subset by keep_samples
-phenotype <- read.table("phenotype.txt", header = TRUE)
+phenotype <- readRDS("phenotype.rds")
 keep_samples <- readRDS(file = "keep_samples.rds")
 phenotype <- phenotype[phenotype$sid %in% keep_samples,]
 
