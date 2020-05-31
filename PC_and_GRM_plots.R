@@ -1,10 +1,5 @@
 #Generate PCs plots, percent variance explained (scree) plots, and relatedness plots
 
-library(SeqArray)
-library(SNPRelate)
-library(SeqVarTools)
-library(GENESIS)
-library(MASS)
 library(ggplot2)
 
 
