@@ -9,23 +9,23 @@ argp <- arg_parser("Generate PCs and GRM") %>%
                default = "") %>%
   add_argument("--variant_id", help = "File with vector of variant IDs") %>%
   add_argument("--sample_id", help = "File with vector of sample IDs") %>%
-  add_argument("--kin_thresh", default = 4.5,
+  add_argument("--kin_thresh", default = 5.5,
                help = "Kinship threshold for pcair (2 ^ -kin_thresh)") %>%
-  add_argument("--div_thresh", default = 4.5,
+  add_argument("--div_thresh", default = 5.5,
                help = "threshold for deciding if pairs are ancestrally divergent(-2 ^ -div_thresh)") %>%
   add_argument("--n_pcs", default = 3,
                "Number of PCs to pass to pcrelate") %>%
   add_argument("--keep_king", flag = TRUE, help = "Save KING-robust GRM")
+argv <- parse_args(argp)
 
 library(SeqArray)
 library(GENESIS)
 library(SeqVarTools)
 library(SNPRelate)
-library(MASS)
 
 sessionInfo()
+print(argv)
 
-argv <- parse_args(argp)
 if (!is.na(argv$variant_id)) {
   variant_id <- readRDS(argv$variant_id)
 } else {
@@ -40,14 +40,15 @@ kin_thresh <- 2 ^ (-argv$kin_thresh)
 div_thresh <- (-2) ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
-print(argv)
 
 king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
-saveRDS(king, "king_obj.rds")
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
 if (argv$keep_king) {
+  #Save king object
+  saveRDS(king, "king_obj.rds")
+  #Save king matrix
   kingMat_temp <- kingMat * 2 # Scaled to match pc-relate GRM
   # coerces low values in matrix to 0
   kingMat_temp[kingMat_temp <= kin_thresh] <- 0
@@ -64,7 +65,7 @@ seqData <- SeqVarData(gds)
 print("1st iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
-                    training.set = mypcair$unrels, sample.block.size = 6000)
+                    training.set = mypcair$unrels)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
 
 pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
@@ -74,12 +75,9 @@ pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thr
 resetIterator(iterator, verbose = TRUE)
 
 print("2nd iteration PC-relate")
-iterator <- SeqVarBlockIterator(seqData, verbose = FALSE)
 pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
-                   training.set = pca$unrels, sample.block.size = 6000)
+                   training.set = pca$unrels)
 
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
-
 saveRDS(pca, paste0(out_prefix, "pcair.rds"))
-write.matrix(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
-saveRDS(pcrel2, paste(out_prefix, "pcr_obj.rds"))
+saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
