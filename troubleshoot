@@ -26,3 +26,7 @@ for(ID in unique(kinship$ID1)){
   }
   
 rownames(min.kin) <- unique(kinship$ID1)
+
+min.kin2 <- min.kin[order(min.kin$min),]
+
+sum(min.kin2$min <= (2^(-4.5)))
