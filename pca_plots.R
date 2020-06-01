@@ -1,6 +1,3 @@
-#Run with:
-#Rscript pca_plots.R CFF_LDsqrt0.1pcair.rds --out_prefix CFF_LDsqrt0.1 --phenotype_file annot.rds --group race_or_ethnicity
-
 #! /usr/bin/env Rscript
 library(argparser)
 library(magrittr)
