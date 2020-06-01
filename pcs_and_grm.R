@@ -68,6 +68,10 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
                     training.set = mypcair$unrels)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
 
+#Save 1st iteration PCA and Relate objects:
+saveRDS(mypcair, "pcair_temp_obj.rds")
+saveRDS(mypcrel, "pcrel_temp_obj.rds")
+
 pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
              divobj = kingMat, snp.include = variant_id,
              sample.include = sample_id)
