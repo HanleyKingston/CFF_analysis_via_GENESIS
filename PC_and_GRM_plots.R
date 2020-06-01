@@ -1,7 +1,7 @@
 #Generate PCs plots, percent variance explained (scree) plots, and relatedness plots
 
 library(ggplot2)
-
+library(SNPRelate)
 
 #Read in phenotype and subset by keep_samples
 phenotype <- readRDS("phenotype.rds")
@@ -75,9 +75,10 @@ dev.off()
 KingRel <- readRDS(file = "king_obj.rds")
 
 kinship <- snpgdsIBDSelection(KingRel)
+
 head(kinship)
 
-pdf("king_plot.pdf")
+pdf("king_plot.png")
 ggplot(kinship, aes(IBS0, kinship)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
     geom_point(alpha=0.2) +
@@ -85,6 +86,4 @@ ggplot(kinship, aes(IBS0, kinship)) +
     theme_bw()
 dev.off()
 
-
-plot(KingRel$IBSO, KingRel$kinship)
 
