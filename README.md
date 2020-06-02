@@ -32,7 +32,7 @@ Merge gds files (excluding X chromosome)
 1. Convert gds_ids (currently match VCF_ids from participants file) to sids from based on sample_names_key.txt (taken from SampleDropandFlag.tsv)
 2. Save gds IDs as a vector
 
-## genrate_sample_filter_and_phenotype_df.R
+## generate_sample_filter_and_phenotype_df.R
 1. Trims participants pheotype file to excldue anyone not in gds
 2. Add columns:
 include_in_analysis: marks indiviuals "exclude" based on SampleDropandFlag file.
