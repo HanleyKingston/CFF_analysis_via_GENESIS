@@ -37,7 +37,7 @@ if (!is.na(argv$variant_id)) {
   sample_id <- NULL
 }
 kin_thresh <- 2 ^ (-argv$kin_thresh)
-div_thresh <- (-2) ^ (-argv$div_thresh)
+div_thresh <- -2 ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
 
