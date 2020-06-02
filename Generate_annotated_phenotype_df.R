@@ -1,4 +1,3 @@
-
 #Load phenotype data:
 phenotype <- readRDS("phenotype.rds")
 
@@ -24,12 +23,17 @@ gds.id <- readRDS("gds_id.rds")
 identical(gds.id, phenotype$sample.id)
 #[1] TRUE
 identical(gds.id[gds.id %in% keep_samples], pcs.df$sample.id)
-#[1] TRUES
+#[1] TRUE
 
 #Add PCA covariates to phenotype data by subject nomber
 merged_phen <- merge(phenotype, pcs.df, by = "sample.id", all.x=TRUE)
 sum(is.na(merged_phen$PC1))
 #[1] 163
+
+#order annotated df to match order of gds ids
+merged_phen <- merged_phen[match(gds.id, merged_phen$sample.id),]
+identical(merged_phen$sample.id, gds.id)
+#[1] TRUE
 
 ##annotate data:
 library(Biobase)
