@@ -86,4 +86,4 @@ pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
 saveRDS(pca, paste0(out_prefix, "pcair.rds"))
 saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
-saveRDS(pcrel2, "rc_rel_obj.rds")
+saveRDS(pcrel2, "pc_rel_obj.rds")
