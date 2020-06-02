@@ -109,7 +109,7 @@ Create a new sample filter that excludes idenitcal twins to be used in assoc_tes
 assoc_test.R
 
 ## assoc_test.R
-### Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count --gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds
+### Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds
   
 
 
