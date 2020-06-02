@@ -12,15 +12,24 @@ colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
 
 keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
-identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), gds.id)
+#check:
+identical(keep_samples, pcs.df$sample.id)
+#[1] TRUE
 
+gds.id <- readRDS("gds_id.rds")
+#Alternatively, can extract from gds file with:
+#library(SeqVarTools)
+#gds.id <- seqGetData(seqOpen("CFF_sid_onlyGT.gds"), "sample.id")
 ##Check that phenotype sample ids match pc IDs (after applying filter to samples)
-#phenotype <- phenotype[match(pcs.df$sample.id, phenotype$sample.id),]
-identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), pcs.df$sample.id)
-
+identical(gds.id, phenotype$sample.id)
+#[1] TRUE
+identical(gds.id[gds.id %in% keep_samples], pcs.df$sample.id)
+#[1] TRUES
 
 #Add PCA covariates to phenotype data by subject nomber
 merged_phen <- merge(phenotype, pcs.df, by = "sample.id", all.x=TRUE)
+sum(is.na(merged_phen$PC1))
+#[1] 163
 
 ##annotate data:
 library(Biobase)
