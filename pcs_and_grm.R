@@ -66,7 +66,7 @@ print("1st iteration PC-relate")
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
                     training.set = mypcair$unrels)
-pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=2, thresh = kin_thresh)
+pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=1, thresh = kin_thresh)
 
 #Save 1st iteration PCA and Relate objects:
 saveRDS(mypcair, "pcair_temp_obj.rds")
