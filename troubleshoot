@@ -70,3 +70,6 @@ str(pc_part3)
 #List of 2
 # $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
 # $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+
+pc_part4 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+
