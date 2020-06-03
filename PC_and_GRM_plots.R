@@ -64,10 +64,10 @@ pcrel <- readRDS(file = "CFF_LDsqrt0.1pcr_obj.rds")
 kinship <- pcrel$kinBtwn
 
 #color by study or race_or_ethnicity
-for(i in 1:nrow(kinship)){
+for(i in 1:100){
   RE1 <- phenotype[phenotype$sid == kinship$ID1[i], "race_or_ethnicity"]
   RE2 <- phenotype[phenotype$sid == kinship$ID2[i], "race_or_ethnicity"]
-  kinship$race_or_ethnicity <- ifelse(RE1 == "white" & RE2 == "white", "white", ifelse(RE1 == "black" & RE2 == "black", "black", ifelse(RE1 == RE2, "match", "different_race_or_ethnicity")))
+  kinship$race_or_ethnicity[i] <- ifelse(RE1 == "white" & RE2 == "white", "white", ifelse(RE1 == "black" & RE2 == "black", "black", ifelse(RE1 == RE2, "match", "different_race_or_ethnicity")))
   }
 
 
