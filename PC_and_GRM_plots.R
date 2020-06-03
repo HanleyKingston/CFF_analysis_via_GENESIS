@@ -63,11 +63,14 @@ dev.off()
 pcrel <- readRDS(file = "CFF_LDsqrt0.1pcr_obj.rds")
 kinship <- pcrel$kinBtwn
 
-#color by study or race_or_ethnicity
-for(i in 1:100){
+#color by study or race_or_ethnicity #Note: this will take a long time to run
+for(i in 1:nrow(kinship)){
   RE1 <- phenotype[phenotype$sid == kinship$ID1[i], "race_or_ethnicity"]
   RE2 <- phenotype[phenotype$sid == kinship$ID2[i], "race_or_ethnicity"]
   kinship$race_or_ethnicity[i] <- ifelse(RE1 == "white" & RE2 == "white", "white", ifelse(RE1 == "black" & RE2 == "black", "black", ifelse(RE1 == RE2, "match", "different_race_or_ethnicity")))
+  if(i %% 100000 == 0)
+     print("1,000,000 rows run")
+     }
   }
 
 
@@ -87,7 +90,7 @@ kinship <- snpgdsIBDSelection(KingRel)
 head(kinship)
 
 pdf("king_plot.png")
-ggplot(kinship, aes(IBS0, kinship)) +
+ggplot(kinship, aes(IBS0, kinship, color = race_or_ethnicity)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
     geom_point(alpha=0.2) +
     ylab("kinship estimate") +
