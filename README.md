@@ -89,7 +89,7 @@ Arguments:
 8. opt: text to uniquely identify plots and figures
 9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
-### Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 4.0 --div_thresh 4.0 --keep_king
+### Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5 --keep_king
 include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 
