@@ -54,7 +54,7 @@ phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508de
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
 
 #Create a column of self-reported race:
-phenotype_pruned$race_or_ethnicity <- NA
+phenotype_pruned$race_or_ethnicity <- NULL
 
 for(line in 1:nrow(phenotype_pruned)){
   if(rowSums(phenotype_pruned[line,c(6:12)], na.rm = TRUE) != 1){
@@ -87,9 +87,9 @@ for(line in 1:nrow(phenotype_pruned)){
               
 table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$race_or_ethnicity)
 #admixed_or_other            asian            black         hispanic
-#              64               13               93              139
+#              65               13               95              147
 #           natAm            white
-#              25             4603
+#              25             4750
         
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
