@@ -1,9 +1,14 @@
-5/4/20
-Troubleshooting PC and grm outputs
-#Try higher relatedness threshold:
+# 5/4/20
+## Troubleshooting PC and grm outputs
+### Try higher relatedness threshold:
 Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix high_first_kin_thresh --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > high_first_kin_thresh_pc_grm_troubleshoot.out
 
-#Pass pruned SNP object from william to generate PCs and GRM:
+### Pass pruned SNP object from william to generate PCs and GRM:
 Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix pruned_from_William --variant_id CFF_5134_onlyGT_pruned.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > pruned_from_William_pc_grm_troubleshoot.out
 
 
+## Add a shared or not shared race/ethnicity descriptor to a kinship object from King
+
+
+##plot
+Rscript pca_plots.R high_first_kin_threshpcair_1it.rds --out_prefix high_first_kin_threshpcair_1it --phenotype_file annot.rds --group race_or_ethnicity
