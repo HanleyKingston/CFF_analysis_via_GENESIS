@@ -92,9 +92,17 @@ Arguments:
 ### Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5 --keep_king
 include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
+## add_phenotype_identifiers_to_kinship_obj.R 
+To color kinship plot based on ancestry, study, etc.
+Arguments:
+1. phenotype data frame as .rds object
+2. kinship object (not matrix) from King or PC-Relate (as a .rds object)
+*This takes hours to run, so include &
+### R -q --vanilla --args phenotype.rds king_obj.rds < add_phenotype_identifiers_to_kinship_obj.R &
+
 
 ## PC_and_GRM_plots.R
-plots PCs w/ more features, simple plot of percent variance explained and relatedness plot.
+plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Suggest running in R, not as a script
 
 ## Generate_annotated_phenotype_df.R
 Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
