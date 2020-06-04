@@ -65,7 +65,7 @@ generate a vector of SNPs pruned by LD to include in PC and GRM creation
 Takes Arguments:
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
 2. opt: out_file (default="pruned_snps.rds")
-3. opt: sample_id: a cahracter vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object
+3. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object
 4. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - saved as an R object
 5. opt: maf: minimum MAF for variants to include (default=0.05)
 6. opt: missing: maximum missing call rate for variants to include, (default=0.05)
@@ -82,7 +82,7 @@ Arguments:
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
 2. opt : out_prefix
 3. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - use pruned_snps.rds from LD pruning step - saved as an R object
-4. opt: sample_id: a cahracter vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
+4. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
 5. opt: kin_thresh: Kinship threshold for pcair (2 ^ -kin_thresh) (default = 5.5)
 6. opt: div_thresh: threshold for deciding if pairs are ancestrally divergent (-2 ^ -kin_thresh) (default = 5.5)
 7. opt: n_pcs: number of PCs to pass to PC-Relate (default = 3)
@@ -96,9 +96,11 @@ include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other proces
 To color kinship plot based on ancestry, study, etc.
 Arguments:
 1. phenotype data frame as .rds object
-2. kinship object (not matrix) from King or PC-Relate (as a .rds object)
+2. a character vector of samples to keep (as a .rds object)
+3. kinship object (not matrix) from King or PC-Relate (as a .rds object)
+4. The type of relatedness object: either "King" or "PC_Relate"
 *This takes hours to run, so include &
-### R -q --vanilla --args phenotype.rds king_obj.rds < add_phenotype_identifiers_to_kinship_obj.R &
+### R -q --vanilla --args phenotype.rds keep_samples.rds king_obj.rds King < add_phenotype_identifiers_to_kinship_obj.R &
 
 
 ## PC_and_GRM_plots.R
