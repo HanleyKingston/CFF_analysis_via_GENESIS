@@ -53,7 +53,7 @@ colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
 if (argv$keep_king) {
   #Save king object
-  saveRDS(king, "king_obj.rds")
+  saveRDS(king, paste0(out_prefix, "king_obj.rds"))
   #Save king matrix
   kingMat_temp <- kingMat * 2 # Scaled to match pc-relate GRM
   # coerces low values in matrix to 0
@@ -77,8 +77,9 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=1)
 
 #Save 1st iteration PCA and Relate objects:
-saveRDS(mypcair, "pcair_temp_obj.rds")
-saveRDS(mypcrel, "pcrel_temp_obj.rds")
+saveRDS(mypcair, paste0(out_prefix, "pcair_1it.rds"))
+saveRDS(mypcrel, paste0(out_prefix, "pcr_obj_1it.rds"))
+
 
 pca <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
              divobj = kingMat, snp.include = variant_id,
@@ -95,4 +96,4 @@ pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
 saveRDS(pca, paste0(out_prefix, "pcair.rds"))
 saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
-saveRDS(pcrel2, "pc_rel_obj.rds")
+saveRDS(pcrel2, paste0(out_prefix, "pcr_obj.rds"))
