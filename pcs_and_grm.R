@@ -72,7 +72,7 @@ pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=1, thresh = kin_thresh)
 saveRDS(mypcair, "pcair_temp_obj.rds")
 saveRDS(mypcrel, "pcrel_temp_obj.rds")
 
-pca <- pcair(seqData, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
+pca <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
              divobj = kingMat, snp.include = variant_id,
              sample.include = sample_id)
 
