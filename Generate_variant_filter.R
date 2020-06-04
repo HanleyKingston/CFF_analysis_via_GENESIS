@@ -37,6 +37,8 @@ pdf("minor_allele_freq_hist.pdf")
 hist(maf, breaks=50)
 dev.off()
 
+
+
 load("flag.metric.RData")
 str(flag.metric.df)
 
@@ -44,7 +46,7 @@ str(flag.metric.df)
 
 #filter criteria:
 
-table(flag.metric.df$flag.info_QD.2)
+table(flag.metric.df$flag.info_QD.2, useNA = TRUE)
 #    FALSE      TRUE
 #114175552   5964292
 QD <- flag.metric.df$flag.info_QD.2 == FALSE
@@ -74,22 +76,22 @@ table(flag.metric.df$flag.info_ReadPosRankSum.8)
 #120137053      2791
 RankSum <- flag.metric.df$flag.info_ReadPosRankSum.8 == FALSE
 
-table(flag.metric.df$index.snvPASS)
+table(flag.metric.df$index.snvPASS, useNA = "ifany")
 #   FALSE     TRUE
-#27543319 926525
+#27543319 92659625
 snvPASS <- flag.metric.df$index.snvPASS == TRUE
 
-table(flag.metric.df$index.indelPASS)
+table(flag.metric.df$index.indelPASS, useNA = "ifany")
 #    FALSE      TRUE
 #107380642  12759202
 indelPASS <- flag.metric.df$index.indelPASS == TRUE
 
-table(flag.metric.df$index.snv_biAllelic)
+table(flag.metric.df$index.snv_biAllelic, useNA = "ifany")
 #    FALSE      TRUE
 # 19202784 100937060
 biAllelic <- flag.metric.df$index.snv_biAllelic == TRUE
 
-table(flag.metric.df$flag.missByVar.0.05)
+table(flag.metric.df$flag.missByVar.0.0, useNA = "ifany"5)
 #    FALSE      TRUE
 #114437649   5702195
 missByVar <- flag.metric.df$flag.missByVar.0.05 == FALSE
