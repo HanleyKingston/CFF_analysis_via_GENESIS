@@ -5,11 +5,17 @@ library(SNPRelate)
 
 #Read in phenotype and subset by keep_samples
 phenotype <- readRDS(args[1])
-keep_samples <- readRDS(file = "keep_samples.rds")
+keep_samples <- readRDS(file = args[2])
 phenotype <- phenotype[phenotype$sid %in% keep_samples,]
 
-pcrel <- readRDS(file = args[2])
-kinship <- pcrel$kinBtwn
+relatedness <- readRDS(file = args[3])
+if(args[4] == "King"){
+  kinship <- snpgdsIBDSelection(relatedness)
+} else if(args[4] == "PC_Relate"){
+  kinship <- relatedness$kinBtwn
+} else {
+  print("kinship object type not supplied")
+  }
 
 for(i in 1:nrow(kinship)){
   RE1 <- phenotype[phenotype$sid == kinship$ID1[i], "race_or_ethnicity"]
