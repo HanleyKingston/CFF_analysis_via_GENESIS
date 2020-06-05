@@ -153,14 +153,6 @@ str(pc_part1)
 #there are more samples with lower kinship values in the kinship object from William's LD-pruned SNPs!
 
 
-### kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2)
-pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
-str(pc_part2)
-#List of 2
-# $ rels  : chr [1:942] "S71706" "S13731" "S38266" "S87729" ...
-# $ unrels: chr [1:4029] "S66366" "S48371" "S30713" "S43109" ...
-
-
 ### kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2)
 pc_part3 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
 str(pc_part3)
