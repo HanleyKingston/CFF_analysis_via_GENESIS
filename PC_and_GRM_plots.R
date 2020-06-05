@@ -89,8 +89,8 @@ kinship <- snpgdsIBDSelection(KingRel)
 
 head(kinship)
 
-pdf("king_plot.png")
-ggplot(kinship, aes(IBS0, kinship, color = race_or_ethnicity)) +
+png("king_plot.png")
+ggplot(kinship, aes(IBS0, kinship)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
     geom_point(alpha=0.2) +
     ylab("kinship estimate") +
