@@ -7,7 +7,13 @@ CFF_5134_onlyGT_pruned.rds
 (inputs are here: https://github.com/wwgordon/cff_gwas/blob/master/ld_prune_gds.R)
 
 # 6/4/20
-## Troubleshooting PC and grm outputs
+## Troubleshooting PC and grm outputs - this will generate:
+1. a King object
+2. 1st iteration PC-Air object
+3. 1st iteration PC-Relate object
+4. 2nd iteration PC-Air object
+5. 2nd iteration PC-Relate object
+6. A kinship matrix
 ### Try higher relatedness threshold:
 Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix high_first_kin_thresh --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > high_first_kin_thresh_pc_grm_troubleshoot.out
 
@@ -18,7 +24,7 @@ Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix pruned_from_Willia
 ## Add a shared or not shared race/ethnicity descriptor to a kinship object from King
 
 
-## plots
+## plots - based on the 6 outputs from above
 library(ggplot2)
 ### Relatedness plots from king
 pcrel <- readRDS(file = "high_first_kin_threshking_obj.rds")
