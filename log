@@ -147,6 +147,7 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 
 ### kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
 pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
 #In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
 #  some samples in unrel.set are not in kinobj or divobj; they will not be included
 str(pc_part1)
@@ -154,3 +155,42 @@ str(pc_part1)
 # $ rels  : chr [1:961] "S71706" "S13731" "S25290" "S35496" ...
 # $ unrels: chr [1:4010] "S10003" "S10014" "S10074" "S10130" ...
 
+### kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2)
+pc_part2 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:976] "S79149" "S97265" "S40340" "S99186" ...
+# $ unrels: chr [1:3995] "S10003" "S10014" "S10074" "S10130" ...
+
+
+## Based on pruned SNP list from William:
+king <- readRDS("pruned_from_Williamking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+pcrel <- readRDS("pruned_from_Williampcr_obj_1it.rds")
+pcrelate_matrix <- pcrelateToMatrix(pcrel, scaleKin=1)
+
+
+### kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:956] "S71706" "S11026" "S25290" "S38266" ...
+# $ unrels: chr [1:4015] "S10003" "S10014" "S10074" "S10130" ...
+#Number of people in unrelated set are very similar between mine and William's
+
+### kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2)
+pc_part2 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:974] "S40340" "S71706" "S89660" "S19246" ...
+# $ unrels: chr [1:3997] "S10003" "S10014" "S10074" "S10130" ...
