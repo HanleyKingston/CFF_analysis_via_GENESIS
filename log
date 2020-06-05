@@ -44,4 +44,42 @@ pcrel <- readRDS(file = "pruned_from_Williampcair_1it.rds")
 kinship <- pcrel$kinBtwn
 #Generated kinship plot from kinship object
 
-### 
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R high_first_kin_threshpcair.rds --out_prefix high_first_kin_threshpcair --phenotype_file annot.rds --group race_or_ethnicity
+
+Rscript pca_plots.R pruned_from_Williampcair.rds --out_prefix pruned_from_Williampcair --phenotype_file annot.rds --group race_or_ethnicity
+
+
+## Check effect of different kin_thresh and div_thresh values on numbers in related and unrelated set
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+
+## Based on my pruned SNP list:
+king <- readRDS("high_first_kin_threshking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(9/2)
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part1)
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(7/2)
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
+str(pc_part2)
+List of 2
+ $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+ $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(9/2)
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
+str(pc_part2)
+
+
+### Based on William's pruned SNP list:
+king <- readRDS("pruned_from_Williamking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+gds <- seqOpen("CFF_sid_onlyGT.gds")
