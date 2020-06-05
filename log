@@ -1,4 +1,12 @@
-# 5/4/20
+# 5/24/20
+## Generated pruned SNP list
+Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
+
+## pruned SNP list from William:
+CFF_5134_onlyGT_pruned.rds
+(inputs are here: https://github.com/wwgordon/cff_gwas/blob/master/ld_prune_gds.R)
+
+# 6/4/20
 ## Troubleshooting PC and grm outputs
 ### Try higher relatedness threshold:
 Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix high_first_kin_thresh --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > high_first_kin_thresh_pc_grm_troubleshoot.out
@@ -49,7 +57,7 @@ ggplot(kinship, aes(k0, kin)) +
     ggtitle("kinship")
 dev.off()
 
-pcrel <- readRDS(file = "pruned_from_Williampcair_1it.rds")
+pcrel <- readRDS(file = "pruned_from_Williampcr_obj_1it.rds")
 kinship <- pcrel$kinBtwn
 png("pruned_from_William_kinship_1it.png")
 ggplot(kinship, aes(k0, kin)) +
@@ -260,7 +268,7 @@ str(kingMat)
 #  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
 
 
-# 5/5/20
+# 6/5/20
 ## Re-run pc_grm_troubleshoot.R with the slightly lower kin_thresh (2^(-6/2)) on my SNP data
 #This threshold was suggested by Stephanie to capture more individuals in the initial unrelated set
 #Note, the pruned SNP list from William does 
