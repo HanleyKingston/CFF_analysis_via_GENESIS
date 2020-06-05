@@ -179,7 +179,7 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
 #Warning message:
 #In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
-#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included *I looked more itno this below
 str(pc_part1)
 #List of 2
 # $ rels  : chr [1:961] "S71706" "S13731" "S25290" "S35496" ...
@@ -235,3 +235,27 @@ str(pc_part2)
 #List of 2
 # $ rels  : chr [1:974] "S40340" "S71706" "S89660" "S19246" ...
 # $ unrels: chr [1:3997] "S10003" "S10014" "S10074" "S10130" ...
+
+
+
+## Investigating warning:
+#kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pcrelate_matrix)
+#Formal class 'dsyMatrix' [package "Matrix"] with 5 slots
+#  ..@ x       : num [1:24710841] 0.451885 0.000653 0.005276 0.002987 0.000796 ...
+#  ..@ Dim     : int [1:2] 4971 4971
+#  ..@ Dimnames:List of 2
+#  .. ..$ : chr [1:4971] "S10003" "S10014" "S10017" "S10063" ...
+#  .. ..$ : chr [1:4971] "S10003" "S10014" "S10017" "S10063" ...
+#  ..@ uplo    : chr "U"
+#  ..@ factors : list()
+str(kingMat)
+# num [1:4971, 1:4971] 0.5 0.0971 0.0957 0.0948 0.0926 ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+
