@@ -10,5 +10,38 @@ Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix pruned_from_Willia
 ## Add a shared or not shared race/ethnicity descriptor to a kinship object from King
 
 
-##plot
+## plots
+### Relatedness plots from king
+pcrel <- readRDS(file = "high_first_kin_threshking_obj.rds")
+kinship <- pcrel$kinBtwn
+#Generated kinship plot from kinship object
+*ggplot(kinship, aes(IBS0, kin)) +
+*    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+*    geom_point(alpha=0.2) +
+*    ylab("kinship estimate") +
+*    ggtitle("kinship")
+
+pcrel <- readRDS(file = "pruned_from_Williamking_1it.rds")
+kinship <- pcrel$kinBtwn
+#Generated kinship plot from kinship object
+
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
 Rscript pca_plots.R high_first_kin_threshpcair_1it.rds --out_prefix high_first_kin_threshpcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+Rscript pca_plots.R pruned_from_Williampcair_1it.rds --out_prefix pruned_from_Williampcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from first iteration PC-Relate
+pcrel <- readRDS(file = "high_first_kin_threshpcr_obj.rds")
+kinship <- pcrel$kinBtwn
+#Generated kinship plot from kinship object
+*ggplot(kinship, aes(k0, kin)) +
+*    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+*    geom_point(alpha=0.2) +
+*    ylab("kinship estimate") +
+*    ggtitle("kinship")
+
+pcrel <- readRDS(file = "pruned_from_Williampcair_1it.rds")
+kinship <- pcrel$kinBtwn
+#Generated kinship plot from kinship object
+
+### 
