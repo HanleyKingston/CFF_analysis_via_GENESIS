@@ -62,24 +62,64 @@ kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 
-### kin.thresh = 2^(-7/2), div.thresh = -2^(9/2)
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2)
 pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
 str(pc_part1)
+#List of 2
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
 
-### kin.thresh = 2^(-7/2), div.thresh = -2^(7/2)
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2)
 pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
 str(pc_part2)
 List of 2
- $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
- $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+#div.thresh does not seem to have an impact on the number of sample in related and unrelated set
 
-### kin.thresh = 2^(-7/2), div.thresh = -2^(9/2)
-pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
-str(pc_part2)
+### kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2)
+pc_part3 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part3)
+#List of 2
+# $ rels  : chr [1:945] "S71706" "S13731" "S38266" "S11026" ...
+# $ unrels: chr [1:4026] "S66366" "S48371" "S30713" "S43109" ...
+
+### kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2)
+pc_part4 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part4)
+#List of 2
+# $ rels  : chr [1:964] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels: chr [1:4007] "S66366" "S48371" "S30713" "S43109" ...
+#this is the threshold that captures everyone in the large cluster and excludes the 2 small top clusters
+
+### kin.thresh = 2^(-6.5/2), div.thresh = -2^(-9/2)
+pc_part5 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6.5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part5)
+#List of 2
+# $ rels  : chr [1:1778] "S53263" "S25472" "S32485" "S33582" ...
+# $ unrels: chr [1:3193] "S66366" "S30713" "S56629" "S96954" ...
+
 
 
 ### Based on William's pruned SNP list:
 king <- readRDS("pruned_from_Williamking_obj.rds")
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
-gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2)
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:2254] "S53263" "S25472" "S97980" "S33582" ...
+# $ unrels: chr [1:2717] "S30713" "S96954" "S38975" "S12067" ...
+#Although the 2 kinship plots based on the different LD pruned objects look similar,
+#there are more samples with lower kinship values in the kinship object from William's LD-pruned SNPs!
+
+
+### kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2)
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:942] "S71706" "S13731" "S38266" "S87729" ...
+# $ unrels: chr [1:4029] "S66366" "S48371" "S30713" "S43109" ...
+
