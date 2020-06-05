@@ -260,9 +260,41 @@ str(kingMat)
 #  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
 
 
+# 5/5/20
 ## Re-run pc_grm_troubleshoot.R with the slightly lower kin_thresh (2^(-6/2)) on my SNP data
 #This threshold was suggested by Stephanie to capture more individuals in the initial unrelated set
 #Note, the pruned SNP list from William does 
 #I am re-running the script entirely to be consistant, but this does use the same king object as the previous run
 Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix kin_thresh3.0 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.0 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > kin_thresh3.0_pc_grm_troubleshoot.out
 
+
+## plots
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-6/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R kin_thresh3.0pcair_1it.rds --out_prefix kin_thresh3.0pcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from first iteration PC-Relate
+library(ggplot2)
+
+pcrel <- readRDS(file = "kin_thresh3.0pcr_obj_1it.rds")
+kinship <- pcrel$kinBtwn
+png("kin_thresh3.0_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-9/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R kin_thresh3.0pcair.rds --out_prefix kin_thresh3.0pcair --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from 2nd iteration PC-Relate
+pcrel <- readRDS(file = "kin_thresh3.0pcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("kin_thresh3.0_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
