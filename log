@@ -11,19 +11,27 @@ Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix pruned_from_Willia
 
 
 ## plots
+library(ggplot2)
 ### Relatedness plots from king
 pcrel <- readRDS(file = "high_first_kin_threshking_obj.rds")
 kinship <- pcrel$kinBtwn
-#Generated kinship plot from kinship object
-*ggplot(kinship, aes(IBS0, kin)) +
-*    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
-*    geom_point(alpha=0.2) +
-*    ylab("kinship estimate") +
-*    ggtitle("kinship")
+png("high_first_kin_thresh_king_plot.png")
+ggplot(kinship, aes(IBS0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
 
 pcrel <- readRDS(file = "pruned_from_Williamking_1it.rds")
 kinship <- pcrel$kinBtwn
-#Generated kinship plot from kinship object
+png("pruned_from_William_king_plot.png")
+ggplot(kinship, aes(IBS0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
 
 ### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
 Rscript pca_plots.R high_first_kin_threshpcair_1it.rds --out_prefix high_first_kin_threshpcair_1it --phenotype_file annot.rds --group race_or_ethnicity
@@ -31,23 +39,53 @@ Rscript pca_plots.R high_first_kin_threshpcair_1it.rds --out_prefix high_first_k
 Rscript pca_plots.R pruned_from_Williampcair_1it.rds --out_prefix pruned_from_Williampcair_1it --phenotype_file annot.rds --group race_or_ethnicity
 
 ### Relatedness plots from first iteration PC-Relate
-pcrel <- readRDS(file = "high_first_kin_threshpcr_obj.rds")
+pcrel <- readRDS(file = "high_first_kin_threshpcr_obj_1it.rds")
 kinship <- pcrel$kinBtwn
-#Generated kinship plot from kinship object
-*ggplot(kinship, aes(k0, kin)) +
-*    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
-*    geom_point(alpha=0.2) +
-*    ylab("kinship estimate") +
-*    ggtitle("kinship")
+png("high_first_kin_thresh_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
 
 pcrel <- readRDS(file = "pruned_from_Williampcair_1it.rds")
 kinship <- pcrel$kinBtwn
-#Generated kinship plot from kinship object
+png("pruned_from_William_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
 
 ### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
 Rscript pca_plots.R high_first_kin_threshpcair.rds --out_prefix high_first_kin_threshpcair --phenotype_file annot.rds --group race_or_ethnicity
 
 Rscript pca_plots.R pruned_from_Williampcair.rds --out_prefix pruned_from_Williampcair --phenotype_file annot.rds --group race_or_ethnicity
+
+
+### Relatedness plots from 2nd iteration PC-Relate
+pcrel <- readRDS(file = "high_first_kin_threshpcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("high_first_kin_thresh_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+pcrel <- readRDS(file = "pruned_from_Williampcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("pruned_from_William_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
 
 
 ## Check effect of different kin_thresh and div_thresh values on numbers in related and unrelated set - from King object
@@ -164,6 +202,17 @@ str(pc_part2)
 #List of 2
 # $ rels  : chr [1:976] "S79149" "S97265" "S40340" "S99186" ...
 # $ unrels: chr [1:3995] "S10003" "S10014" "S10074" "S10130" ...
+
+### kin.thresh = 2^(-9/2), div.thresh = -2^(-11/2)
+pc_part3 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-11/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part3)
+#List of 2
+# $ rels  : chr [1:961] "S71706" "S48216" "S38266" "S25290" ...
+# $ unrels: chr [1:4010] "S10003" "S10014" "S10074" "S10130" ...
+#div.thresh doesn't make a difference
 
 
 ## Based on pruned SNP list from William:
