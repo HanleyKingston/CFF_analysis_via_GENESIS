@@ -34,13 +34,14 @@ sum(min.kin2$min <= (2^(-4.5)))
 
 
 ####
-king <- readRDS("king_obj.rds")
-kingMat <- king$kinship
-colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+
 library(SeqArray)
 library(GENESIS)
 library(SeqVarTools)
 library(SNPRelate)
+king <- readRDS("king_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 
 
@@ -73,3 +74,7 @@ str(pc_part3)
 
 pc_part4 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
 
+pc_it1_1 <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-7/2), divobj = kingMat)
+
+
+pc_part <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
