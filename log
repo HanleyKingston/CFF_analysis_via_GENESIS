@@ -312,3 +312,37 @@ ggplot(kinship, aes(k0, kin)) +
     ylab("kinship estimate") +
     ggtitle("kinship")
 dev.off()
+
+
+
+
+# Redoing with a higher r^2 for LD pruning
+library(SeqArray)
+library(SNPRelate)
+library(argparser)
+sessionInfo()
+
+# parse file paths
+gds.file <- "CFF_sid_onlyGT.gds"
+out.file <- "pruned_higherLD"
+sample.id <- readRDS("keep_samples.rds")
+variant.id <- readRDS("keep_var_stringent.rds")
+
+# open GDS file
+gds <- seqOpen(gds.file)
+
+maf <- 0.05
+missing <- 0.05
+window_size <- 1e6
+r_threshold <- sqrt(0.2)
+
+snpset <- snpgdsLDpruning(gds,
+                          sample.id = sample.id,
+                          snp.id = variant.id,
+                          maf = maf,
+                          missing.rate = missing,
+                          method = "corr",
+                          slide.max.bp = window_size, 
+                          ld.threshold = r_threshold
+                          )
+                          
