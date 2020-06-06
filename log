@@ -182,10 +182,10 @@ library(SeqVarTools)
 library(SNPRelate)
 
 ## Based on my pruned SNP list:
-king <- readRDS("high_first_kin_threshking_obj.rds")
+king <- readRDS("6,4_troubleshoot/high_first_kin_threshking_obj.rds")
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
-pcrel <- readRDS("high_first_kin_threshpcr_obj_1it.rds")
+pcrel <- readRDS("6,4_troubleshoot/high_first_kin_threshpcr_obj_1it.rds")
 pcrelate_matrix <- pcrelateToMatrix(pcrel, scaleKin=1)
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 
