@@ -561,6 +561,9 @@ for(ID in unique(kinship$ID1)){
   max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
   i <- i + 1
   }
+#Warning message:
+# In max(kinship[kinship$ID2 == ID, "kinship"]) :
+#  no non-missing arguments to max; returning -Inf
 
 max.kin$ID <- unique(kinship$ID1)
 
@@ -586,16 +589,40 @@ i <- 1
 
 for(ID in unique(kinship$ID1)){
   min1 <- min(kinship[kinship$ID1 == ID, "kinship"])
-  min2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  min2 <- min(kinship[kinship$ID2 == ID, "kinship"])
   min.kin[i, "min"] <- ifelse(min1 < min2, min1, min2)
   i <- i + 1
   }
   
 rownames(min.kin) <- unique(kinship$ID1)
 
-min.kin2 <- min.kin[order(min.kin$min),]
+min.kin <- min.kin[order(min.kin$min),]
 
-sum(min.kin2$min <= (2^(-6/2)))
+sum(min.kin$min <= (2^(-6/2)))
+#[1] 4970
 
 
-                          
+## Develop 1st iteration PC-Air
+
+### Check number in related and unrelated set using pcairPartition
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:960] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels: chr [1:4011] "S66366" "S48371" "S30713" "S43109" ...
+#I will use this threshold
+
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:2441] "S53263" "S33582" "S52656" "S25472" ...
+# $ unrels: chr [1:2530] "S30713" "S56629" "S96954" "S12067" ...
+#Not enough peopple in the unrelated set
+
+kin_thresh1 <- 2 ^ (-6/2)
+div_thresh1 <- -2 ^ (-9/2)                    
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh1, div.thresh = div_thresh1, divobj = kingMat, snp.include = variant_id, sample.include = sample_id)
+
