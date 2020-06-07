@@ -317,24 +317,58 @@ dev.off()
 
 
 # Redoing with a higher r^2 for LD pruning
+
+# LD pruning
 library(SeqArray)
 library(SNPRelate)
 library(argparser)
 sessionInfo()
+                          
+sessionInfo()
+#R version 3.6.1 (2019-07-05)
+#Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+#Running under: CentOS release 6.10 (Final)
+#
+#Matrix products: default
+#BLAS/LAPACK: /cm/shared/apps/conda3/5.3.1/lib/R/lib/libRblas.so
+#
+#locale:
+# [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+# [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+# [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+# [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+# [9] LC_ADDRESS=C               LC_TELEPHONE=C
+#[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+#
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base
+#
+#other attached packages:
+#[1] argparser_0.6    SNPRelate_1.20.1 SeqArray_1.26.2  gdsfmt_1.22.0
+#
+#loaded via a namespace (and not attached):
+# [1] IRanges_2.20.2         Biostrings_2.54.0      bitops_1.0-6
+# [4] GenomeInfoDb_1.22.1    stats4_3.6.1           zlibbioc_1.32.0
+# [7] XVector_0.26.0         S4Vectors_0.24.4       RCurl_1.98-1.2
+#[10] parallel_3.6.1         compiler_3.6.1         BiocGenerics_0.32.0
+#[13] GenomicRanges_1.38.0   GenomeInfoDbData_1.2.2
 
-# parse file paths
+## parse file paths
 gds.file <- "CFF_sid_onlyGT.gds"
 out.file <- "pruned_higherLD"
 sample.id <- readRDS("keep_samples.rds")
 variant.id <- readRDS("keep_var_stringent.rds")
 
-# open GDS file
+## open GDS file
 gds <- seqOpen(gds.file)
 
 maf <- 0.05
 missing <- 0.05
 window_size <- 1e6
 r_threshold <- sqrt(0.2)
+r_threshold
+#[1] 0.4472136
+
 
 snpset <- snpgdsLDpruning(gds,
                           sample.id = sample.id,
@@ -345,4 +379,115 @@ snpset <- snpgdsLDpruning(gds,
                           slide.max.bp = window_size, 
                           ld.threshold = r_threshold
                           )
+
+#SNV pruning based on LD:
+#Calculating allele counts/frequencies ...
+#[==================================================] 100%, completed, 10.8m
+#Excluding 447,987 SNVs (monomorphic: TRUE, MAF: 0.05, missing rate: 0.05)
+#Working space: 4,971 samples, 6,381,209 SNVs
+#    using 1 (CPU) core
+#    sliding window: 1,000,000 basepairs, Inf SNPs
+#    |LD| threshold: 0.447214
+#    method: correlation
+#Chromosome 1: 0.21%, 20,844/9,936,669
+#Chromosome 10: 0.53%, 30,109/5,678,525
+#Chromosome 11: 0.44%, 25,409/5,822,215
+#Chromosome 12: 0.47%, 26,164/5,561,704
+#Chromosome 13: 0.54%, 23,674/4,404,461
+#Chromosome 14: 0.54%, 19,329/3,567,216
+#Chromosome 15: 0.55%, 18,662/3,417,178
+#Chromosome 16: 0.64%, 24,581/3,826,829
+#Chromosome 17: 0.67%, 22,529/3,380,458
+#Chromosome 18: 0.53%, 17,957/3,417,044
+#Chromosome 19: 0.68%, 17,903/2,617,465
+#Chromosome 2: 0.47%, 46,475/9,877,586
+#Chromosome 20: 0.87%, 24,742/2,842,811
+#Chromosome 21: 0.56%, 9,631/1,722,032
+#Chromosome 22: 1.11%, 20,069/1,809,412
+#Chromosome 3: 0.44%, 35,127/8,005,377
+#Chromosome 4: 0.45%, 35,251/7,759,638
+#Chromosome 5: 0.44%, 31,481/7,235,943
+#Chromosome 6: 0.43%, 28,708/6,751,274
+#Chromosome 7: 0.52%, 32,989/6,373,532
+#Chromosome 8: 0.42%, 25,812/6,159,400
+#Chromosome 9: 0.53%, 28,432/5,371,174
+#565,878 markers are selected in total.
+
+## convert list with one element per chrom to vector
+pruned <- unlist(snpset, use.names=FALSE)
+str(pruned)
+#int [1:565878] 1683 2190 2215 3755 6388 10751 10852 11502 13043 13048 ...
+
+saveRDS(pruned, file=out.file)
+
+
+# GRM and PC generation
+#Started a new R session
+
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+
+sessionInfo()
+#R version 3.6.1 (2019-07-05)
+#Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+#Running under: CentOS release 6.10 (Final)
+#
+#Matrix products: default
+#BLAS/LAPACK: /cm/shared/apps/conda3/5.3.1/lib/R/lib/libRblas.so
+#
+#locale:
+# [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+# [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+# [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+# [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+# [9] LC_ADDRESS=C               LC_TELEPHONE=C
+#[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+#
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base
+#
+#other attached packages:
+#[1] SNPRelate_1.20.1   SeqVarTools_1.24.1 GENESIS_2.16.1     SeqArray_1.26.2
+#[5] gdsfmt_1.22.0
+#
+#loaded via a namespace (and not attached):
+# [1] zoo_1.8-8              tidyselect_1.1.0       purrr_0.3.4
+# [4] DNAcopy_1.60.0         splines_3.6.1          lattice_0.20-40
+# [7] vctrs_0.3.0            generics_0.0.2         GWASExactHW_1.01
+#[10] stats4_3.6.1           mgcv_1.8-31            blob_1.2.1
+#[13] survival_3.1-8         rlang_0.4.6            pillar_1.4.4
+#[16] glue_1.4.1             DBI_1.1.0              BiocGenerics_0.32.0
+#[19] bit64_0.9-7            GenomeInfoDbData_1.2.2 foreach_1.5.0
+#[22] lifecycle_0.2.0        zlibbioc_1.32.0        MatrixModels_0.4-1
+#[25] Biostrings_2.54.0      codetools_0.2-16       memoise_1.1.0
+#[28] Biobase_2.46.0         SparseM_1.78           IRanges_2.20.2
+#[31] lmtest_0.9-37          GenomeInfoDb_1.22.1    quantreg_5.55
+#[34] parallel_3.6.1         broom_0.5.6            GWASTools_1.32.0
+#[37] Rcpp_1.0.4.6           backports_1.1.7        quantsmooth_1.52.0
+#[40] S4Vectors_0.24.4       XVector_0.26.0         bit_1.1-15.2
+#[43] digest_0.6.25          dplyr_1.0.0            GenomicRanges_1.38.0
+#[46] grid_3.6.1             bitops_1.0-6           sandwich_2.5-1
+#[49] magrittr_1.5           RCurl_1.98-1.2         RSQLite_2.2.0
+#[52] tibble_3.0.1           mice_3.9.0             crayon_1.3.4
+#[55] tidyr_1.1.0            pkgconfig_2.0.3        ellipsis_0.3.1
+#[58] Matrix_1.2-18          data.table_1.12.8      logistf_1.23
+#[61] iterators_1.0.12       R6_2.4.1               nlme_3.1-144
+#[64] compiler_3.6.1
+
+variant_id <- readRDS("pruned_higherLD")
+head(variant_id)
+#[1]  1683  2190  2215  3755  6388 10751
+
+sample_id <- readRDS("keep_samples.rds")
+head(sample_id)
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
+
+
+
                           
