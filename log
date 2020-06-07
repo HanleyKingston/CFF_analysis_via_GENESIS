@@ -314,7 +314,7 @@ ggplot(kinship, aes(k0, kin)) +
 dev.off()
 
 
-
+# 6/5 - 6/7
 
 # Redoing with a higher r^2 for LD pruning
 
@@ -428,6 +428,7 @@ library(SeqArray)
 library(GENESIS)
 library(SeqVarTools)
 library(SNPRelate)
+library(ggplot2)
 
 sessionInfo()
 #R version 3.6.1 (2019-07-05)
@@ -488,6 +489,113 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 
 king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
 
+out_prefix <- "higherLD"
+saveRDS(king, paste0(out_prefix, "king_obj.rds"))
+
+#remove and reload king object to check everythign worked:
+rm(king)
+king <- readRDS("higherLDking_obj.rds")
+
+## Generate King plot
+kinship <- snpgdsIBDSelection(king)
+
+head(kinship)
+#     ID1    ID2       IBS0    kinship
+#1 S66366 S48371 0.04233814 0.08446806
+#2 S66366 S92611 0.04284780 0.08126938
+#3 S66366 S30713 0.04332890 0.08083401
+#4 S66366 S43109 0.04309900 0.07875828
+#5 S66366 S58186 0.04350115 0.07912337
+#6 S66366 S56629 0.04310380 0.07879784
+
+
+png(paste(out_prefix, "king_plot.png", sep = ""))
+ggplot(kinship, aes(IBS0, kinship)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    theme_bw()
+dev.off()
+
+
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <-king$sample.id
+head(colnames(kingMat))
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+
+str(kingMat)
+# num [1:4971, 1:4971] 0.5 0.0845 0.0813 0.0808 0.0788 ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+
+kingMat[1:5,1:5]
+#           S66366     S48371     S92611     S30713     S43109
+#S66366 0.50000000 0.08446806 0.08126938 0.08083401 0.07875828
+#S48371 0.08446806 0.50000000 0.08549786 0.08406603 0.08472768
+#S92611 0.08126938 0.08549786 0.50000000 0.07896923 0.08546221
+#S30713 0.08083401 0.08406603 0.07896923 0.50000000 0.07672440
+#S43109 0.07875828 0.08472768 0.08546221 0.07672440 0.50000000
+
+## How many of my kingMat values are below the kinship thereshold?
+sum(kingMat)
+[1] 1904571
+
+#Individual values (note: this doesn't tell us who will and won't be included in the unrelated set because every individual has many values
+sum(kingMat < 2^-6/2)/sum(kingMat)
+#[1] 0.2463852 #~25%
+
+sum(kingMat < 2^-7/2)/sum(kingMat)
+#[1] 0.2099434 #~21% #When I used the lower LD pruning threshold of R^2 = 0.1, the difference between these 2 thresholds was more prounounced? - check this!
+
+sum(kingMat < 2^-5/2)/sum(kingMat)
+#[1] 0.3094808 #~31%
+
+### Find the number of max and min kinship values (by person) below threshold
+max.kin <- data.frame(max = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  max1 <- max(kinship[kinship$ID1 == ID, "kinship"])
+  max2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
+  i <- i + 1
+  }
+
+max.kin$ID <- unique(kinship$ID1)
+
+max.kin <- max.kin[order(max.kin$max),]
+
+nrow(max.kin)
+#[1] 4970 #What happened to the last person?
+
+head(max.kin)
+#             max     ID
+#3408 -0.06798321 S66538
+#2367 -0.01961797 S95170
+#3359  0.02159744 S44473
+#4356  0.02242756 S77769
+#1884  0.03087220 S82196
+#2154  0.04456040 S78405
+
+sum(max.kin$max <= (2^(-6/2)))
+#[1] 3115
+
+min.kin <- data.frame(min = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  min1 <- min(kinship[kinship$ID1 == ID, "kinship"])
+  min2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  min.kin[i, "min"] <- ifelse(min1 < min2, min1, min2)
+  i <- i + 1
+  }
+  
+rownames(min.kin) <- unique(kinship$ID1)
+
+min.kin2 <- min.kin[order(min.kin$min),]
+
+sum(min.kin2$min <= (2^(-6/2)))
 
 
                           
