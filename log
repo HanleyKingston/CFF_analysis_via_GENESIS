@@ -625,4 +625,127 @@ str(pc_part2)
 kin_thresh1 <- 2 ^ (-6/2)
 div_thresh1 <- -2 ^ (-9/2)                    
 mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh1, div.thresh = div_thresh1, divobj = kingMat, snp.include = variant_id, sample.include = sample_id)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Working with 4971 samples
+#Identifying relatives for each sample using kinship threshold 0.125
+#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
+#Partitioning samples into unrelated and related sets...
+#Unrelated Set: 4011 Samples
+#Related Set: 960 Samples
+#Performing PCA on the Unrelated Set...
+#Principal Component Analysis (PCA) on genotypes:
+#Calculating allele counts/frequencies ...
+#[==================================================] 100%, completed, 8.8m
+#Working space: 4,011 samples, 565,878 SNVs
+#    using 1 (CPU) core
+#CPU capabilities: Double-Precision SSE2
+#Sat Jun  6 22:17:46 2020    (internal increment: 772)
+#[==================================================] 100%, completed, 40.8m
+#Sat Jun  6 22:58:35 2020    Begin (eigenvalues and eigenvectors)
+#Sat Jun  6 22:58:51 2020    Done.
+#Predicting PC Values for the Related Set...
+#SNP loading:
+#Working space: 4011 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Sat Jun  6 22:59:00 2020    (internal increment: 6200)
+#[==================================================] 100%, completed, 9.5m
+#Sat Jun  6 23:08:30 2020    Done.
+#Sample loading:
+#Working space: 960 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Sat Jun  6 23:08:39 2020    (internal increment: 25904)
+#[==================================================] 100%, completed, 9.0m
+#Sat Jun  6 23:17:38 2020    Done.
+
+
+print(str(mypcair))
+#List of 12
+# $ vectors   : num [1:4971, 1:32] -0.004 -0.00439 -0.00108 -0.00383 -0.00104 ...
+#  ..- attr(*, "dimnames")=List of 2
+#  .. ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  .. ..$ : NULL
+# $ values    : num [1:32] 24.51 5.31 5.19 3.48 3.36 ...
+# $ rels      : chr [1:960] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels    : chr [1:4011] "S66366" "S48371" "S30713" "S43109" ...
+# $ kin.thresh: num 0.125
+# $ div.thresh: num -0.0442
+# $ sample.id : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+# $ nsamp     : int 4971
+# $ nsnps     : int 565878
+# $ varprop   : num [1:4011] 0.006113 0.001325 0.001295 0.000869 0.000837 ...
+# $ call      : language .pcair(gdsobj = gdsobj, kinobj = ..1, divobj = ..4, kin.thresh = ..2, div.thresh = ..3,      sample.include = ..6| __truncated__
+# $ method    : chr "PC-AiR"
+# - attr(*, "class")= chr "pcair"
+#NULL
+
+saveRDS(mypcair, paste0(out_prefix, "pcair_1it.rds"))
+
+#Delete PC-Air object to be sure this worked
+rm(mypcair)
+
+## plot
+### Read in phenotype and subset by keep_samples
+phenotype <- readRDS("phenotype.rds")
+keep_samples <- readRDS(file = "keep_samples.rds")
+phenotype <- phenotype[phenotype$sid %in% keep_samples,]
+
+pca <- readRDS("higherLDpcair_1it.rds")
+pcs.df <- as.data.frame(pca$vectors[,1:7])
+pcs.df$sid <- rownames(pcs.df)
+pcs.df <- merge(pcs.df, phenotype[,c("sid","site", "race_or_ethnicity")], by="sid", all.x = TRUE, all.y = FALSE)
+
+rels_V <- pca$rels
+pcs.df$relate <- ifelse(pcs.df$sid %in% rels_V, "related", "unrelated")
+
+png(paste0(out_prefix, "_PC1and2.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 1") + ylab("PC 2") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC2and3.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 2") + ylab("PC 3") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC3and4.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,4], pcs.df[,5], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 3") + ylab("PC 4") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+#Plot percent variance explained by each pc:
+var_prop_vect <- 100*pca$varprop[1:12]
+PC_labs <- 1:12
+
+png(paste0(out_prefix, "percent_var.png"))
+plot(x=PC_labs, y = var_prop_vect, xlab = "PC", ylab = "percent variance accounted for")
+dev.off()
+
+
+rm(pca)
+
+
+## Generate 1st iteration PC-Relate
+mypcair <- readRDS("higherLDpcair_1it.rds")
+
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+## of selected samples: 4,971
+## of selected variants: 565,878
+seqData <- SeqVarData(gds)
+print("1st iteration PC-relate")
+iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
+mypcrel <- pcrelate(iterator, pcs = mypcair$vectors, training.set = mypcair$unrels) #Note:including all vectors, had previously just included vectors 1-3
+
 
