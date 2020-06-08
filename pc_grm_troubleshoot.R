@@ -68,6 +68,7 @@ mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh1, div.thresh = d
                  sample.include = sample_id)
 print(str(mypcair))
 
+#Generate 1st iteration PC-Relate
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
 seqData <- SeqVarData(gds)
 print("1st iteration PC-relate")
@@ -97,3 +98,4 @@ pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
 saveRDS(pca, paste0(out_prefix, "pcair.rds"))
 saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
 saveRDS(pcrel2, paste0(out_prefix, "pcr_obj.rds"))
+
