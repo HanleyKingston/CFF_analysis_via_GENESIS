@@ -314,9 +314,9 @@ ggplot(kinship, aes(k0, kin)) +
 dev.off()
 
 
-# 6/5 - 6/7
+# 6/5 - 6/8
 
-# Redoing with a higher r^2 for LD pruning
+# Redoing with a higher r^2 for LD pruning. I also edited the pcrelate argument "pcs" to include all eigenvectors, not just the first 3
 
 # LD pruning
 library(SeqArray)
@@ -1018,3 +1018,6 @@ ggplot(kinship, aes(k0, kin)) +
     ggtitle("kinship")
 dev.off()
 
+
+# 6/8
+## Regenerate 1st iteration PC-Relate using only the first 3 eigenvectors from PC-Air to test whether this makes a big difference
