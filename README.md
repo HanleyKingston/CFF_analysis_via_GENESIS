@@ -107,6 +107,9 @@ Arguments:
 ## PC_and_GRM_plots.R
 plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Suggest running in R, not as a script
 
+## kinship plots.R
+### Rscript plot_kinship.R higherLDpcr_obj.rds --out_prefix test
+
 ## Generate_annotated_phenotype_df.R
 Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
 
