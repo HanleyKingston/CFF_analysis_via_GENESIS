@@ -93,14 +93,15 @@ Arguments:
 include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## add_phenotype_identifiers_to_kinship_obj.R 
+-Optional- this takes 24 hrs+ to run
 To color kinship plot based on ancestry, study, etc.
 Arguments:
 1. phenotype data frame as .rds object
 2. a character vector of samples to keep (as a .rds object)
-3. kinship object (not matrix) from King or PC-Relate (as a .rds object)
+3. kinship object (not matrix) from King (as a .rds object)
 4. The type of relatedness object: either "King" or "PC_Relate"
 *This takes hours to run, so include &
-### R -q --vanilla --args phenotype.rds keep_samples.rds king_obj.rds King < add_phenotype_identifiers_to_kinship_obj.R &
+### R -q --vanilla --args phenotype.rds keep_samples.rds higherLDking_obj.rds King < add_phenotype_identifiers_to_kinship_obj.R & > record.txt
 
 
 ## PC_and_GRM_plots.R
