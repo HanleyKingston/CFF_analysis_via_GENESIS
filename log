@@ -1070,6 +1070,7 @@ sum(colnames(grm) %in% gds.id)
 #Generate null model
 seqData <- SeqVarData(gds, sampleData = pheno)
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+
 ## of selected samples: 4,971
 ## of selected variants: 6,829,196
 iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
@@ -1099,6 +1100,79 @@ nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
 #Computing Variance Component Estimates...
 #Sigma^2_A     log-lik     RSS
 #[1]  1.593648e-04 -2.695650e+03  2.586897e-01
+
+assoc <- assocTestSingle(iterator, nullmod)
+
+## This seems to be working but is taking a really long time... will try subsetting by chromosome
+
+
+
+
+# 6/10
+
+
+library(SeqArray)
+library(SeqVarTools)
+library(Biobase)
+library(GENESIS)
+sessionInfo()
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pheno <- readRDS("annot.rds")
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
+grm <- readRDS("higherLDpcr_grm.rds")
+
+#Generate null model
+seqData <- SeqVarData(gds, sampleData = pheno)
+
+#filter to just test 1 chromosome for now
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+## of selected samples: 4,971
+## of selected variants: 6,829,196
+
+seqSetFilterChrom(gds, 1)
+## of selected variants: 9,936,669
+#this reset the filter
+
+#Check how many variants I expect to get:
+seqSetFilter(gds)
+## of selected samples: 5,134
+## of selected variants: 115,537,943
+
+gds.var <- seqGetData(gds, "variant.id")
+gds.chrom <- seqGetData(gds, "chromosome")
+sum(gds.chrom == 1)
+#[1] 9936669
+gds.var_1 <- gds.var[1:9936669]
+chr1_vars.temp <- intersect(gds.var_1, variant_id)
+length(chr1_vars.temp)
+#[1] 420226
+
+#Reset the sample and variant ID filter ontop of the chromosome filter using action argument
+seqSetFilterChrom(gds, 1)
+## of selected variants: 9,936,669
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id, action = "intersect")
+## of selected samples: 4,971
+## of selected variants: 420,226 #Yes!
+
+iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
+
+covars <- c("PC1", "PC2", "PC3", "PC4")
+outcome <- "F508_count"
+family <- "poisson"
+
+nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
+                        cov.mat = grm, family = family, sample.id = sample_id)
+#It is redundant to have sample.id here twice, but could use this to filter out additional people that weren't filteres in PC and GRM generation (like identical tiwn pairs)
+
+nullmod$fixef
+#                   Est         SE        Stat         pval
+#(Intercept)  0.3031544 0.02127095 203.1206403 4.353755e-46
+#PC1          2.9264957 0.46395985  39.7864316 2.833064e-10
+#PC2         -1.4952900 0.71854416   4.3305590 3.743395e-02
+#PC3         -2.0021810 0.74948315   7.1364617 7.553205e-03
+#PC4         -0.4489079 0.48903018   0.8426422 3.586422e-01
 
 assoc <- assocTestSingle(iterator, nullmod)
 
