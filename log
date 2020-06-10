@@ -1100,6 +1100,7 @@ nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
 #Sigma^2_A     log-lik     RSS
 #[1]  1.593648e-04 -2.695650e+03  2.586897e-01
 
+assoc <- assocTestSingle(iterator, nullmod)
 
 
 
