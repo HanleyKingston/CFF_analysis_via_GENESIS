@@ -1175,8 +1175,19 @@ nullmod$fixef
 #PC4         -0.4489079 0.48903018   0.8426422 3.586422e-01
 
 assoc <- assocTestSingle(iterator, nullmod)
+## of selected samples: 4,971
+#Iteration 1 of 43 completed
+#Iteration 2 of 43 completed
+#Iteration 3 of 43 completed
+#...
+#Iteration 34 of 43 completed
+#Error in asMethod(object) :
+#  Cholmod error 'out of memory' at file ../Core/cholmod_memory.c, line 147
 
+## Try a larger variant block for iterator
+resetIterator(iterator, verbose = TRUE)
 
-
+iterator <- SeqVarBlockIterator(seqData, variantBlock = 3000, verbose=TRUE)
+assoc <- assocTestSingle(iterator, nullmod)
 
 
