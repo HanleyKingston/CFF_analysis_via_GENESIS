@@ -25,12 +25,12 @@ out_prefix <- argv$out_prefix
 
 
 if(argv$is_king == TRUE){
-	kinship <- snpgdsIBDSelection(rel)
+	kinship.df <- snpgdsIBDSelection(rel)
 	} else {
-	kinship <- rel$kinBtwn
+	kinship.df <- rel$kinBtwn
 	}
 
-if(argv$is_king & argv$x_axis == "k0" & argv$y_axis == "kin"){
+if(argv$is_king == TRUE & argv$x_axis == "k0" & argv$y_axis == "kin"){
   argv$x_axis <- "IBS0"
   argv$y_axis <- "kinship"
   }
@@ -42,9 +42,9 @@ if (!is.na(argv$group)) {
 }
 
 png(paste0(argv$out_prefix, "_kinship.png"))
-ggplot(kinship, aes_string(argv$x_axis, argv$y_axis, color = group)) +
+ggplot(kinship.df, aes_string(argv$x_axis, argv$y_axis, color = group)) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
-    geom_point(alpha=0.2) +
+    geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
     ylab("kinship estimate") +
     ggtitle("kinship")
 dev.off()
