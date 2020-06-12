@@ -1191,3 +1191,30 @@ iterator <- SeqVarBlockIterator(seqData, variantBlock = 3000, verbose=TRUE)
 assoc <- assocTestSingle(iterator, nullmod)
 
 
+# 6/11
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pheno <- readRDS("annot.rds")
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
+grm <- readRDS("higherLDpcr_grm.rds")
+seqData <- SeqVarData(gds, sampleData = pheno)
+seqSetFilterChrom(gds, 21)
+## of selected variants: 1,722,032
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id, action = "intersect")
+## of selected samples: 4,971
+## of selected variants: 103,926
+
+iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
+
+covars <- c("PC1", "PC2", "PC3", "PC4")
+outcome <- "F508_count"
+family <- "poisson"
+
+nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
+                        cov.mat = grm, family = family, sample.id = sample_id)
+assoc <- assocTestSingle(iterator, nullmod)
+
+out_file <- "higher_LDpercent_var_assoc.rds"
+saveRDS(assoc, out_file)
+
+## 
