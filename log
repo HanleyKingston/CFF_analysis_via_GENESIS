@@ -1227,4 +1227,4 @@ R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_
 
 # 6/13
 ## generate pcs and grm
-R -q --vanilla --args pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
