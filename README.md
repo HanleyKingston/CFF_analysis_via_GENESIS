@@ -89,11 +89,11 @@ Arguments:
 8. opt: text to uniquely identify plots and figures
 9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
-### Rscript pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5 --keep_king
+### R -q --vanilla --args pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5 --keep_king < pcs_and_grm.R > pcs_and_grm_6,12.log &
 include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## add_phenotype_identifiers_to_kinship_obj.R 
--Optional- this takes 24 hrs+ to run
+-Optional- this takes over a week to run!
 To color kinship plot based on ancestry, study, etc.
 Arguments:
 1. phenotype data frame as .rds object
@@ -123,6 +123,9 @@ Create a new sample filter that excludes idenitcal twins to be used in assoc_tes
 assoc_test.R
 
 ## assoc_test.R
+for f in {1..22}; do echo "Assoc_testing '$f' "
+R -q --vanilla --args F508_count gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds --chromosome "$f"
+< assoc_test.R & sleep 30 done
 ### Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds
   
 
