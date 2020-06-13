@@ -68,6 +68,9 @@ mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh1, div.thresh = d
                  sample.include = sample_id)
 print(str(mypcair))
 
+#Save 1st iteration PCA object:
+saveRDS(mypcair, paste0(out_prefix, "pcair_1it.rds"))
+
 #Generate 1st iteration PC-Relate
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
 seqData <- SeqVarData(gds)
@@ -77,16 +80,18 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
                     training.set = mypcair$unrels)
 pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=1)
 
-#Save 1st iteration PCA and Relate objects:
-saveRDS(mypcair, paste0(out_prefix, "pcair_1it.rds"))
+#Save 1st iteration PC-Relate object:
 saveRDS(mypcrel, paste0(out_prefix, "pcr_obj_1it.rds"))
 
-
+#Generate 2nd iteration PC-Air:
 pca <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh,
              divobj = kingMat, snp.include = variant_id,
              sample.include = sample_id)
 print(str(pca))
 
+saveRDS(pca, paste0(out_prefix, "pcair.rds"))
+
+#Generate 2nd iteration PC-Relate object:
 resetIterator(iterator, verbose = TRUE)
 #iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 
@@ -95,7 +100,6 @@ pcrel2 <- pcrelate(iterator, pcs = pca$vectors[, seq(argv$n_pcs)],
                    training.set = pca$unrels)
 
 pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
-saveRDS(pca, paste0(out_prefix, "pcair.rds"))
 saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
 saveRDS(pcrel2, paste0(out_prefix, "pcr_obj.rds"))
 
