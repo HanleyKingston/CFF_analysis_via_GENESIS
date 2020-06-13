@@ -1218,3 +1218,13 @@ out_file <- "higher_LDpercent_var_assoc.rds"
 saveRDS(assoc, out_file)
 
 ## 
+
+
+
+# 6/12
+## Regenerate LD_pruned SNP list:
+R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1 < ld_pruning.R > 6,12_pruned_snps.log &
+
+# 6/13
+## generate pcs and grm
+R -q --vanilla --args pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs ncol(mypcair$vectors) --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
