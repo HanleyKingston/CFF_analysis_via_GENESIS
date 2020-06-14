@@ -4,12 +4,12 @@ library(magrittr)
 
 #Read arguments
 argp <- arg_parser("Generate kinship plot") %>%
-  add_argument("pcrelate_file", help = "PC-Relate file (.rds)") %>%
+  add_argument("pcrelate or king file", help = "PC-Relate file (.rds)") %>%
   add_argument("--out_prefix", help = "Prefix for output files", default = "") %>%
   add_argument("--group", help = "grouping variable - a column in king or pc-relate dataframe") %>%
   add_argument("--is_king", flag = TRUE, help = "Is input file format from King?") %>%
-  add_argument("--x_axis", default = "k0", help = "x variable") %>%
-  add_argument("--y_axis", default = "kin", help = "y variable")
+  add_argument("--x_axis", default = "k0", help = "x variable (note: with --is_king flag, default is 'IBSO'") %>%
+  add_argument("--y_axis", default = "kin", help = "y variable (note: with --is_king flag, default is 'kinship'")
                
 argv <- parse_args(argp)
 print(argv)
