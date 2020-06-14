@@ -15,8 +15,6 @@ argp <- arg_parser("Run PC-Relate") %>%
   add_argument("--scale_kin", help = "Scaling factor for GRM output",
                default = 1) %>%
   add_argument("--sparse_thresh", help = "st_help", default = 0) %>%
-  add_argument("--scan_block_size", help = "pcrelate scan block size",
-               default = 5000) %>%
   add_argument("--correct", "Flag to implement small-sample correction",
                flag = TRUE) %>%
   add_argument("--variant_block", help = "SeqVarBlaockIterator block size",
@@ -50,8 +48,7 @@ seqData <- SeqVarData(gds)
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE,
                                 variantBlock = argv$variant_block)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
-                    training.set = mypcair$unrels, sample.include = sample_id,
-                    scan.block.size = argv$scan_block_size)
+                    training.set = mypcair$unrels, sample.include = sample_id)
 
 saveRDS(mypcrel, paste0(argv$out_prefix, "pcrelate.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, thresh = argv$sparse_thresh,
