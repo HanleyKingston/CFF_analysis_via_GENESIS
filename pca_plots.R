@@ -47,6 +47,11 @@ if (!is.na(argv$phenotype_file) & !is.na(argv$group)) {
     pcs$group <- "NA"
 }
 
+p <- ggplot(pcs, aes_string("PC1", "PC2", color=group)) + geom_point(alpha=0.5) +
+    guides(colour=guide_legend(override.aes=list(alpha=1)))
+ggsave(paste0(out_prefix, "pc12.png"), plot=p, width=7, height=6)
+
+
 npr <- min(argv$n_pairs, n)
 p <- ggpairs(pcs, mapping=aes_string(color=group), columns=1:npr,
              lower=list(continuous=wrap("points", alpha=0.5)),
@@ -64,7 +69,3 @@ p <- ggparcoord(pc2, columns=1:n, groupColumn=group, alphaLines=0.5, scale="unim
     guides(colour=guide_legend(override.aes=list(alpha=1, size=2))) +
     xlab("PC") + ylab("")
 ggsave(paste0(out_prefix, "parcoord.png"), plot=p, width=10, height=5)
-
-# mem stats
-ms <- gc()
-cat(">>> Max memory: ", ms[1,6]+ms[2,6], " MB\n")
