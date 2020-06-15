@@ -75,10 +75,10 @@ Takes Arguments:
 ### Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
 
 
-## pcs_and_grm.R
+## pc_grm_troubleshoot.R
 generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
 
-Arguments:
+Arguments (needs updating):
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
 2. opt : out_prefix
 3. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - use pruned_snps.rds from LD pruning step - saved as an R object
@@ -89,7 +89,7 @@ Arguments:
 8. opt: text to uniquely identify plots and figures
 9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
-### R -q --vanilla --args pcs_and_grm.R CFF_sid_onlyGT.gds --out_prefix CFF_LDsqrt0.1 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 3.5 --div_thresh 3.5 --keep_king < pcs_and_grm.R > pcs_and_grm_6,12.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
 include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## add_phenotype_identifiers_to_kinship_obj.R 
