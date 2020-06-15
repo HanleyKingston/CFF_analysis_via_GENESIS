@@ -59,6 +59,9 @@ stringent filter also excludes:
 
 Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
+## exclude_regions_beforeLD_prune.R
+This will create a dataframe of all of chr7 to excldue in LD_pruning analysis - note: ld_pruning.R script is not yet set up to take this as an input
+
 ## ld_pruning.R
 generate a vector of SNPs pruned by LD to include in PC and GRM creation
 
