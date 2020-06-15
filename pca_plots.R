@@ -1,6 +1,3 @@
-#Run with:
-#Rscript pca_plots.R CFF_LDsqrt0.1pcair.rds --out_prefix CFF_LDsqrt0.1 --phenotype_file annot.rds --group1 race_or_ethnicity --group2 site
-
 #! /usr/bin/env Rscript
 library(argparser)
 library(magrittr)
@@ -84,7 +81,3 @@ p <- ggparcoord(pc2, columns=1:n, groupColumn=group, alphaLines=0.5, scale="unim
     guides(colour=guide_legend(override.aes=list(alpha=1, size=2))) +
     xlab("PC") + ylab("")
 ggsave(paste0(out_prefix, "parcoord.png"), plot=p, width=10, height=5)
-
-# mem stats
-ms <- gc()
-cat(">>> Max memory: ", ms[1,6]+ms[2,6], " MB\n")

@@ -1,0 +1,5 @@
+library(SeqArray)
+gds <- seqOpen("CFF_5134_onlyGT.gds")
+gds.id <- seqGetData(gds, "sample.id")
+saveRDS(gds.id, "sample_id_gds.rds")
+seqClose(gds)

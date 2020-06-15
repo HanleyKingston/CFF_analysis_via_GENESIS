@@ -1,0 +1,1230 @@
+# 5/24/20
+## Generated pruned SNP list
+Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
+
+## pruned SNP list from William:
+CFF_5134_onlyGT_pruned.rds
+(inputs are here: https://github.com/wwgordon/cff_gwas/blob/master/ld_prune_gds.R)
+
+# 6/4/20
+## Troubleshooting PC and grm outputs - this will generate:
+1. a King object
+2. 1st iteration PC-Air object
+3. 1st iteration PC-Relate object
+4. 2nd iteration PC-Air object
+5. 2nd iteration PC-Relate object
+6. A kinship matrix
+### Try higher relatedness threshold:
+Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix high_first_kin_thresh --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > high_first_kin_thresh_pc_grm_troubleshoot.out
+
+### Pass pruned SNP object from william to generate PCs and GRM:
+Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix pruned_from_William --variant_id CFF_5134_onlyGT_pruned.rds --sample_id keep_samples.rds --kin_thresh1 3.5 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > pruned_from_William_pc_grm_troubleshoot.out
+
+
+## Add a shared or not shared race/ethnicity descriptor to a kinship object from King
+
+
+## plots - based on the 6 outputs from above
+library(ggplot2)
+### Relatedness plots from king
+pcrel <- readRDS(file = "high_first_kin_threshking_obj.rds")
+kinship <- pcrel$kinBtwn
+png("high_first_kin_thresh_king_plot.png")
+ggplot(kinship, aes(IBS0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+pcrel <- readRDS(file = "pruned_from_Williamking_1it.rds")
+kinship <- pcrel$kinBtwn
+png("pruned_from_William_king_plot.png")
+ggplot(kinship, aes(IBS0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R high_first_kin_threshpcair_1it.rds --out_prefix high_first_kin_threshpcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+Rscript pca_plots.R pruned_from_Williampcair_1it.rds --out_prefix pruned_from_Williampcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from first iteration PC-Relate
+pcrel <- readRDS(file = "high_first_kin_threshpcr_obj_1it.rds")
+kinship <- pcrel$kinBtwn
+png("high_first_kin_thresh_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+pcrel <- readRDS(file = "pruned_from_Williampcr_obj_1it.rds")
+kinship <- pcrel$kinBtwn
+png("pruned_from_William_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-7/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R high_first_kin_threshpcair.rds --out_prefix high_first_kin_threshpcair --phenotype_file annot.rds --group race_or_ethnicity
+
+Rscript pca_plots.R pruned_from_Williampcair.rds --out_prefix pruned_from_Williampcair --phenotype_file annot.rds --group race_or_ethnicity
+
+
+### Relatedness plots from 2nd iteration PC-Relate
+pcrel <- readRDS(file = "high_first_kin_threshpcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("high_first_kin_thresh_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+pcrel <- readRDS(file = "pruned_from_Williampcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("pruned_from_William_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+## Check effect of different kin_thresh and div_thresh values on numbers in related and unrelated set - from King object
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+
+## Based on my pruned SNP list:
+king <- readRDS("high_first_kin_threshking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2)
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
+str(pc_part2)
+List of 2
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+#div.thresh does not seem to have an impact on the number of sample in related and unrelated set
+
+### kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2)
+pc_part3 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part3)
+#List of 2
+# $ rels  : chr [1:945] "S71706" "S13731" "S38266" "S11026" ...
+# $ unrels: chr [1:4026] "S66366" "S48371" "S30713" "S43109" ...
+
+### kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2)
+pc_part4 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part4)
+#List of 2
+# $ rels  : chr [1:964] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels: chr [1:4007] "S66366" "S48371" "S30713" "S43109" ...
+#this is the threshold that captures everyone in the large cluster and excludes the 2 small top clusters
+
+### kin.thresh = 2^(-6.5/2), div.thresh = -2^(-9/2)
+pc_part5 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6.5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part5)
+#List of 2
+# $ rels  : chr [1:1778] "S53263" "S25472" "S32485" "S33582" ...
+# $ unrels: chr [1:3193] "S66366" "S30713" "S56629" "S96954" ...
+
+
+## Based on William's pruned SNP list:
+king <- readRDS("pruned_from_Williamking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+
+### kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:2254] "S53263" "S25472" "S97980" "S33582" ...
+# $ unrels: chr [1:2717] "S30713" "S96954" "S38975" "S12067" ...
+#Although the 2 kinship plots based on the different LD pruned objects look similar,
+#there are more samples with lower kinship values in the kinship object from William's LD-pruned SNPs!
+
+
+### kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2)
+pc_part3 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part3)
+List of 2
+ $ rels  : chr [1:942] "S71706" "S13731" "S38266" "S87729" ...
+ $ unrels: chr [1:4029] "S66366" "S48371" "S30713" "S43109" ...
+
+
+
+## Check effect of different kin_thresh and div_thresh values on numbers in related and unrelated set from 1st iteration PC-Relate
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+
+## Based on my pruned SNP list:
+king <- readRDS("6,4_troubleshoot/high_first_kin_threshking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+pcrel <- readRDS("6,4_troubleshoot/high_first_kin_threshpcr_obj_1it.rds")
+pcrelate_matrix <- pcrelateToMatrix(pcrel, scaleKin=1)
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+### kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included *I looked more itno this below
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:961] "S71706" "S13731" "S25290" "S35496" ...
+# $ unrels: chr [1:4010] "S10003" "S10014" "S10074" "S10130" ...
+
+### kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2)
+pc_part2 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:976] "S79149" "S97265" "S40340" "S99186" ...
+# $ unrels: chr [1:3995] "S10003" "S10014" "S10074" "S10130" ...
+
+### kin.thresh = 2^(-9/2), div.thresh = -2^(-11/2)
+pc_part3 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-11/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part3)
+#List of 2
+# $ rels  : chr [1:961] "S71706" "S48216" "S38266" "S25290" ...
+# $ unrels: chr [1:4010] "S10003" "S10014" "S10074" "S10130" ...
+#div.thresh doesn't make a difference
+
+
+## Based on pruned SNP list from William:
+king <- readRDS("pruned_from_Williamking_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+pcrel <- readRDS("pruned_from_Williampcr_obj_1it.rds")
+pcrelate_matrix <- pcrelateToMatrix(pcrel, scaleKin=1)
+
+
+### kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:956] "S71706" "S11026" "S25290" "S38266" ...
+# $ unrels: chr [1:4015] "S10003" "S10014" "S10074" "S10130" ...
+#Number of people in unrelated set are very similar between mine and William's
+
+### kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2)
+pc_part2 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-11/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:974] "S40340" "S71706" "S89660" "S19246" ...
+# $ unrels: chr [1:3997] "S10003" "S10014" "S10074" "S10130" ...
+
+
+
+## Investigating warning:
+#kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2) *This is what I used
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pcrelate_matrix)
+#Formal class 'dsyMatrix' [package "Matrix"] with 5 slots
+#  ..@ x       : num [1:24710841] 0.451885 0.000653 0.005276 0.002987 0.000796 ...
+#  ..@ Dim     : int [1:2] 4971 4971
+#  ..@ Dimnames:List of 2
+#  .. ..$ : chr [1:4971] "S10003" "S10014" "S10017" "S10063" ...
+#  .. ..$ : chr [1:4971] "S10003" "S10014" "S10017" "S10063" ...
+#  ..@ uplo    : chr "U"
+#  ..@ factors : list()
+str(kingMat)
+# num [1:4971, 1:4971] 0.5 0.0971 0.0957 0.0948 0.0926 ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+
+
+# 6/5/20
+## Re-run pc_grm_troubleshoot.R with the slightly lower kin_thresh (2^(-6/2)) on my SNP data
+#This threshold was suggested by Stephanie to capture more individuals in the initial unrelated set
+#Note, the pruned SNP list from William does 
+#I am re-running the script entirely to be consistant, but this does use the same king object as the previous run
+Rscript pc_grm_troubleshoot.R CFF_sid_onlyGT.gds --out_prefix kin_thresh3.0 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3.0 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --keep_king & > kin_thresh3.0_pc_grm_troubleshoot.out
+
+
+## plots
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-6/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R kin_thresh3.0pcair_1it.rds --out_prefix kin_thresh3.0pcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from first iteration PC-Relate
+library(ggplot2)
+
+pcrel <- readRDS(file = "kin_thresh3.0pcr_obj_1it.rds")
+kinship <- pcrel$kinBtwn
+png("kin_thresh3.0_kinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+### PC visualizations from first iteration PC-Air (kin_thresh = 2^(-9/2), div_thresh = 2^(-9/2))
+Rscript pca_plots.R kin_thresh3.0pcair.rds --out_prefix kin_thresh3.0pcair --phenotype_file annot.rds --group race_or_ethnicity
+
+### Relatedness plots from 2nd iteration PC-Relate
+pcrel <- readRDS(file = "kin_thresh3.0pcr_obj.rds")
+kinship <- pcrel$kinBtwn
+png("kin_thresh3.0_kinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+# 6/5 - 6/8
+
+# Redoing with a higher r^2 for LD pruning. I also edited the pcrelate argument "pcs" to include all eigenvectors, not just the first 3
+
+# LD pruning
+library(SeqArray)
+library(SNPRelate)
+library(argparser)
+sessionInfo()
+                          
+sessionInfo()
+#R version 3.6.1 (2019-07-05)
+#Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+#Running under: CentOS release 6.10 (Final)
+#
+#Matrix products: default
+#BLAS/LAPACK: /cm/shared/apps/conda3/5.3.1/lib/R/lib/libRblas.so
+#
+#locale:
+# [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+# [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+# [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+# [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+# [9] LC_ADDRESS=C               LC_TELEPHONE=C
+#[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+#
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base
+#
+#other attached packages:
+#[1] argparser_0.6    SNPRelate_1.20.1 SeqArray_1.26.2  gdsfmt_1.22.0
+#
+#loaded via a namespace (and not attached):
+# [1] IRanges_2.20.2         Biostrings_2.54.0      bitops_1.0-6
+# [4] GenomeInfoDb_1.22.1    stats4_3.6.1           zlibbioc_1.32.0
+# [7] XVector_0.26.0         S4Vectors_0.24.4       RCurl_1.98-1.2
+#[10] parallel_3.6.1         compiler_3.6.1         BiocGenerics_0.32.0
+#[13] GenomicRanges_1.38.0   GenomeInfoDbData_1.2.2
+
+## parse file paths
+gds.file <- "CFF_sid_onlyGT.gds"
+out.file <- "pruned_higherLD"
+sample.id <- readRDS("keep_samples.rds")
+variant.id <- readRDS("keep_var_stringent.rds")
+
+## open GDS file
+gds <- seqOpen(gds.file)
+
+maf <- 0.05
+missing <- 0.05
+window_size <- 1e6
+r_threshold <- sqrt(0.2)
+r_threshold
+#[1] 0.4472136
+
+
+snpset <- snpgdsLDpruning(gds,
+                          sample.id = sample.id,
+                          snp.id = variant.id,
+                          maf = maf,
+                          missing.rate = missing,
+                          method = "corr",
+                          slide.max.bp = window_size, 
+                          ld.threshold = r_threshold
+                          )
+
+#SNV pruning based on LD:
+#Calculating allele counts/frequencies ...
+#[==================================================] 100%, completed, 10.8m
+#Excluding 447,987 SNVs (monomorphic: TRUE, MAF: 0.05, missing rate: 0.05)
+#Working space: 4,971 samples, 6,381,209 SNVs
+#    using 1 (CPU) core
+#    sliding window: 1,000,000 basepairs, Inf SNPs
+#    |LD| threshold: 0.447214
+#    method: correlation
+#Chromosome 1: 0.21%, 20,844/9,936,669
+#Chromosome 10: 0.53%, 30,109/5,678,525
+#Chromosome 11: 0.44%, 25,409/5,822,215
+#Chromosome 12: 0.47%, 26,164/5,561,704
+#Chromosome 13: 0.54%, 23,674/4,404,461
+#Chromosome 14: 0.54%, 19,329/3,567,216
+#Chromosome 15: 0.55%, 18,662/3,417,178
+#Chromosome 16: 0.64%, 24,581/3,826,829
+#Chromosome 17: 0.67%, 22,529/3,380,458
+#Chromosome 18: 0.53%, 17,957/3,417,044
+#Chromosome 19: 0.68%, 17,903/2,617,465
+#Chromosome 2: 0.47%, 46,475/9,877,586
+#Chromosome 20: 0.87%, 24,742/2,842,811
+#Chromosome 21: 0.56%, 9,631/1,722,032
+#Chromosome 22: 1.11%, 20,069/1,809,412
+#Chromosome 3: 0.44%, 35,127/8,005,377
+#Chromosome 4: 0.45%, 35,251/7,759,638
+#Chromosome 5: 0.44%, 31,481/7,235,943
+#Chromosome 6: 0.43%, 28,708/6,751,274
+#Chromosome 7: 0.52%, 32,989/6,373,532
+#Chromosome 8: 0.42%, 25,812/6,159,400
+#Chromosome 9: 0.53%, 28,432/5,371,174
+#565,878 markers are selected in total.
+
+## convert list with one element per chrom to vector
+pruned <- unlist(snpset, use.names=FALSE)
+str(pruned)
+#int [1:565878] 1683 2190 2215 3755 6388 10751 10852 11502 13043 13048 ...
+
+saveRDS(pruned, file=out.file)
+
+
+# GRM and PC generation
+#Started a new R session
+
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+library(ggplot2)
+
+sessionInfo()
+#R version 3.6.1 (2019-07-05)
+#Platform: x86_64-conda_cos6-linux-gnu (64-bit)
+#Running under: CentOS release 6.10 (Final)
+#
+#Matrix products: default
+#BLAS/LAPACK: /cm/shared/apps/conda3/5.3.1/lib/R/lib/libRblas.so
+#
+#locale:
+# [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+# [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+# [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+# [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+# [9] LC_ADDRESS=C               LC_TELEPHONE=C
+#[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+#
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base
+#
+#other attached packages:
+#[1] SNPRelate_1.20.1   SeqVarTools_1.24.1 GENESIS_2.16.1     SeqArray_1.26.2
+#[5] gdsfmt_1.22.0
+#
+#loaded via a namespace (and not attached):
+# [1] zoo_1.8-8              tidyselect_1.1.0       purrr_0.3.4
+# [4] DNAcopy_1.60.0         splines_3.6.1          lattice_0.20-40
+# [7] vctrs_0.3.0            generics_0.0.2         GWASExactHW_1.01
+#[10] stats4_3.6.1           mgcv_1.8-31            blob_1.2.1
+#[13] survival_3.1-8         rlang_0.4.6            pillar_1.4.4
+#[16] glue_1.4.1             DBI_1.1.0              BiocGenerics_0.32.0
+#[19] bit64_0.9-7            GenomeInfoDbData_1.2.2 foreach_1.5.0
+#[22] lifecycle_0.2.0        zlibbioc_1.32.0        MatrixModels_0.4-1
+#[25] Biostrings_2.54.0      codetools_0.2-16       memoise_1.1.0
+#[28] Biobase_2.46.0         SparseM_1.78           IRanges_2.20.2
+#[31] lmtest_0.9-37          GenomeInfoDb_1.22.1    quantreg_5.55
+#[34] parallel_3.6.1         broom_0.5.6            GWASTools_1.32.0
+#[37] Rcpp_1.0.4.6           backports_1.1.7        quantsmooth_1.52.0
+#[40] S4Vectors_0.24.4       XVector_0.26.0         bit_1.1-15.2
+#[43] digest_0.6.25          dplyr_1.0.0            GenomicRanges_1.38.0
+#[46] grid_3.6.1             bitops_1.0-6           sandwich_2.5-1
+#[49] magrittr_1.5           RCurl_1.98-1.2         RSQLite_2.2.0
+#[52] tibble_3.0.1           mice_3.9.0             crayon_1.3.4
+#[55] tidyr_1.1.0            pkgconfig_2.0.3        ellipsis_0.3.1
+#[58] Matrix_1.2-18          data.table_1.12.8      logistf_1.23
+#[61] iterators_1.0.12       R6_2.4.1               nlme_3.1-144
+#[64] compiler_3.6.1
+
+variant_id <- readRDS("pruned_higherLD")
+head(variant_id)
+#[1]  1683  2190  2215  3755  6388 10751
+
+sample_id <- readRDS("keep_samples.rds")
+head(sample_id)
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
+
+out_prefix <- "higherLD"
+saveRDS(king, paste0(out_prefix, "king_obj.rds"))
+
+#remove and reload king object to check everythign worked:
+rm(king)
+king <- readRDS("higherLDking_obj.rds")
+
+## Generate King plot
+kinship <- snpgdsIBDSelection(king)
+
+head(kinship)
+#     ID1    ID2       IBS0    kinship
+#1 S66366 S48371 0.04233814 0.08446806
+#2 S66366 S92611 0.04284780 0.08126938
+#3 S66366 S30713 0.04332890 0.08083401
+#4 S66366 S43109 0.04309900 0.07875828
+#5 S66366 S58186 0.04350115 0.07912337
+#6 S66366 S56629 0.04310380 0.07879784
+
+
+png(paste(out_prefix, "king_plot.png", sep = ""))
+ggplot(kinship, aes(IBS0, kinship)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color="grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    theme_bw()
+dev.off()
+
+
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <-king$sample.id
+head(colnames(kingMat))
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+
+str(kingMat)
+# num [1:4971, 1:4971] 0.5 0.0845 0.0813 0.0808 0.0788 ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+
+kingMat[1:5,1:5]
+#           S66366     S48371     S92611     S30713     S43109
+#S66366 0.50000000 0.08446806 0.08126938 0.08083401 0.07875828
+#S48371 0.08446806 0.50000000 0.08549786 0.08406603 0.08472768
+#S92611 0.08126938 0.08549786 0.50000000 0.07896923 0.08546221
+#S30713 0.08083401 0.08406603 0.07896923 0.50000000 0.07672440
+#S43109 0.07875828 0.08472768 0.08546221 0.07672440 0.50000000
+
+## How many of my kingMat values are below the kinship thereshold?
+sum(kingMat)
+[1] 1904571
+
+#Individual values (note: this doesn't tell us who will and won't be included in the unrelated set because every individual has many values
+sum(kingMat < 2^-6/2)/sum(kingMat)
+#[1] 0.2463852 #~25%
+
+sum(kingMat < 2^-7/2)/sum(kingMat)
+#[1] 0.2099434 #~21% #When I used the lower LD pruning threshold of R^2 = 0.1, the difference between these 2 thresholds was more prounounced? - check this!
+
+sum(kingMat < 2^-5/2)/sum(kingMat)
+#[1] 0.3094808 #~31%
+
+### Find the number of max and min kinship values (by person) below threshold
+max.kin <- data.frame(max = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  max1 <- max(kinship[kinship$ID1 == ID, "kinship"])
+  max2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
+  i <- i + 1
+  }
+#Warning message:
+# In max(kinship[kinship$ID2 == ID, "kinship"]) :
+#  no non-missing arguments to max; returning -Inf
+
+max.kin$ID <- unique(kinship$ID1)
+
+max.kin <- max.kin[order(max.kin$max),]
+
+nrow(max.kin)
+#[1] 4970 #What happened to the last person?
+
+head(max.kin)
+#             max     ID
+#3408 -0.06798321 S66538
+#2367 -0.01961797 S95170
+#3359  0.02159744 S44473
+#4356  0.02242756 S77769
+#1884  0.03087220 S82196
+#2154  0.04456040 S78405
+
+sum(max.kin$max <= (2^(-6/2)))
+#[1] 3115
+
+min.kin <- data.frame(min = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  min1 <- min(kinship[kinship$ID1 == ID, "kinship"])
+  min2 <- min(kinship[kinship$ID2 == ID, "kinship"])
+  min.kin[i, "min"] <- ifelse(min1 < min2, min1, min2)
+  i <- i + 1
+  }
+  
+rownames(min.kin) <- unique(kinship$ID1)
+
+min.kin <- min.kin[order(min.kin$min),]
+
+sum(min.kin$min <= (2^(-6/2)))
+#[1] 4970
+
+
+## Develop 1st iteration PC-Air
+
+### Check number in related and unrelated set using pcairPartition
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-6/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:960] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels: chr [1:4011] "S66366" "S48371" "S30713" "S43109" ...
+#I will use this threshold
+
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+str(pc_part2)
+#List of 2
+# $ rels  : chr [1:2441] "S53263" "S33582" "S52656" "S25472" ...
+# $ unrels: chr [1:2530] "S30713" "S56629" "S96954" "S12067" ...
+#Not enough peopple in the unrelated set
+
+kin_thresh1 <- 2 ^ (-6/2)
+div_thresh1 <- -2 ^ (-9/2)                    
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = kin_thresh1, div.thresh = div_thresh1, divobj = kingMat, snp.include = variant_id, sample.include = sample_id)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Working with 4971 samples
+#Identifying relatives for each sample using kinship threshold 0.125
+#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
+#Partitioning samples into unrelated and related sets...
+#Unrelated Set: 4011 Samples
+#Related Set: 960 Samples
+#Performing PCA on the Unrelated Set...
+#Principal Component Analysis (PCA) on genotypes:
+#Calculating allele counts/frequencies ...
+#[==================================================] 100%, completed, 8.8m
+#Working space: 4,011 samples, 565,878 SNVs
+#    using 1 (CPU) core
+#CPU capabilities: Double-Precision SSE2
+#Sat Jun  6 22:17:46 2020    (internal increment: 772)
+#[==================================================] 100%, completed, 40.8m
+#Sat Jun  6 22:58:35 2020    Begin (eigenvalues and eigenvectors)
+#Sat Jun  6 22:58:51 2020    Done.
+#Predicting PC Values for the Related Set...
+#SNP loading:
+#Working space: 4011 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Sat Jun  6 22:59:00 2020    (internal increment: 6200)
+#[==================================================] 100%, completed, 9.5m
+#Sat Jun  6 23:08:30 2020    Done.
+#Sample loading:
+#Working space: 960 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Sat Jun  6 23:08:39 2020    (internal increment: 25904)
+#[==================================================] 100%, completed, 9.0m
+#Sat Jun  6 23:17:38 2020    Done.
+
+
+print(str(mypcair))
+#List of 12
+# $ vectors   : num [1:4971, 1:32] -0.004 -0.00439 -0.00108 -0.00383 -0.00104 ...
+#  ..- attr(*, "dimnames")=List of 2
+#  .. ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  .. ..$ : NULL
+# $ values    : num [1:32] 24.51 5.31 5.19 3.48 3.36 ...
+# $ rels      : chr [1:960] "S71706" "S35496" "S13731" "S25290" ...
+# $ unrels    : chr [1:4011] "S66366" "S48371" "S30713" "S43109" ...
+# $ kin.thresh: num 0.125
+# $ div.thresh: num -0.0442
+# $ sample.id : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+# $ nsamp     : int 4971
+# $ nsnps     : int 565878
+# $ varprop   : num [1:4011] 0.006113 0.001325 0.001295 0.000869 0.000837 ...
+# $ call      : language .pcair(gdsobj = gdsobj, kinobj = ..1, divobj = ..4, kin.thresh = ..2, div.thresh = ..3,      sample.include = ..6| __truncated__
+# $ method    : chr "PC-AiR"
+# - attr(*, "class")= chr "pcair"
+#NULL
+
+saveRDS(mypcair, paste0(out_prefix, "pcair_1it.rds"))
+
+#Delete PC-Air object to be sure this worked
+rm(mypcair)
+
+## plot
+### Read in phenotype and subset by keep_samples
+phenotype <- readRDS("phenotype.rds")
+keep_samples <- readRDS(file = "keep_samples.rds")
+phenotype <- phenotype[phenotype$sid %in% keep_samples,]
+
+pca <- readRDS("higherLDpcair_1it.rds")
+pcs.df <- as.data.frame(pca$vectors[,1:7])
+pcs.df$sid <- rownames(pcs.df)
+pcs.df <- merge(pcs.df, phenotype[,c("sid","site", "race_or_ethnicity")], by="sid", all.x = TRUE, all.y = FALSE)
+
+rels_V <- pca$rels
+pcs.df$relate <- ifelse(pcs.df$sid %in% rels_V, "related", "unrelated")
+
+png(paste0(out_prefix, "_PC1and2_1it.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 1") + ylab("PC 2") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC2and3_1it.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 2") + ylab("PC 3") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC3and4_1it.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,4], pcs.df[,5], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 3") + ylab("PC 4") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+#Plot percent variance explained by each pc:
+var_prop_vect <- 100*pca$varprop[1:12]
+PC_labs <- 1:12
+
+png(paste0(out_prefix, "percent_var_1it.png"))
+plot(x=PC_labs, y = var_prop_vect, xlab = "PC", ylab = "percent variance accounted for")
+dev.off()
+
+
+rm(pca)
+
+
+## Generate 1st iteration PC-Relate
+mypcair <- readRDS("higherLDpcair_1it.rds")
+
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+## of selected samples: 4,971
+## of selected variants: 565,878
+seqData <- SeqVarData(gds)
+print("1st iteration PC-relate")
+iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
+mypcrel <- pcrelate(iterator, pcs = mypcair$vectors, training.set = mypcair$unrels) #Note:including all vectors, had previously just included vectors 1-3
+#4971 samples to be included in the analysis...
+#Betas for 32 PC(s) will be calculated using 4011 samples in training.set...
+#Running PC-Relate analysis for 4971 samples using 565878 SNPs in 57 blocks...
+#    Running block 1...
+#    Running block 2...
+#    Running block 3...
+#    Running block 4...
+#    Running block 5...
+#    Running block 6...
+#    Running block 7...
+#    Running block 8...
+#    Running block 9...
+#    Running block 10...
+#    Running block 11...
+#    Running block 12...
+#    Running block 13...
+#    Running block 14...
+#    Running block 15...
+#    Running block 16...
+#    Running block 17...
+#    Running block 18...
+#    Running block 19...
+#    Running block 20...
+#    Running block 21...
+#    Running block 22...
+#    Running block 23...
+#    Running block 24...
+#    Running block 25...
+#    Running block 26...
+#    Running block 27...
+#    Running block 28...
+#    Running block 29...
+#    Running block 30...
+#    Running block 31...
+#    Running block 32...
+#    Running block 33...
+#    Running block 34...
+#    Running block 35...
+#    Running block 36...
+#    Running block 37...
+#    Running block 38...
+#    Running block 39...
+#    Running block 40...
+#    Running block 41...
+#    Running block 42...
+#    Running block 43...
+#    Running block 44...
+#    Running block 45...
+#    Running block 46...
+#    Running block 47...
+#    Running block 48...
+#    Running block 49...
+#    Running block 50...
+#    Running block 51...
+#    Running block 52...
+#    Running block 53...
+#    Running block 54...
+#    Running block 55...
+#    Running block 56...
+#    Running block 57...
+
+#Save PC-realte object
+saveRDS(mypcrel, paste0(out_prefix, "pcr_obj_1it.rds"))
+
+#Delete pc-Relate object to be sure this worked
+
+## plot
+pcrel <- readRDS(file = "higherLDpcr_obj_1it.rds")
+kinship <- pcrel$kinBtwn
+
+png("higherLDkinship_1it.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+rm(pcrel)
+
+## develop 2nd iteration PC-Air
+mypcrel <- readRDS(file = "higherLDpcr_obj_1it.rds")
+pcrelate_matrix <- pcrelateToMatrix(mypcrel, scaleKin=1)
+#Using 4971 samples provided
+#Identifying clusters of relatives...
+#    4971 relatives in 1 clusters; largest cluster = 4971
+#Creating block matrices for clusters...
+#0 samples with no relatives included
+
+
+### Check number in related and unrelated set using pcairPartition
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Warning message:
+#In pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-9/2),  :
+#  some samples in unrel.set are not in kinobj or divobj; they will not be included
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:960] "S71706" "S48216" "S25290" "S35496" ...
+# $ unrels: chr [1:4011] "S10003" "S10014" "S10074" "S10130" ...
+
+kin_thresh <- 2^(-9/2)
+div_thresh <- -2^(-9/2)
+
+pca <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = kin_thresh, div.thresh = div_thresh, divobj = kingMat, snp.include = variant_id, sample.include = sample_id)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Working with 4971 samples
+#Identifying relatives for each sample using kinship threshold 0.0441941738241592
+#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
+#Partitioning samples into unrelated and related sets...
+#Unrelated Set: 4011 Samples
+#Related Set: 960 Samples
+#Performing PCA on the Unrelated Set...
+#Principal Component Analysis (PCA) on genotypes:
+#Calculating allele counts/frequencies ...
+#[==================================================] 100%, completed, 9.1m
+#Working space: 4,011 samples, 565,878 SNVs
+#    using 1 (CPU) core
+#CPU capabilities: Double-Precision SSE2
+#Sun Jun  7 23:58:49 2020    (internal increment: 772)
+#[=============================================>....] 89%, ETC: 6.5m
+#[==================================================] 100%, completed, 57.7m
+#Mon Jun  8 00:56:30 2020    Begin (eigenvalues and eigenvectors)
+#Mon Jun  8 00:56:49 2020    Done.
+#Predicting PC Values for the Related Set...
+#SNP loading:
+#Working space: 4011 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Mon Jun  8 00:57:22 2020    (internal increment: 6200)
+#[==================================================] 100%, completed, 9.8m
+#Mon Jun  8 01:07:11 2020    Done.
+#Sample loading:
+#Working space: 960 samples, 565878 SNPs
+#    using 1 (CPU) core
+#    using the top 32 eigenvectors
+#Mon Jun  8 01:07:54 2020    (internal increment: 25904)
+#[==================================================] 100%, completed, 9.2m
+#Mon Jun  8 01:17:07 2020    Done.
+
+print(str(pca))
+#List of 12
+# $ vectors   : num [1:4971, 1:32] -0.00404 -0.00437 -0.00111 -0.00382 -0.00104 ...
+#  ..- attr(*, "dimnames")=List of 2
+#  .. ..$ : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+#  .. ..$ : NULL
+# $ values    : num [1:32] 24.44 5.37 5.2 3.49 3.37 ...
+# $ rels      : chr [1:960] "S71706" "S48216" "S25290" "S35496" ...
+# $ unrels    : chr [1:4011] "S10003" "S10014" "S10074" "S10130" ...
+# $ kin.thresh: num 0.0442
+# $ div.thresh: num -0.0442
+# $ sample.id : chr [1:4971] "S66366" "S48371" "S92611" "S30713" ...
+# $ nsamp     : int 4971
+# $ nsnps     : int 565878
+# $ varprop   : num [1:4011] 0.006094 0.001339 0.001296 0.000872 0.000841 ...
+# $ call      : language .pcair(gdsobj = gdsobj, kinobj = ..1, divobj = ..4, kin.thresh = ..2, div.thresh = ..3,      sample.include = ..6| __truncated__
+# $ method    : chr "PC-AiR"
+# - attr(*, "class")= chr "pcair"
+#NULL
+
+#Save PC-Air object
+saveRDS(pca, paste0(out_prefix, "pcair.rds"))
+
+rm(pca)
+
+## plot
+#Read in phenotype and subset by keep_samples
+phenotype <- readRDS("phenotype.rds")
+keep_samples <- readRDS(file = "keep_samples.rds")
+phenotype <- phenotype[phenotype$sid %in% keep_samples,]
+
+pca <- readRDS("higherLDpcair.rds")
+pcs.df <- as.data.frame(pca$vectors[,1:7])
+pcs.df$sid <- rownames(pcs.df)
+pcs.df <- merge(pcs.df, phenotype[,c("sid","site", "race_or_ethnicity")], by="sid", all.x = TRUE, all.y = FALSE)
+
+rels_V <- pca$rels
+pcs.df$relate <- ifelse(pcs.df$sid %in% rels_V, "related", "unrelated")
+
+png(paste0(out_prefix, "_PC1and2.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,2], pcs.df[,3], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 1") + ylab("PC 2") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC2and3.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,3], pcs.df[,4], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 2") + ylab("PC 3") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+
+png(paste0(out_prefix, "_PC3and4.png"))
+ggplot() +
+   geom_point(aes(pcs.df[,4], pcs.df[,5], col = factor(pcs.df$race_or_ethnicity), pch = pcs.df$relate)) +
+   xlab("PC 3") + ylab("PC 4") +
+   scale_shape(solid = FALSE) +
+   labs(col= "Race or Ethnicity", shape="PC set")
+dev.off()
+
+#Plot percent variance explained by each pc:
+var_prop_vect <- 100*pca$varprop[1:12]
+PC_labs <- 1:12
+
+png(paste0(out_prefix, "percent_var.png"))
+plot(x=PC_labs, y = var_prop_vect, xlab = "PC", ylab = "percent variance accounted for")
+dev.off()
+
+
+rm(pca)
+
+
+
+## Develop 2nd iteration relatedness matrix
+pca <- readRDS("higherLDpcair.rds")
+
+resetIterator(iterator, verbose = TRUE)
+## of selected variants: 10,000
+str(iterator)
+#Formal class 'SeqVarBlockIterator' [package ""] with 6 slots
+#  ..@ variantBlock : int 10000
+#  ..@ variantFilter:List of 57
+#  .. ..$ 1 : int [1:10000] 1683 2190 2215 3755 6388 10751 10852 11502 13043 13048 ...
+#  .. ..$ 2 : int [1:10000] 4279555 4279560 4279561 4279738 4279822 4280802 4281131 4281243 4281307 4281392 ...
+#  .. ..$ 3 : int [1:10000] 9659133 9659169 9659213 9659225 9659374 9659516 9659800 
+#...
+#  .. ..$ 57: int [1:5878] 114525331 114525527 114525773 114525797 114525841 114525922 114526049 114526622 114526681 114526931 ...
+#  ..@ lastFilter   :<environment: 0x5555b3a895a0>
+#  ..@ sampleData   :Formal class 'AnnotatedDataFrame' [package "Biobase"] with 4 slots
+#  .. .. ..@ varMetadata      :'data.frame':     0 obs. of  1 variable:
+#  .. .. .. ..$ labelDescription: chr(0)
+#  .. .. ..@ data             :'data.frame':     5134 obs. of  0 variables
+#  .. .. ..@ dimLabels        : chr [1:2] "rowNames" "columnNames"
+#  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+#  .. .. .. .. ..@ .Data:List of 1
+#  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+#  ..@ variantData  :Formal class 'AnnotatedDataFrame' [package "Biobase"] with 4 slots
+#  .. .. ..@ varMetadata      :'data.frame':     0 obs. of  1 variable:
+#  .. .. .. ..$ labelDescription: chr(0)
+#  .. .. ..@ data             :'data.frame':     115537943 obs. of  0 variables
+#  .. .. ..@ dimLabels        : chr [1:2] "rowNames" "columnNames"
+#  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+#  .. .. .. .. ..@ .Data:List of 1
+#  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+#  ..@ .S3Class     : chr "gds.class"
+
+pcrel2 <- pcrelate(iterator, pcs = pca$vectors, training.set = pca$unrels)
+pcrelate_matrix2 <- pcrelateToMatrix(pcrel2, scaleKin = 2, thresh = kin_thresh)
+
+saveRDS(pcrel2, paste0(out_prefix, "pcr_obj.rds"))
+saveRDS(pcrelate_matrix2, paste0(out_prefix, "pcr_grm.rds"))
+
+#delete PC relate object to make sure this worked
+rm(pcrel2)
+
+## plot
+pcrel <- readRDS(file = "higherLDpcr_obj.rds")
+kinship <- pcrel$kinBtwn
+
+png("higherLDkinship.png")
+ggplot(kinship, aes(k0, kin)) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) +
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+# 6/8
+## Regenerate 1st iteration PC-Relate using only the first 3 eigenvectors from PC-Air to test whether this makes a big difference
+
+
+# 6/9
+## Association testing
+
+library(SeqArray)
+library(SeqVarTools)
+library(Biobase)
+library(GENESIS)
+sessionInfo()
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pheno <- readRDS("annot.rds")
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
+grm <- readRDS("higherLDpcr_grm.rds")
+
+#check for compatability:
+gds.id <- seqGetData(gds, "sample.id")
+head(gds.id)
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+head(pData(pheno)$sample.id)
+#[1] "S66366" "S48371" "S92611" "S30713" "S43109" "S58186"
+identical(gds.id, pData(pheno)$sample.id)
+#[1] TRUE
+
+sum(sample_id %in% gds.id)
+#[1] 4971
+
+grm[1:5,1:5]
+#5 x 5 sparse Matrix of class "dsCMatrix"
+#          S10063    S22752    S10252    S82601    S10656
+#S10063 0.9143344 0.4072069 .         .         .
+#S22752 0.4072069 0.9044073 .         .         .
+#S10252 .         .         0.9018518 0.3630782 .
+#S82601 .         .         0.3630782 0.9021806 .
+#S10656 .         .         .         .         0.8943037
+#Note: grm IDs are not in the same order as gds
+
+nrow(grm)
+#[1] 4971
+
+sum(colnames(grm) %in% gds.id)
+#[1] 4971
+
+
+#Generate null model
+seqData <- SeqVarData(gds, sampleData = pheno)
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+
+## of selected samples: 4,971
+## of selected variants: 6,829,196
+iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
+## of selected variants: 10,000
+str(iterator)
+#Formal class 'SeqVarBlockIterator' [package ""] with 6 slots
+#  ..@ variantBlock : int 10000
+#  ..@ variantFilter:List of 683
+#  .. ..$ 1  : int [1:10000] 1683 2190 2204 2215 3754 3755 3933 5866 6388 10751 ...
+#  .. ..$ 2  : int [1:10000] 267146 267151 267167 267175 267197 267200 267224 267239 267240 267249 ...
+
+covars <- c("PC1", "PC2", "PC3", "PC4")
+outcome <- "F508_count"
+family <- "poisson"
+
+nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
+                        cov.mat = grm, family = family, sample.id = sample_id)
+#Computing Variance Component Estimates...
+#Sigma^2_A     log-lik     RSS
+#[1]     0.0100000 -2689.3888020     0.2546535
+#[1]  4.583991e-03 -2.692676e+03  2.568448e-01
+#[1]  1.946151e-03 -2.694302e+03  2.579267e-01
+#[1]  6.442046e-04 -2.695110e+03  2.584642e-01
+#[1]  3.208055e-04 -2.695312e+03  2.585981e-01
+#[1]  1.593648e-04 -2.695412e+03  2.586650e-01
+#Updating WorkingY Vector...
+#Computing Variance Component Estimates...
+#Sigma^2_A     log-lik     RSS
+#[1]  1.593648e-04 -2.695650e+03  2.586897e-01
+
+assoc <- assocTestSingle(iterator, nullmod)
+
+## This seems to be working but is taking a really long time... will try subsetting by chromosome
+
+
+
+
+# 6/10
+
+
+library(SeqArray)
+library(SeqVarTools)
+library(Biobase)
+library(GENESIS)
+sessionInfo()
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pheno <- readRDS("annot.rds")
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
+grm <- readRDS("higherLDpcr_grm.rds")
+
+#Generate null model
+seqData <- SeqVarData(gds, sampleData = pheno)
+
+#filter to just test 1 chromosome for now
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+## of selected samples: 4,971
+## of selected variants: 6,829,196
+
+seqSetFilterChrom(gds, 1)
+## of selected variants: 9,936,669
+#this reset the filter
+
+#Check how many variants I expect to get:
+seqSetFilter(gds)
+## of selected samples: 5,134
+## of selected variants: 115,537,943
+
+gds.var <- seqGetData(gds, "variant.id")
+gds.chrom <- seqGetData(gds, "chromosome")
+sum(gds.chrom == 1)
+#[1] 9936669
+gds.var_1 <- gds.var[1:9936669]
+chr1_vars.temp <- intersect(gds.var_1, variant_id)
+length(chr1_vars.temp)
+#[1] 420226
+
+#Reset the sample and variant ID filter ontop of the chromosome filter using action argument
+seqSetFilterChrom(gds, 1)
+## of selected variants: 9,936,669
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id, action = "intersect")
+## of selected samples: 4,971
+## of selected variants: 420,226 #Yes!
+
+iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
+
+covars <- c("PC1", "PC2", "PC3", "PC4")
+outcome <- "F508_count"
+family <- "poisson"
+
+nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
+                        cov.mat = grm, family = family, sample.id = sample_id)
+#It is redundant to have sample.id here twice, but could use this to filter out additional people that weren't filteres in PC and GRM generation (like identical tiwn pairs)
+
+nullmod$fixef
+#                   Est         SE        Stat         pval
+#(Intercept)  0.3031544 0.02127095 203.1206403 4.353755e-46
+#PC1          2.9264957 0.46395985  39.7864316 2.833064e-10
+#PC2         -1.4952900 0.71854416   4.3305590 3.743395e-02
+#PC3         -2.0021810 0.74948315   7.1364617 7.553205e-03
+#PC4         -0.4489079 0.48903018   0.8426422 3.586422e-01
+
+assoc <- assocTestSingle(iterator, nullmod)
+## of selected samples: 4,971
+#Iteration 1 of 43 completed
+#Iteration 2 of 43 completed
+#Iteration 3 of 43 completed
+#...
+#Iteration 34 of 43 completed
+#Error in asMethod(object) :
+#  Cholmod error 'out of memory' at file ../Core/cholmod_memory.c, line 147
+
+## Try a larger variant block for iterator
+resetIterator(iterator, verbose = TRUE)
+
+iterator <- SeqVarBlockIterator(seqData, variantBlock = 3000, verbose=TRUE)
+assoc <- assocTestSingle(iterator, nullmod)
+
+
+# 6/11
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pheno <- readRDS("annot.rds")
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
+grm <- readRDS("higherLDpcr_grm.rds")
+seqData <- SeqVarData(gds, sampleData = pheno)
+seqSetFilterChrom(gds, 21)
+## of selected variants: 1,722,032
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id, action = "intersect")
+## of selected samples: 4,971
+## of selected variants: 103,926
+
+iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
+
+covars <- c("PC1", "PC2", "PC3", "PC4")
+outcome <- "F508_count"
+family <- "poisson"
+
+nullmod <- fitNullModel(pheno, outcome = outcome, covars = covars,
+                        cov.mat = grm, family = family, sample.id = sample_id)
+assoc <- assocTestSingle(iterator, nullmod)
+
+out_file <- "higher_LDpercent_var_assoc.rds"
+saveRDS(assoc, out_file)
+
+## 
+
+
+
+# 6/12
+## Regenerate LD_pruned SNP list:
+R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1 < ld_pruning.R > 6,12_pruned_snps.log &
+
+# 6/13
+## generate pcs and grm
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &

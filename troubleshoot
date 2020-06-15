@@ -1,0 +1,80 @@
+#find max and min kinship from king output:
+
+max.kin <- data.frame(max = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  max.kin[i, "ID"] <- as.character(ID)
+  max1 <- max(kinship[kinship$ID1 == ID, "kinship"])
+  max2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  max.kin[i, "max"] <- ifelse(max1 > max2, max1, max2)
+  i <- i + 1
+  }
+
+max.kin2 <- max.kin[order(max.kin$max),]
+
+sum(max.kin2$max <= (2^(-4.5)))
+
+min.kin <- data.frame(min = numeric(0), ID = character(0))
+i <- 1
+
+for(ID in unique(kinship$ID1)){
+  min1 <- min(kinship[kinship$ID1 == ID, "kinship"])
+  min2 <- max(kinship[kinship$ID2 == ID, "kinship"])
+  min.kin[i, "min"] <- ifelse(min1 < min2, min1, min2)
+  i <- i + 1
+  }
+  
+rownames(min.kin) <- unique(kinship$ID1)
+
+min.kin2 <- min.kin[order(min.kin$min),]
+
+sum(min.kin2$min <= (2^(-4.5)))
+
+
+
+####
+
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+library(SNPRelate)
+king <- readRDS("king_obj.rds")
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+
+pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-7/2), divobj = kingMat)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Identifying relatives for each sample using kinship threshold 0.0883883476483184
+#Identifying pairs of divergent samples using divergence threshold -0.0883883476483184
+str(pc_part1)
+#List of 2
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+
+pc_part2 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-9/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Identifying relatives for each sample using kinship threshold 0.0441941738241592
+#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
+str(pc_part2)
+#List of 2
+#$ rels  : chr [1:4953] "S81638" "S41485" "S66975" "S38975" ...
+#$ unrels: chr [1:18] "S95170" "S44473" "S66538" "S77769" ...
+
+pc_part3 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)
+#Using kinobj and divobj to partition samples into unrelated and related sets
+#Identifying relatives for each sample using kinship threshold 0.0883883476483184
+#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
+str(pc_part3)
+#List of 2
+# $ rels  : chr [1:4655] "S76851" "S13552" "S52656" "S54591" ...
+# $ unrels: chr [1:316] "S97442" "S78938" "S77510" "S22822" ...
+
+pc_part4 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-9/2), divobj = kingMat)
+
+pc_it1_1 <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-5/2), div.thresh = -2^(-7/2), divobj = kingMat)
+
+
+pc_part <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-7/2), div.thresh = -2^(-9/2), divobj = kingMat)

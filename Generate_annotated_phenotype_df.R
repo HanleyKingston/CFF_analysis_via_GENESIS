@@ -1,6 +1,5 @@
-
 #Load phenotype data:
-phenotype <- read.table("phenotype.txt", sep = "\t", header = TRUE)
+phenotype <- readRDS("phenotype.rds")
 
 ##The null model requires a sample ID column:
 phenotype$sample.id <- as.character(phenotype$sid)
@@ -10,16 +9,31 @@ pca <- readRDS("CFF_LDsqrt0.1pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:6])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
 
+keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
-identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), gds.id)
+#check:
+identical(keep_samples, pcs.df$sample.id)
+#[1] TRUE
 
+gds.id <- readRDS("gds_id.rds")
+#Alternatively, can extract from gds file with:
+#library(SeqVarTools)
+#gds.id <- seqGetData(seqOpen("CFF_sid_onlyGT.gds"), "sample.id")
 ##Check that phenotype sample ids match pc IDs (after applying filter to samples)
-#phenotype <- phenotype[match(pcs.df$sample.id, phenotype$sample.id),]
-identical(as.character(phenotype[phenotype$sample.id %in% keep_samples, "sample.id"]), pcs.df$sample.id)
-
+identical(gds.id, phenotype$sample.id)
+#[1] TRUE
+identical(gds.id[gds.id %in% keep_samples], pcs.df$sample.id)
+#[1] TRUE
 
 #Add PCA covariates to phenotype data by subject nomber
 merged_phen <- merge(phenotype, pcs.df, by = "sample.id", all.x=TRUE)
+sum(is.na(merged_phen$PC1))
+#[1] 163
+
+#order annotated df to match order of gds ids
+merged_phen <- merged_phen[match(gds.id, merged_phen$sample.id),]
+identical(merged_phen$sample.id, gds.id)
+#[1] TRUE
 
 ##annotate data:
 library(Biobase)
@@ -31,10 +45,6 @@ metadata <- data.frame(labelDescription = c(
   "birthdate year",
   "fist CFTR variant - for deltaF508 carriers, F508del is listed first",
   "second CFTR variant",
-  "cftr_addl_vars_wgs",
-  "cftr_gt_category_wgs",
-  "age_dx",
-  "year_dx",
   "age at death",
   "knorma score",
   "VCF ID - don't use",
@@ -56,3 +66,6 @@ annot <- AnnotatedDataFrame(merged_phen, metadata)
 
 #Save annot as an R object
 saveRDS(annot, file = "annot.rds")
+
+library(dplyr)
+head(pData(annot))

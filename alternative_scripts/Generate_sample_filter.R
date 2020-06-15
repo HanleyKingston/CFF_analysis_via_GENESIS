@@ -7,18 +7,12 @@ gds.id <- seqGetData(gds, "sample.id")
 
 phenotype <- read.table("phenotype.txt", header = TRUE)
 
-##Both data frames must have all the same smaple IDs
-sum(phen$sid %in% gds.id)
-#[1] 5134
-sum(gds.id %in% phen$sid)
-#[1] 5134
-
-
 #THIS MUST BE TRUE
 identical(as.character(phenotype$sid), as.character(gds.id))
 
 #These should be in the same order from the last script, but if not, must do this (can only do if the %in% checks are both equal):
 #phenotype <- phenotype[match(gds.id, phenotype$sid),]
+#But also check why they weren't already coerced to be in the same order because this could indicate a problem
 
 #Get a boolean vector of samples to exclude based on QC in phenotype data
 #Must make sure to exclude all individuals who whould be excluded based on phenotype QC
