@@ -1228,3 +1228,52 @@ R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_
 # 6/13
 ## generate pcs and grm
 R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
+
+
+
+
+# 6/15
+## remoove problematic LD regions
+gds <- seqOpen("CFR_sid_onlyGT.gds")
+
+filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
+chrom <- seqGetData(gds, "chromosome")
+pos <- seqGetData(gds, "position")
+pca.filt <- rep(TRUE, length(chrom))
+for (f in 1:nrow(filt)) {
+    pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
+}
+seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
+}
+
+PCAcorr_snps <- seqGetData(gds, "variant.id")
+length(PCAcorr_snps)
+#[1] 113941618
+
+
+pruned <- readRDS("pruned_snps.rds")
+length(pruned)
+#[1] 394140
+
+length(intersect(pruned, PCAcorr_snps))
+#[1] 388097
+
+#These sums all make sense
+
+#Now I need to figure out how to excldue the CFTR delation region (chr7:117559591-117559594 (GRCh38.p12))
+
+head(filt)
+#         chrom start.base  end.base      comment
+#2q21         2  129125957 139525961          LCT
+#HLA          6   24091793  38924246 includes MHC
+#8p23         8    6755071  13598120    inversion
+#17q21.31    17   42394456  46567318    inversion
+
+nrow(filt)
+#[1] 4
+
+#Find average length of regions included in filt (note: end.base is always > start.base)
+mean(filt$end.base - filt$start.base)
+#[1] 9062092
+
+filt <- rbind(filt, c("
