@@ -6,7 +6,8 @@ argp <- arg_parser("Generate PC plots") %>%
   add_argument("--out_prefix", help = "Prefix for output files",
                default = "") %>%
   add_argument("--phenotype_file", help = "Phenotype file (.rds)") %>%
-  add_argument("--group", help = "grouping variable") %>%
+  add_argument("--group1", help = "grouping variable") %>%
+  add_argument("--group2", help = "grouping variable") %>%
   add_argument("--n_pairs", help = "number of pairwise plots", default = 6)
 
 argv <- parse_args(argp)
@@ -34,12 +35,18 @@ p <- ggplot(dat, aes(x=factor(pc), y=100*varprop)) +
 ggsave(paste0(out_prefix, "pc_scree.png"), plot=p, width=6, height=6)
 
 ## color by group
-if (!is.na(argv$phenotype_file) & !is.na(argv$group)) {
-    group <- argv$group
+if (!is.na(argv$phenotype_file) & !is.na(argv$group1)) {
+    group1 <- argv$group1
     annot <- readRDS(argv$phenotype_file)
-    stopifnot(group %in% varLabels(annot))
+    stopifnot(group1 %in% varLabels(annot))
     annot <- pData(annot) %>%
-        select(sample.id, !!enquo(group))
+        select(sample.id, !!enquo(group1))
+    pcs <- left_join(pcs, annot, by="sample.id")
+} else if (!is.na(argv$group2)) {
+    group2 <- argv$group2
+    stopifnot(group2 %in% varLabels(annot))
+    annot <- pData(annot) %>%
+        select(sample.id, !!enquo(group2))
     pcs <- left_join(pcs, annot, by="sample.id")
 } else {
     ## make up dummy group
@@ -47,9 +54,14 @@ if (!is.na(argv$phenotype_file) & !is.na(argv$group)) {
     pcs$group <- "NA"
 }
 
-p <- ggplot(pcs, aes_string("PC1", "PC2", color=group)) + geom_point(alpha=0.5) +
+p <- ggplot(pcs, aes_string("PC1", "PC2", color=group1, shape = group2)) + geom_point(alpha=0.5) +
     guides(colour=guide_legend(override.aes=list(alpha=1)))
 ggsave(paste0(out_prefix, "pc12.png"), plot=p, width=7, height=6)
+
+p <- ggplot(pcs, aes_string("PC2", "PC3", color=group1, shape = group2)) + geom_point(alpha=0.5) +
+    guides(colour=guide_legend(override.aes=list(alpha=1)))
+ggsave(paste0(out_prefix, "pc12.png"), plot=p, width=7, height=6)
+
 
 
 npr <- min(argv$n_pairs, n)
