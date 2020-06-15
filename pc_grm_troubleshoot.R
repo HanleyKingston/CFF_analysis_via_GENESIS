@@ -47,7 +47,7 @@ div_thresh <- -2 ^ (-argv$div_thresh)
 out_prefix <- argv$out_prefix
 gds <- seqOpen(argv$gds_file)
 
-king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id)
+king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id, type = "KING-robust")
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
