@@ -1237,28 +1237,6 @@ R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_s
 gds <- seqOpen("CFR_sid_onlyGT.gds")
 
 filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
-chrom <- seqGetData(gds, "chromosome")
-pos <- seqGetData(gds, "position")
-pca.filt <- rep(TRUE, length(chrom))
-for (f in 1:nrow(filt)) {
-    pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
-}
-seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
-}
-
-PCAcorr_snps <- seqGetData(gds, "variant.id")
-length(PCAcorr_snps)
-#[1] 113941618
-
-
-pruned <- readRDS("pruned_snps.rds")
-length(pruned)
-#[1] 394140
-
-length(intersect(pruned, PCAcorr_snps))
-#[1] 388097
-
-#These sums all make sense
 
 #Now I need to figure out how to excldue the CFTR delation region (chr7:117559591-117559594 (GRCh38.p12))
 
@@ -1276,4 +1254,41 @@ nrow(filt)
 mean(filt$end.base - filt$start.base)
 #[1] 9062092
 
-filt <- rbind(filt, c("
+add_regions <- data.frame(t(c(7, 1, 159,345,973, "to exclude deltaF508")))
+colnames(add_regions) <- colnames(filt)
+rownames(add_regions) <- "chr7"
+saveRDS(add_regions, "exclude_regions_chr7.rds")
+
+add_regions <- readRDS("exclude_regions_chr7.rds")
+
+filt <- rbind(filt, add_regions)
+
+chrom <- seqGetData(gds, "chromosome")
+pos <- seqGetData(gds, "position")
+pca.filt <- rep(TRUE, length(chrom))
+for (f in 1:nrow(filt)) {
+    pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
+}
+seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
+## of selected variants: 113,778,467
+
+PCAcorr_snps <- seqGetData(gds, "variant.id")
+length(PCAcorr_snps)
+#[1] 113778467
+#save just the list of SNPs not in the excluded region:
+saveRDS(PCAcorr_snps, "PCAcorr_snps.rds")
+
+pruned <- readRDS("pruned_snps.rds")
+length(pruned)
+#[1] 394140
+
+pruned_excludedRegions_andChr7 <- intersect(pruned, PCAcorr_snps)
+length(pruned_excludedRegions_andChr7)
+#[1] 387546
+
+#These variant counts make sense
+#I will update LD-prunign script to optionally excldue LD-problematic regions and/or a specified region.
+#to avoid re-running LD-pruning, for now I will just save the intersected file.
+
+saveRDS(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.rds")
+
