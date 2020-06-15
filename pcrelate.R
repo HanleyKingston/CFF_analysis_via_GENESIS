@@ -15,8 +15,6 @@ argp <- arg_parser("Run PC-Relate") %>%
   add_argument("--scale_kin", help = "Scaling factor for GRM output",
                default = 1) %>%
   add_argument("--sparse_thresh", help = "st_help", default = 0) %>%
-  add_argument("--correct", "Flag to implement small-sample correction",
-               flag = TRUE) %>%
   add_argument("--variant_block", help = "SeqVarBlaockIterator block size",
                default = 1024)
 argv <- parse_args(argp)
@@ -52,5 +50,5 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(argv$n_pcs)],
 
 saveRDS(mypcrel, paste0(argv$out_prefix, "pcrelate.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, thresh = argv$sparse_thresh,
-                            scaleKin = argv$scale_kin, correct = argv$correct)
+                            scaleKin = argv$scale_kin)
 saveRDS(pcr_mat, paste0(argv$out_prefix, "pcr_mat.rds"))
