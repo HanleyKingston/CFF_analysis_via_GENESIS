@@ -1371,10 +1371,12 @@ R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,15 --variant_id pruned_e
 ### plot kinship
 R -q --vanilla --args 6,15king_obj.rds --out_prefix 6,15_king --is_king < plot_kinship.R &
 R -q --vanilla --args 6,15pcr_obj_1it.rds --out_prefix 6,15_1it < plot_kinship.R &
+R -q --vanilla --args 6,15pcr_obj.rds --out_prefix 6,15 < plot_kinship.R &
 
 
 ## Use the PC object with updated pruning criteria to get a 1st iteration pc-relate based on a single PC
-R -q --vanilla --args CFF_sid_onlyGT.gds 6,15pcair_1it.rds --out_prefix twoPC --variant_id pruned_snps.rds --sample_id keep_samples.rds --n_pcs 1 < pcrelate.R > onePC_pcrelate.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds 6,15pcair_1it.rds --out_prefix onePC --variant_id pruned_snps.rds --sample_id keep_samples.rds --n_pcs 1 < pcrelate.R > 6,15onePC_pcrelate.log &
+R -q --vanilla --args onePC_1itpcrelate.rds --out_prefix onePC_1it < plot_kinship.R &
 
 
 # 6/15
