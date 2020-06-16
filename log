@@ -1305,7 +1305,9 @@ R -q --vanilla --args noQCpcr_obj_1it.rds --out_prefix noQC_1it < plot_kinship.R
 
 # 6/15
 ## remoove problematic LD regions
-gds <- seqOpen("CFR_sid_onlyGT.gds")
+library(SeqArray)
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
 
 filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
 
@@ -1325,7 +1327,7 @@ nrow(filt)
 mean(filt$end.base - filt$start.base)
 #[1] 9062092
 
-add_regions <- data.frame(t(c(7, 1, 159,345,973, "to exclude deltaF508")))
+add_regions <- data.frame(t(c(7, 1, 159345973, "to exclude deltaF508")))
 colnames(add_regions) <- colnames(filt)
 rownames(add_regions) <- "chr7"
 saveRDS(add_regions, "exclude_regions_chr7.rds")
@@ -1341,11 +1343,11 @@ for (f in 1:nrow(filt)) {
     pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
 }
 seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
-## of selected variants: 113,778,467
+## of selected variants: 111,797,708
 
 PCAcorr_snps <- seqGetData(gds, "variant.id")
 length(PCAcorr_snps)
-#[1] 113778467
+#[1] 111797708
 #save just the list of SNPs not in the excluded region:
 saveRDS(PCAcorr_snps, "PCAcorr_snps.rds")
 
@@ -1355,7 +1357,7 @@ length(pruned)
 
 pruned_excludedRegions_andChr7 <- intersect(pruned, PCAcorr_snps)
 length(pruned_excludedRegions_andChr7)
-#[1] 387546
+#[1] 380171
 
 #These variant counts make sense
 #I will update LD-prunign script to optionally excldue LD-problematic regions and/or a specified region.
@@ -1384,5 +1386,6 @@ R -q --vanilla --args CFF_sid_onlyGT.gds 6,15pcair_1it.rds --out_prefix onePC --
 R -q --vanilla --args onePC_1itpcrelate.rds --out_prefix onePC_1it < plot_kinship.R &
 
 
-# 6/15
-## Get SNP correaltion plots 
+# 6/16
+## Re-run all of King, PC-Air, and PC-Relate using updated pruned SNP list
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,15 --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,15.log &
