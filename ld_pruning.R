@@ -13,6 +13,7 @@ argp <- add_argument(argp, "--maf", help="minimum MAF for variants to include", 
 argp <- add_argument(argp, "--missing", help="maximum missing call rate for variants to include", default=0.05)
 argp <- add_argument(argp, "--r_threshold", help="r threshold for LD", default=sqrt(0.1))
 argp <- add_argument(argp, "--window_size", help="window size in Mb", default=10)
+argp <- add_argument(argp, "build", help = "map build to filter problematic regions")
 argv <- parse_args(argp)
 print(argv)
 
@@ -39,7 +40,8 @@ snpset <- snpgdsLDpruning(gds,
 # convert list with one element per chrom to vector
 pruned <- unlist(snpset, use.names=FALSE)
 
-filterByPCAcorr <- function(gds, build="hg38", verbose=TRUE) {
+if(argv$build){
+filterByPCAcorr <- function(gds, build= build, verbose=TRUE) {
     filt <- get(data(list=paste("pcaSnpFilters", build, sep="."), package="GWASTools"))
     chrom <- seqGetData(gds, "chromosome")
     pos <- seqGetData(gds, "position")
@@ -49,7 +51,14 @@ filterByPCAcorr <- function(gds, build="hg38", verbose=TRUE) {
     }
     seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
 }
-
+  
 PCAcorr_snps <- seqGetData(gds, "variant.id")
+saveRDS(PCAcorr_snps, "PCAcorr_snps.rds")
+
+pruned <- intersect(pruned, PCAcorr_snps)
+}
+
+print(length(pruned))
+
 
 saveRDS(pruned, file=out.file)
