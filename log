@@ -1291,4 +1291,91 @@ length(pruned_excludedRegions_andChr7)
 #to avoid re-running LD-pruning, for now I will just save the intersected file.
 
 saveRDS(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.rds")
+write(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.txt", ncolumns = 1)
 
+
+
+
+# 6/12 - 6/15
+## Getting PCs and kinship estimates under different parameters
+*Note: the pc_grm_troubleshoot script take kin_thresh and div_thresh in different format
+
+# Regenerate LD_pruned SNP list:
+R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1 < ld_pruning.R > 6,12_pruned_snps.log &
+
+# Run all of PC-Air and Relate iterations using standard inputs
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
+## Get King and 1st and 2nd iteration kinship plots and 2nd iteration PC plots
+R -q --vanilla --args 6,13king_obj.rds --out_prefix 6,13_king --is_king < plot_kinship.R &
+R -q --vanilla --args 6,13pcr_obj_1it.rds --out_prefix 6,13_1it < plot_kinship.R &
+R -q --vanilla --args 6,13pcr_obj.rds --out_prefix 6,13 < plot_kinship.R &
+R -q --vanilla --args 6,13pcair.rds --out_prefix 6,13 --phenotype_file annot.rds --group race_or_ethnicity < pca_plots.R &
+
+
+#Note: unlike the pcs_and_grm.R and pc_grm_troubleshoot.R, pcair.R takes the kinship and divergence thresholds as arguments (not the exposnents for these thresholds)
+#I couldn't get the command line to accept a negative number as an input so I modified the script to make the div thresh negative
+# Using king matrix from 6/13 LD pruning sqrt(0.1), generate 1st kinship plots using kin_thresh = 4 for 1st PC-Air
+R -q --vanilla --args CFF_sid_onlyGT.gds 6,13king_robust_grm.rds 6,13king_robust_grm.rds --variant_id pruned_snps.rds --sample_id keep_samples.rds --out_prefix kin_thresh4 --kin_thresh 0.0625 --div_thresh 0.0442 < pcair.R > kin_thresh4_pcAir.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds kin_thresh4pcair.rds --out_prefix kin_thresh4 --variant_id pruned_snps.rds --sample_id keep_samples.rds < pcrelate.R > kin_thresh4_pcRelate.log &
+## plot
+R -q --vanilla --args kin_thresh4pcrelate.rds --out_prefix kin_thresh4_1it < plot_kinship.R &
+## Get total related and unrelateds based on these conditions (this should also be in the log, but the log is cutting off the last part of the analysis)
+king <- readRDS("6,13king_robust_grm.rds")
+library(SeqArray)
+library(GENESIS)
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+pc_part1 <- pcairPartition(gds, kinobj = king, kin.thresh = 2^(-4), div.thresh = -2^(-4.5), divobj = king)
+#some samples in unrel.set are not in kinobj or divobj; they will not be included
+#No idea where this warning is coing from!!!
+str(pc_part1)
+# $ unrels: chr [1:14] "S95170" "S66538" "S77769" "S44473" ...
+
+# Using king matrix from 6/13 LD pruning sqrt(0.1), generate 1st kinship plots using div_thresh = 3 for 1st PC-Air
+R -q --vanilla --args CFF_sid_onlyGT.gds 6,13king_robust_grm.rds 6,13king_robust_grm.rds --variant_id pruned_snps.rds --sample_id keep_samples.rds --out_prefix div_thresh3 --kin_thresh 0.125 --div_thresh 0.125 < pcair.R > div_thresh3_pcAir.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds div_thresh3pcair.rds --out_prefix div_thresh3 --variant_id pruned_snps.rds --sample_id keep_samples.rds < pcrelate.R > div_thresh3_pcRelate.log &
+## plot
+R -q --vanilla --args div_thresh3pcrelate.rds --out_prefix div_thresh3_1it < plot_kinship.R &
+
+# Using PC-Air object from 6/13 LD pruning sqrt(0.1), generate 1st kinship plots using just 1 PC
+R -q --vanilla --args CFF_sid_onlyGT.gds 6,13pcair_1it.rds --out_prefix twoPC --variant_id pruned_snps.rds --sample_id keep_samples.rds --n_pcs 2 < pcrelate.R > twoPC_pcrelate.log &
+#Note:tried to run with just one PC but got this error:
+#"pcs should be a matrix of PCs with rownames set to sample.ids"
+#I think that pcrelate won't accept a single PC (rather than this being a problem with the code, because it didn't work when I manually hcanged the number of PCs to 1)
+## plot
+R -q --vanilla --args twoPCpcrelate.rds --out_prefix twoPC_1it < plot_kinship.R &
+
+# 6/14 I realized a forgoto to set the type in kin to King-robust, so I fixed that and re-ran everything (I overwrote all files run without the King-Robust input)
+#It is unclear what the default type is, but this change did not make any visually-noticible difference to my plots
+
+
+# With LD pruning R^2 = 0.2, Run all of PC-Air and Relate iterations using standard inputs
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix LD0.2 --variant_id pruned_higherLD.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_LD0.2.log &
+## Get King and 1st and 2nd iteration kinship plots and 2nd iteration PC plots
+R -q --vanilla --args LD0.2king_obj.rds --out_prefix LD0.2_king --is_king < plot_kinship.R &
+R -q --vanilla --args LD0.2pcr_obj_1it.rds --out_prefix LD0.2_1it < plot_kinship.R &
+
+# With LD pruning R^2 = 0.1, but no prior QC: Run all of PC-Air and Relate iterations using standard inputs
+## Get pruned SNPs
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_file pruned_snps_noQC.rds --sample_id keep_samples.rds --window_size 1 < ld_pruning.R > noQC_pruned_snps.log &
+## Run all of PC-Air and Relate iterations using standard inputs
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix noQC --variant_id pruned_higherLD.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_noQC.log &
+## Get King and 1st and 2nd iteration kinship plots and 2nd iteration PC plots
+R -q --vanilla --args noQCking_obj.rds --out_prefix noQC_king --is_king < plot_kinship.R &
+R -q --vanilla --args noQCpcr_obj_1it.rds --out_prefix noQC_1it < plot_kinship.R &
+
+
+
+# 6/15
+## Re-run all of King, PC-Air, and PC-Relate using updated pruned SNP list
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,15 --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,15.log &
+### plot kinship
+R -q --vanilla --args 6,15king_obj.rds --out_prefix 6,15_king --is_king < plot_kinship.R &
+R -q --vanilla --args 6,15pcr_obj_1it.rds --out_prefix 6,15_1it < plot_kinship.R &
+
+
+## Use the PC object with updated pruning criteria to get a 1st iteration pc-relate based on a single PC
+R -q --vanilla --args CFF_sid_onlyGT.gds 6,15pcair_1it.rds --out_prefix twoPC --variant_id pruned_snps.rds --sample_id keep_samples.rds --n_pcs 1 < pcrelate.R > onePC_pcrelate.log &
+
+
+# 6/15
+## Get SNP correaltion plots 
