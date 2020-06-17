@@ -2,16 +2,16 @@
 
 library(SeqArray)
 library(SNPRelate)
-library(argparser)
-sessionInfo()
 
 # open GDS file
-gds <- seqOpen(gds.file)
+gds <- seqOpen("CFF_sid_onlyGT.gds") #This is the merged gds file ("CFF_5134_onlyGT.gds") from the seqArray_onlyGT folder, but I changed the sample.id's from the VCF_ids to the sids
+variant_id <- readRDS("keep_var_stringent.rds")
+sample_id <- readRDS("keep_samples.rds")
 
 # run LD pruning
 snpset <- snpgdsLDpruning(gds,
-                          sample.id = keep_samples.rds,
-                          snp.id = keep_var_stringent.rds,
+                          sample.id = sample_id,
+                          snp.id = variant_id,
                           maf = 0.05,
                           missing.rate = 0.05,
                           method = "corr",
@@ -55,3 +55,109 @@ saveRDS(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.rds")
 
 
 # King
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+sample_id <- readRDS("keep_samples.rds")
+
+king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id,
+                      type = "KING-robust")
+
+kingMat <- king$kinship
+colnames(kingMat) <- rownames(kingMat) <- king$sample.id
+
+saveRDS(king, paste0("6,15", "king_obj.rds"))
+saveRDS(kingMat, paste0("6,15", "king_grm.rds")) #Note: should save a sparse matrix if using for association testing but not to give to PC-AiR
+
+
+
+# Plot King
+library(ggplot2)
+library(SNPRelate)
+
+rel <- readRDS("6,15king_obj.rds")
+
+kinship.df <- snpgdsIBDSelection(rel)
+
+png(paste0("6,15", "_kinship.png"))
+ggplot(kinship.df, aes_string("IBS0", "kinship")) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+
+# 1st itertion PC-Air
+library(SeqArray)
+library(GENESIS)
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+sample_id <- readRDS("keep_samples.rds")
+kingMat <- readRDS("6,15king_grm.rds")
+
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-3),
+                 divobj = kingMat, snp.include = variant_id,
+                 sample.include = sample_id, div.thresh = -2^(-4.5))
+
+saveRDS(mypcair, paste0("6,15", "pcair_1it.rds"))
+
+
+
+# 1st ititeration PC-Relate
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+sample_id <- readRDS("keep_samples.rds")
+mypcair <- readRDS("6,15pcair_1it.rds")
+
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+seqData <- SeqVarData(gds)
+iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
+mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(12)],
+                    training.set = mypcair$unrels, sample.include = sample_id)
+
+saveRDS(mypcrel, paste0("6,15", "pcr_obj_1it.rds"))
+pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 1)
+saveRDS(pcr_mat, paste0(argv$out_prefix, "pcr_mat.rds"))
+
+
+
+
+# 1st ititeration PC-Relate
+library(ggplot2)
+library(SNPRelate)
+
+rel <- readRDS("6,15pcr_obj_1it.rds")
+
+kinship.df <- rel$kinBtwn
+
+png(paste0("6,15", "1it_kinship.png"))
+ggplot(kinship.df, aes_string("k0", "kin")) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
+
+
+
+# 2nd itertion PC-Air
+library(SeqArray)
+library(GENESIS)
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+sample_id <- readRDS("keep_samples.rds")
+kingMat <- readRDS("6,15king_grm.rds")
+kingMat <- readRDS("6,15pcr_obj_1it.rds")
+
+
+mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-3),
+                 divobj = kingMat, snp.include = variant_id,
+                 sample.include = sample_id, div.thresh = -2^(-4.5))
+
+saveRDS(mypcair, paste0("6,15", "pcair_1it.rds"))
+
+
+
