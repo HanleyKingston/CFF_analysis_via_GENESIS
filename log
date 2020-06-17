@@ -1445,4 +1445,23 @@ write(combined_filter, "keep_samples_twin_and_Eur_filter.txt", ncol = 1)
 ## Get PC-Air and Relate for this subset of samples
 R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,16sample_subset --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples_twin_and_Eur_filter.rds --kin_thresh1 3.5 --div_thresh1 4.0 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 3 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,16sample_subset.log &
 ### plot
+R -q --vanilla --args 6,16sample_subsetpcr_obj_1it.rds --out_prefix 6,16sample_subset_1it < plot_kinship.R &
+
+
+
+
+# 6/17
+Figure out association testing
+## First just for 1 chromosome (note: script it in local folder, not updated on github yet):
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds temp_pcr_grm.rds F508_count gaussian --out_file test_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples_twin_and_Eur_filter.rds --chromosome 21 < assoc_test.R > assoc_test.log &
+
+### This is working. Now add in parallelization:
+for f in {1..22}; do echo "Assoc_testing '$f' "
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds temp_pcr_grm.rds F508_count gaussian --out_file "$f" --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples_twin_and_Eur_filter.rds --chromosome f < assoc_test.R & sleep 30 done
+
+
+### Make output clearer & save a log file:
+for f in {1..22}; do echo "Assoc_testing '$f' "
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds temp_pcr_grm.rds F508_count gaussian --out_prefix "$f" --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples_twin_and_Eur_filter.rds --chromosome f < assoc_test.R & sleep 30 done
+
 
