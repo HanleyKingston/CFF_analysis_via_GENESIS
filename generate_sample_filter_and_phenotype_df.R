@@ -94,13 +94,13 @@ table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$race_
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
 
-pdf("F508_count_by_study.pdf")
+png("F508_count_by_study.png")
 barplot(counts, main="Count of DeltaF508 per study Site",
   xlab="Study", legend = rownames(counts), beside = TRUE)
 dev.off()
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic")]
     
 saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
 
