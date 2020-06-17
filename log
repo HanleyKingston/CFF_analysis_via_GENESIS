@@ -1389,3 +1389,59 @@ R -q --vanilla --args onePC_1itpcrelate.rds --out_prefix onePC_1it < plot_kinshi
 # 6/16
 ## Re-run all of King, PC-Air, and PC-Relate using updated pruned SNP list
 R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,15 --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,15.log &
+
+
+
+
+
+
+# 6/16
+## Exclude identical twins, dulicates, and non-white people from PCs
+### Get a vector of only self-identified white people (since this sample is majorily while, I excluded anyone of mixed race and anyone who identified as hispanic
+phenotype <- readRDS("phenotype.rds")
+
+Only select non-hispanic white people
+Eur <- phenotype[phenotype$race_white == 1 & !is.na(phenotype$race_white) & phenotype$race_black != 1 & phenotype$race_natAm != 1 & phenotype$race_asian != 1 & phenotype$race_pac != 1 & phenotype$race_other != 1, "sid"]
+Eur <- as.character(Eur)
+length(Eur)
+#[1] 4895
+
+saveRDS(Eur, "keep_Eur_samples.rds")
+write(Eur, "keep_Eur_samples.txt", ncol = 1)
+
+
+### Exclude identical twins (and any duplicates that slipped past QC)
+pcrel2 <- readRDS("6,15pcr_obj.rds")
+kinship <- pcrel2$kinBtwn
+
+#Find likely identical twins
+range(kinship$kin)
+kinship[kinship$kin > 0.28, c("kin", "k2", "ID1", "ID2")]
+
+#Remove identical twins from keep_samples vector
+exclude_one_twin <- kinship[kinship$kin > 0.28, "ID1"] #ID1 is always the lowest of the 2 number IDs
+keep_samples <- readRDS(file = "keep_samples.rds")
+length(keep_samples)
+#[1] 4971
+
+"%notin%" <- Negate("%in%")
+keep_one_mzTwin_samples <- keep_samples[keep_samples %notin% exclude_one_twin]
+length(keep_one_mzTwin_samples)
+#[1] 4945
+
+saveRDS(keep_one_mzTwin_samples, file = "keep_one_mzTwin_samples.rds")
+write(keep_one_mzTwin_samples, file = "keep_one_mzTwin_samples.txt", ncol = 1)
+
+## Develop a combined sample filter (excludes based on QC and 1 of each MZ twin pair, only self-identified white)
+combined_filter <- intersect(intersect(keep_samples, keep_one_mzTwin_samples), Eur)
+length(combined_filter)
+#[1] 4720
+
+saveRDS(combined_filter, "keep_samples_twin_and_Eur_filter.rds")
+write(combined_filter, "keep_samples_twin_and_Eur_filter.txt", ncol = 1)
+
+
+## Get PC-Air and Relate for this subset of samples
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,16sample_subset --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples_twin_and_Eur_filter.txt --kin_thresh1 3.5 --div_thresh1 4.0 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 3 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,16sample_subset.log &
+
+
