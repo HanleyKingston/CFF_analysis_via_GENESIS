@@ -1443,6 +1443,6 @@ write(combined_filter, "keep_samples_twin_and_Eur_filter.txt", ncol = 1)
 
 
 ## Get PC-Air and Relate for this subset of samples
-R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,16sample_subset --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples_twin_and_Eur_filter.txt --kin_thresh1 3.5 --div_thresh1 4.0 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 3 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,16sample_subset.log &
-
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,16sample_subset --variant_id pruned_excludedRegions_andChr7.rds --sample_id keep_samples_twin_and_Eur_filter.rds --kin_thresh1 3.5 --div_thresh1 4.0 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 3 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,16sample_subset.log &
+### plot
 
