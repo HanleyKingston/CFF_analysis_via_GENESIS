@@ -1,64 +1,57 @@
+# LD-pruning
+
 library(SeqArray)
 library(SNPRelate)
 library(argparser)
 sessionInfo()
-
-# read arguments
-argp <- arg_parser("LD pruning")
-argp <- add_argument(argp, "gds_file", help="GDS file")
-argp <- add_argument(argp, "--out_file", help="output file name", default="pruned_snps.rds")
-argp <- add_argument(argp, "--sample_id", help="RDS file with vector of sample.id to include")
-argp <- add_argument(argp, "--variant_id", help="RDS file with vector of variant.id to include")
-argp <- add_argument(argp, "--maf", help="minimum MAF for variants to include", default=0.05)
-argp <- add_argument(argp, "--missing", help="maximum missing call rate for variants to include", default=0.05)
-argp <- add_argument(argp, "--r_threshold", help="r threshold for LD", default=sqrt(0.1))
-argp <- add_argument(argp, "--window_size", help="window size in Mb", default=10)
-argp <- add_argument(argp, "build", help = "map build to filter problematic regions")
-argv <- parse_args(argp)
-print(argv)
-
-# parse file paths
-gds.file <- argv$gds_file
-out.file <- argv$out_file
-sample.id <- if (!is.na(argv$sample_id)) readRDS(argv$sample_id) else NULL
-variant.id <- if (!is.na(argv$variant_id)) readRDS(argv$variant_id) else NULL
 
 # open GDS file
 gds <- seqOpen(gds.file)
 
 # run LD pruning
 snpset <- snpgdsLDpruning(gds,
-                          sample.id = sample.id,
-                          snp.id = variant.id,
-                          maf = argv$maf,
-                          missing.rate = argv$missing,
+                          sample.id = keep_samples.rds,
+                          snp.id = keep_var_stringent.rds,
+                          maf = 0.05,
+                          missing.rate = 0.05,
                           method = "corr",
-                          slide.max.bp = argv$window_size * 1e6, 
-                          ld.threshold = argv$r_threshold
+                          slide.max.bp = 1 * 1e6, 
+                          ld.threshold = sqrt(0.1)
                           )
 
 # convert list with one element per chrom to vector
 pruned <- unlist(snpset, use.names=FALSE)
+length(pruned)
+#[1] 394140
 
-if(argv$build){
-filterByPCAcorr <- function(gds, build= build, verbose=TRUE) {
-    filt <- get(data(list=paste("pcaSnpFilters", build, sep="."), package="GWASTools"))
-    chrom <- seqGetData(gds, "chromosome")
-    pos <- seqGetData(gds, "position")
-    pca.filt <- rep(TRUE, length(chrom))
-    for (f in 1:nrow(filt)) {
-        pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
-    }
-    seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
+# Also filter out 4 problematic LD regions and excldue chromosome 7
+filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
+
+add_regions <- data.frame(t(c(7, 1, 159345973, "to exclude deltaF508")))
+colnames(add_regions) <- colnames(filt)
+rownames(add_regions) <- "chr7"
+filt <- rbind(filt, add_regions)
+
+chrom <- seqGetData(gds, "chromosome")
+pos <- seqGetData(gds, "position")
+pca.filt <- rep(TRUE, length(chrom))
+for (f in 1:nrow(filt)) {
+    pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
+}
+seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
+## of selected variants: 111,797,708
 }
   
 PCAcorr_snps <- seqGetData(gds, "variant.id")
 saveRDS(PCAcorr_snps, "PCAcorr_snps.rds")
 
-pruned <- intersect(pruned, PCAcorr_snps)
-}
+pruned_excludedRegions_andChr7 <- intersect(pruned, PCAcorr_snps)
+length(pruned_excludedRegions_andChr7)
+#[1] 380171
 
-print(length(pruned))
+saveRDS(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.rds")
 
 
-saveRDS(pruned, file=out.file)
+
+
+# King
