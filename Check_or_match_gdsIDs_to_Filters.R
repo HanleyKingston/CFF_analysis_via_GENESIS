@@ -37,19 +37,21 @@ for (chromosome in unique(flag.metric.df$chr)) {
 }
 res <- bind_rows(res_list)
 
-#spot_check:
-rand <- sample(1:nrow(res),1)
-if(res[res$variant_id_gds == rand, "pos"] != seqGetData(gds, "position")[rand]){
-           print("varaint ID's are not identical")
-}
-
-print(sum(res$variant.id != res$variant_id_gds))
-[1] 105601274
 
 if(sum(res$variant.id != res$variant_id_gds) != 0)
-   print("varaint ID's are not identical")
+   print("Original varaint ID's were not identical")
 
-saveRDS("res", "flag.metric_with_gds_ids.rds")
+
+print(paste("number of variants that were not shared between files:" sum(res$variant.id != res$variant_id_gds)))
+#[1] 105601274
+
+#spot_check:
+rand <- sample(1:nrow(res),1)
+if(res[res$variant_id_gds == rand, "pos"] == seqGetData(gds, "position")[rand]){
+           print("Matching WAS succesful")
+}
+
+saveRDS(res, "flag.metric_with_gds_ids.rds")
 
 
 # add spot checks on chromosome, position, alleles between gds file and flag metrics file
