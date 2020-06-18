@@ -24,10 +24,6 @@ pca_plots.R - plots a scree plot (percent variance explained), cord plot, and pa
 Exclude_identical_twin_from_samples.R - Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
 assoc_test.R
 
-
-## merge_ind_chr_files.R
-Merge gds files (excluding X chromosome)
-
 ## change_gds_ids.R
 1. Convert gds_ids (currently match VCF_ids from participants file) to sids from based on sample_names_key.txt (taken from SampleDropandFlag.tsv)
 2. Save gds IDs as a vector
