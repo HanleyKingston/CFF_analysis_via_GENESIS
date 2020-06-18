@@ -17,7 +17,7 @@ sid_list <- as.vector(as.character(sample_key[sample_key$vcf_id %in% gds.id, "si
 class(sid_list)
 #[1] "character"
 
-#Close gds file and reopen in write mode
+#Close gds file and reopen in write mode. Note: make a copy of the gds file and rename it "CFF_sid_onlyGT.gds"
 gdsfmt::showfile.gds(closeall=TRUE)
 rm(gds.id)
 gds <- openfn.gds("CFF_sid_onlyGT.gds", readonly=FALSE)
