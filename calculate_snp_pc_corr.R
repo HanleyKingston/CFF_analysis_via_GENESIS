@@ -1,5 +1,3 @@
-#R -q --vanilla --args --pca-file 6,15pcair.rds --gds-file CFF_sid_onlyGT.gds --block-size 32768 --chromosome $SGE_TASK_ID --outfile snp_corr_chr${SGE_TASK_ID}.rds < calculate_snp_pc_corr.R
-
 library(argparser)
 library(tidyverse)
 library(glue)
