@@ -1465,3 +1465,39 @@ for f in {1..22}; do echo "Assoc_testing '$f' "
 R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds temp_pcr_grm.rds F508_count gaussian --out_prefix "$f" --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples_twin_and_Eur_filter.rds --chromosome f < assoc_test.R & sleep 30 done
 
 
+
+
+# Yikes! The flag.metric.RData file may be in a divverent order than my variant.ids
+gds <- seqOpen("/home/hkings/DATA/CFF_sid_onlyGT.gds")
+
+load("flag.metric.RData")
+str(flag.metric.df)
+
+match("2", flag.metric.df$chr)
+#[1] 9936670
+
+flag.metric.df[9936670, c("variant.id", "chr", "pos")]
+#        variant.id chr   pos
+#9936670    9936670   2 10188
+
+#Now look at 1 variant before that:
+flag.metric.df[9936669, c("variant.id", "chr", "pos")]
+#        variant.id chr       pos
+#9936669    9936669   1 248946405
+#This is a different order than for my data. Not good!
+#I will need to re-order my varaint list to match based on chr and position
+
+
+position <- seqGetData(gds, "position")
+chromosome <- seqGetData(gds, "chromosome")
+variant <- seqGetData(gds, "variant.id")
+gds.ids <- data.frame(position, chromosome, variant, stringsAsFactors=FALSE)
+
+head(gds.ids)
+
+varaint.ids <- integer()
+
+for(i in 1:nrow(flag.metric.df)){
+    variant.ids[i] <- gds.ids[gds.ids$chromosome == flag.metric.df$chr[i] & gds.ids$variant == flag.metric.df$variant.id[i], "variant"]
+}
+
