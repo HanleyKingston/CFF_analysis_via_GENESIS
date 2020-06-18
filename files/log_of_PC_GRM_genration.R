@@ -101,7 +101,7 @@ mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-3),
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id, div.thresh = -2^(-4.5))
 
-saveRDS(mypcair, paste0("6,15", "pcair_1it.rds"))
+saveRDS(mypcair, paste0("6,15_1it", "pcair.rds"))
 
 
 
@@ -117,18 +117,18 @@ iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(12)],
                     training.set = mypcair$unrels, sample.include = sample_id)
 
-saveRDS(mypcrel, paste0("6,15", "pcr_obj_1it.rds"))
+saveRDS(mypcrel, paste0("6,15_1it", "pcr_obj.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 1)
-saveRDS(pcr_mat, paste0(argv$out_prefix, "pcr_mat.rds"))
+saveRDS(pcr_mat, paste0("6,15_1it", "pcr_mat.rds"))
 
 
 
 
-# 1st ititeration PC-Relate
+# Plot 1st ititeration PC-Relate
 library(ggplot2)
 library(SNPRelate)
 
-rel <- readRDS("6,15pcr_obj_1it.rds")
+rel <- readRDS("6,15_1itpcr_obj_1it.rds")
 
 kinship.df <- rel$kinBtwn
 
@@ -150,14 +150,49 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
 sample_id <- readRDS("keep_samples.rds")
 kingMat <- readRDS("6,15king_grm.rds")
-kingMat <- readRDS("6,15pcr_obj_1it.rds")
+pcrelate_matrix <- readRDS("6,15_1itpcr_mat.rds")
 
 
-mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-3),
+mypcair <- pcair(gds, kinobj = pcrMat, kin.thresh = 2^(-4.5),
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id, div.thresh = -2^(-4.5))
 
-saveRDS(mypcair, paste0("6,15", "pcair_1it.rds"))
+saveRDS(mypcair, paste0("6,15", "pcair.rds"))
 
 
+
+
+# 2nd ititeration PC-Relate
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+sample_id <- readRDS("keep_samples.rds")
+mypcair <- readRDS("6,15_1itpcair.rds")
+
+seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+seqData <- SeqVarData(gds)
+iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
+mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(12)],
+                    training.set = mypcair$unrels, sample.include = sample_id)
+
+saveRDS(mypcrel, paste0("6,15", "pcr_obj.rds"))
+pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 2)
+saveRDS(pcr_mat, paste0("6,15", "pcr_mat.rds"))
+
+
+
+# Plot 2nd ititeration PC-Relate
+library(ggplot2)
+library(SNPRelate)
+
+rel <- readRDS("6,15pcr_obj.rds")
+
+kinship.df <- rel$kinBtwn
+
+png(paste0("6,15", "kinship.png"))
+ggplot(kinship.df, aes_string("k0", "kin")) +
+    geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
+    geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
+    ylab("kinship estimate") +
+    ggtitle("kinship")
+dev.off()
 
