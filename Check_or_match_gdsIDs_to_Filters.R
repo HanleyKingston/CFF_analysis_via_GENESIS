@@ -54,6 +54,3 @@ if(res[res$variant_id_gds == rand, "pos"] == seqGetData(gds, "position")[rand]){
 saveRDS(res, "flag.metric_with_gds_ids.rds")
 
 
-# add spot checks on chromosome, position, alleles between gds file and flag metrics file
-# Save "res" file somewhere.
-### end
