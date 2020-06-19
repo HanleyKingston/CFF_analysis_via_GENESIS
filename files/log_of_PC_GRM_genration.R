@@ -226,22 +226,32 @@ str(iterator)
 #  ..@ variantFilter:List of 18
 mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(3)],
                     training.set = mypcair$unrels, sample.include = sample_id)
+#4971 samples to be included in the analysis...
+#Betas for 3 PC(s) will be calculated using 3994 samples in training.set...
+#Running PC-Relate analysis for 4971 samples using 171679 SNPs in 18 blocks..
+#...
 
-saveRDS(mypcrel, paste0("6,15_1it", "pcr_obj.rds"))
+
+saveRDS(mypcrel, paste0("6,18_1it", "pcr_obj.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 1)
-saveRDS(pcr_mat, paste0("6,15_1it", "pcr_mat.rds"))
+#Using 4971 samples provided
+#Identifying clusters of relatives...
+#    4971 relatives in 1 clusters; largest cluster = 4971
+#Creating block matrices for clusters...
+#0 samples with no relatives included
+saveRDS(pcr_mat, paste0("6,18_1it", "pcr_mat.rds"))
 
 
 
-# Plot 1st ititeration PC-Relate
+# Plot 1st ititeration PC-Relate (restart R)
 library(ggplot2)
 library(SNPRelate)
 
-rel <- readRDS("6,15_1itpcr_obj_1it.rds")
+rel <- readRDS("6,18_1itpcr_obj.rds")
 
 kinship.df <- rel$kinBtwn
 
-png(paste0("6,15", "1it_kinship.png"))
+png(paste0("6,18", "1it_kinship.png"))
 ggplot(kinship.df, aes_string("k0", "kin")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
@@ -251,41 +261,73 @@ dev.off()
 
 
 
-# 2nd itertion PC-Air
+# 2nd itertion PC-Air (restart R)
 library(SeqArray)
 library(GENESIS)
 
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
 sample_id <- readRDS("keep_samples.rds")
-kingMat <- readRDS("6,15king_grm.rds")
-pcrelate_matrix <- readRDS("6,15_1itpcr_mat.rds")
+kingMat <- readRDS("6,18king_grm.rds")
+pcrelate_matrix <- readRDS("6,18_1itpcr_mat.rds")
+
+pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
+str(pc_part1)
 
 
-mypcair <- pcair(gds, kinobj = pcrMat, kin.thresh = 2^(-4.5),
+mypcair <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-4.5),
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id, div.thresh = -2^(-4.5))
 
-saveRDS(mypcair, paste0("6,15", "pcair.rds"))
+saveRDS(mypcair, paste0("6,18", "pcair.rds"))
+
+
+
+# plot 1st iteration PCs with script
+Rscript pca_plots.R 6,18pcair.rds --out_prefix 6,18 --phenotype_file annot.rds --group race_or_ethnicity
+
+#Plot correaltion by PCs
+qsub -q new.q calculate_snp_pc_corr.sh
+qsub -q new.q plot_snp_pc_corr.sh #Not working yet... need to install Topmed Pipeline or SSH into Adrienne's folder
 
 
 
 
 # 2nd ititeration PC-Relate
+library(SeqArray)
+library(GENESIS)
+library(SeqVarTools)
+
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
 sample_id <- readRDS("keep_samples.rds")
-mypcair <- readRDS("6,15_1itpcair.rds")
+mypcair <- readRDS("6,18_1itpcair.rds")
 
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
+## of selected samples: 4,971
+## of selected variants: 171,679
 seqData <- SeqVarData(gds)
 iterator <- SeqVarBlockIterator(seqData, verbose=FALSE)
-mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(12)],
-                    training.set = mypcair$unrels, sample.include = sample_id)
+#Formal class 'SeqVarBlockIterator' [package ""] with 6 slots
+#  ..@ variantBlock : int 10000
+#  ..@ variantFilter:List of 18
 
-saveRDS(mypcrel, paste0("6,15", "pcr_obj.rds"))
-pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 2)
-saveRDS(pcr_mat, paste0("6,15", "pcr_mat.rds"))
+mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(3)],
+                    training.set = mypcair$unrels, sample.include = sample_id)
+#4971 samples to be included in the analysis...
+#Betas for 3 PC(s) will be calculated using 3994 samples in training.set...
+#Running PC-Relate analysis for 4971 samples using 171679 SNPs in 18 blocks...
+#...
+
+saveRDS(mypcrel, paste0("6,18", "pcr_obj.rds"))
+pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^(-4.5), scaleKin = 2)
+#Using 4971 samples provided
+#Identifying clusters of relatives...
+#    1892 relatives in 893 clusters; largest cluster = 26
+#Creating block matrices for clusters...
+#3079 samples with no relatives included
+#Putting all samples together into one block diagonal matrix
+saveRDS(pcr_mat, paste0("6,18", "pcr_mat.rds"))
 
 
 
@@ -293,11 +335,11 @@ saveRDS(pcr_mat, paste0("6,15", "pcr_mat.rds"))
 library(ggplot2)
 library(SNPRelate)
 
-rel <- readRDS("6,15pcr_obj.rds")
+rel <- readRDS("6,18pcr_obj.rds")
 
 kinship.df <- rel$kinBtwn
 
-png(paste0("6,15", "kinship.png"))
+png(paste0("6,18", "kinship.png"))
 ggplot(kinship.df, aes_string("k0", "kin")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
