@@ -121,12 +121,21 @@ Plots a scree plot (percent variance explained), cord plot, and pairwise PC comp
 Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
 assoc_test.R
 
-## assoc_test.R
-for f in {1..22}; do echo "Assoc_testing '$f' "
-R -q --vanilla --args F508_count gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds --chromosome "$f"
-< assoc_test.R & sleep 30 done
-### Rscript assoc_test.R CFF_sid_onlyGT.gds annot.rds CFF_LDsqrt0.1pcr_grm.rds F508_count gaussian --out_file CFF_LDsqrt0.1_assoc.rds --covars "PC1 PC2 PC3" --variant_id keep_var_stringent.rds --sample_id keep_samples.rds
-  
+## assoc_test.sh
+### sh assoc_test.sh
+Runs assoc_test.R with the following arguments:
+CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$f" --covars "PC1 PC2 PC3" --variant_id var_filter_SNVs_MAF0.05.rds --sample_id keep_samples.rds --chromosome "$f" < assoc_test2.R &
+1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
+2. req: phenotype file (as an annotated dataframe R object)
+3. req: outcome
+4. req: faily (either binomial, gaussian (continuous), or poisson (discrete numeric))
+5. opt: out_prefix (to parallelize, this should be the chrosomome name)
+6. opt: covariates (as a string, each covariate should be seperated by a space)
+7. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - use pruned_snps.rds from LD pruning step - saved as an R object
+5. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
+7. opt: chromosome to fitler by
 
+### recombine association test files:
+cat chr{1..22}assoc.rds > assoc.rds
 
-
+## assoc_plots.R
