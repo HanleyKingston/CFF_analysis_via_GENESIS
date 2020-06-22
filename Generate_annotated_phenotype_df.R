@@ -5,9 +5,9 @@ phenotype <- readRDS("phenotype.rds")
 phenotype$sample.id <- as.character(phenotype$sid)
 
 ##Read in PCA covariates
-pca <- readRDS("CFF_LDsqrt0.1pcair.rds")
-pcs.df <- as.data.frame(pca$vectors[,1:6])
-colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
+pca <- readRDS("6-18pcair.rds")
+pcs.df <- as.data.frame(pca$vectors[,1:8])
+colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8")
 
 keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
@@ -52,12 +52,21 @@ metadata <- data.frame(labelDescription = c(
   "recruitment site - may have errors",
   "count of F508 deletion",
   "self-reported race or ethnicity - note, hispanic whites are reported as hispanic and white Native Americans as Native American",
+  "does participant self-report as white - not: need to check if this is actually self-report",
+  "does participant self-report as black",
+  "does participant self-report as Native American",
+  "does participant self-report as Asian",
+  "does participant self-report as Pacific Islander",
+  "does participant self-report as a race not included above",
+  "does participant self-report as Hispanic",
   "first principal component",
   "second principle component",
   "third principle component",
   "fourth principle component",
   "fifth principle component",
-  "sixth principle component"
+  "sixth principle component",
+  "seventh principle component",
+  "eighth principle component"
 ))
 
 
