@@ -4,7 +4,7 @@ R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds 6-18pcr_mat.rds F508_count ga
 sleep 30
 done
 
-#assoc_test.sh
+#Run with: assoc_test.sh
 
 
 #Alt. method:
@@ -13,8 +13,9 @@ done
 ##$ -cwd
 ##$ -j y
 ##$ -t 1-22
-##Run with qsub -q new.q calculate_snp_pc_corr.sh
 
 #module load conda
 
 #R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds 6-18pcr_mat.rds F508_count gaussian --out_prefix 6-18${SGE_TASK_ID} --covars "PC1 PC2 PC3" --variant_id var_filter_SNVs_MAF0.05.rds --sample_id keep_samples.rds --chromosome $SGE_TASK_ID < assoc_test.R &
+
+##Run with qsub -q new.q calculate_snp_pc_corr.sh
