@@ -131,7 +131,7 @@ rel <- readRDS("6,18king_obj.rds")
 
 kinship.df <- snpgdsIBDSelection(rel)
 
-png(paste0("6,18", "_kinship.png"))
+png(paste0("6,18_king", "_kinship.png"))
 ggplot(kinship.df, aes_string("IBS0", "kinship")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
