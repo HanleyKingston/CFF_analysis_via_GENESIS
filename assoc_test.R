@@ -9,8 +9,8 @@ argp <- arg_parser("Run association test") %>%
   add_argument("outcome", help = "Outcome variable name") %>%
   add_argument("family", help = "Distribution family",
                default = "gaussian") %>%
-  add_argument("--out_file", help="output file name",
-               default = "assoc_test") %>%
+  add_argument("--out_prefix", help="output file name",
+               default = "") %>%
   add_argument("--covars",
                help = "Covariate variable names (space-separated)") %>%
   add_argument("--variant_id", help = "File with vector of variant IDs") %>%
@@ -72,5 +72,5 @@ message(nullmod$fixef)
 
 
 assoc <- assocTestSingle(iterator, nullmod)
-saveRDS(assoc, file = out_file)
+saveRDS(assoc, paste0("chr", argv$out_prefix, "assoc.rds"))
 seqClose(gds)
