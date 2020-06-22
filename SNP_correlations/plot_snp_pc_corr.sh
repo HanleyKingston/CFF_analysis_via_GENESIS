@@ -5,6 +5,6 @@
 
 module load conda
 
-R -q --no-save --args --infile-prefix /home/hkings/DATA/PC_correlations6,15/snp_corr --outfile /home/hkings/DATA/PC_correlations6,15/snp_corr.png < plot_snp_pc_corr.R
+R -q --no-save --args --infile-prefix /home/hkings/DATA/PC_correlations6,18/snp_corr --outfile /home/hkings/DATA/PC_correlations6,18/snp_corr.png < plot_snp_pc_corr.R
 
 #Run with: qsub -q new.q plot_snp_pc_corr.sh
