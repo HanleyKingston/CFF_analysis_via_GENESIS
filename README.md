@@ -134,8 +134,8 @@ CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$
 5. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
 7. opt: chromosome to fitler by
 
-## recombine association test files:
-### cat chr{1..22}assoc.rds > assoc.rds
+## combine_seperate_chr_files.R
+recombines association test files into one file (assoc.rds) - chromosomes will be in numerical order
 
 ## assoc_plots.R
-###  R -q --vanilla --args assoc.rds CFF_F508 < assoc_plots.R &
+###  R -q --vanilla --args assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
