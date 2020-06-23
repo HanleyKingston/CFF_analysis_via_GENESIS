@@ -136,6 +136,12 @@ CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$
 
 ## combine_seperate_chr_files.R
 recombines association test files into one file (assoc.rds) - chromosomes will be in numerical order
+Takes as an argument:
+1. prefix for input and output (input files should be in the form: "prefix"chr1assoc.rds)
+### Rscript combine_seperate_chr_files.R F508del
+### Rscript combine_seperate_chr_files.R sex
 
 ## assoc_plots.R
 ###  R -q --vanilla --args assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
+###  R -q --vanilla --args assoc.rds --out_prefix sex < assoc_plots.R &
+
