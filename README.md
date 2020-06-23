@@ -89,7 +89,7 @@ Arguments (needs updating):
 9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
 ### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
-include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
+*include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## add_phenotype_identifiers_to_kinship_obj.R 
 -Optional- this takes over a week to run!
@@ -99,8 +99,8 @@ Arguments:
 2. a character vector of samples to keep (as a .rds object)
 3. kinship object (not matrix) from King (as a .rds object)
 4. The type of relatedness object: either "King" or "PC_Relate"
-*This takes hours to run, so include &
 ### R -q --vanilla --args phenotype.rds keep_samples.rds higherLDking_obj.rds King < add_phenotype_identifiers_to_kinship_obj.R & > record.txt
+*This takes hours to run, so include &
 
 
 ## PC_and_GRM_plots.R
@@ -115,7 +115,6 @@ Add PCs to phenotype data and produce an annotated dataframe to be used in pca_p
 ## pca_plots.R
 Plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs. and phenotype file as an annotated data frame. Takes PC-AiR and PC-Relate .rds objects and phenotype file as an annotated data frame
 ### Rscript pca_plots.R CFF_LDsqrt0.1pcair.rds --out_prefix CFF_LDsqrt0.1 --phenotype_file annot.rds --group race_or_ethnicity
-
 
 ## Exclude_identical_twin_from_samples.R
 Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
@@ -135,7 +134,8 @@ CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$
 5. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
 7. opt: chromosome to fitler by
 
-### recombine association test files:
-cat chr{1..22}assoc.rds > assoc.rds
+## recombine association test files:
+### cat chr{1..22}assoc.rds > assoc.rds
 
 ## assoc_plots.R
+###  R -q --vanilla --args assoc.rds CFF_F508 < assoc_plots.R &
