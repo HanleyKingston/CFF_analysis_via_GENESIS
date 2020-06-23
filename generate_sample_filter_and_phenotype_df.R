@@ -50,6 +50,9 @@ table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"]
 colnames(phenotype_pruned)
 
 #Create column of deltaF508 count
+table(phenotype_pruned$cftr_var_1) #F508del is by far the most common and does not seem to appear under any other name
+table(phenotype_pruned$cftr_var_2)
+
 phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
 
@@ -61,9 +64,11 @@ for(line in 1:nrow(phenotype_pruned)){
       if(any(is.na(phenotype_pruned[line,c(6:12)]))){
         race_or_ethnicity <- NA
         }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$race_natAm == 1){
-          race_or_ethnicity <- "natAm" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
+          race_or_ethnicity <- "natAm" #Note: for purposes of plotting, because the dataset is majority white, people who are white and native american will be recorded as native american
         }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$hispanic == 1){
-          race_or_ethnicity <- "hispanic" #Note: for purposes of plotting, people who are white and native american will be recorded as native american
+          race_or_ethnicity <- "white_hispanic"
+        }else if(phenotype_pruned[line,]$race_black == 1 & phenotype_pruned[line,]$hispanic == 1){
+          race_or_ethnicity <- "black_hispanic"
         }else{
           race_or_ethnicity <- "admixed_or_other"
           }                    
@@ -86,10 +91,11 @@ for(line in 1:nrow(phenotype_pruned)){
   }
               
 table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$race_or_ethnicity)
-#admixed_or_other            asian            black         hispanic
-#              65               13               95              147
-#           natAm            white
-#              25             4750
+#admixed_or_other            asian            black            natAm
+#              64               13               93               25
+#           white   white_hispanic
+#            4603              139
+
         
 #Plot count of deltaF508 per study site:
 counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
@@ -99,8 +105,40 @@ barplot(counts, main="Count of DeltaF508 per study Site",
   xlab="Study", legend = rownames(counts), beside = TRUE)
 dev.off()
 
+  
+colnames(phenotype_pruned)
+
+    
+#Create birthday 5-yr age cohorts:
+range(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birthdate_year"], na.rm = TRUE)
+#[1] 1943 2011
+(2011-1943)/5
+#[1] 13.6
+phenotype_pruned$age_cohort <- cut(phenotype_pruned$birthdate_year, 14)
+
+    
+#Count NA's for covariates in study (should these be included in analyses?)    
+table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "sex_registry"], useNA = "ifany")
+#   F    M <NA>
+#2322 2634   10
+    
+table(phenotype_pruned$age_cohort, useNA = "ifany")
+
+#          4          14          51          94         147         179
+#(1972,1977] (1977,1982] (1982,1987] (1987,1992] (1992,1996] (1996,2001]
+#        231         303         609         682         919        1084
+#(2001,2006] (2006,2011]        <NA>
+#        701          83          33
+
+sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birth_cohort"]))
+#[1] 23
+    
+sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"]))
+#[1] 0
+
+
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
     
 saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
 
