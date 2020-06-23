@@ -13,17 +13,10 @@ print(argv)
 library(dplyr)
 library(ggplot2)
 library(RColorBrewer)
-# Get pipeline directory
-initial.options <- commandArgs(trailingOnly = FALSE)
-file.arg.name <- "--file="
-script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
-script.basename <- dirname(script.name)
-# Source utils.R from pipeline directory
-file.path(script.basename, "utils.R") %>% source
+
 
 assoc <- readRDS(argv$assoc_file)
 
-lambda <- calculateLambda((assoc$Score.Stat)^2, df=1)
 
 ## qq plot
 n <- nrow(assoc)
