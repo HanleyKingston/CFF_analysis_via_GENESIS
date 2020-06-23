@@ -5,7 +5,7 @@ phenotype <- readRDS("phenotype.rds")
 phenotype$sample.id <- as.character(phenotype$sid)
 
 ##Read in PCA covariates
-pca <- readRDS("6-18pcair.rds")
+pca <- readRDS("6_18pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:8])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8")
 
@@ -42,6 +42,7 @@ metadata <- data.frame(labelDescription = c(
   "participant ID",
   "subject ID - matches sample.id",
   "chromosomal sex",
+  "sex in registry (M or F)",
   "birthdate year",
   "fist CFTR variant - for deltaF508 carriers, F508del is listed first",
   "second CFTR variant",
@@ -59,6 +60,7 @@ metadata <- data.frame(labelDescription = c(
   "does participant self-report as Pacific Islander",
   "does participant self-report as a race not included above",
   "does participant self-report as Hispanic",
+  "5-year age groupings by birth year",
   "first principal component",
   "second principle component",
   "third principle component",
