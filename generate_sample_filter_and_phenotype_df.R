@@ -47,7 +47,7 @@ keep_samples <- scan("keep_samples.txt", "character", sep = "\n")
 #Read 4966 items
 sum(keep_samples %in% gds.id)
 #[1] 4966
-saveRDS(keep_samples, "keep_sample.rds")
+saveRDS(keep_samples, "keep_samples.rds")
 
 phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$sid %in% keep_samples, "include", "exclude")
 
