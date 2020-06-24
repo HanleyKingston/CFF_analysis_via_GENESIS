@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 
-chr <- readRDS(paste0(args[1], "chr1assoc.rds")_
+chr <- readRDS(paste0(args[1], "chr1assoc.rds"))
 
 for(i in 2:22){
 chr_temp <- readRDS(paste0(args[1], "chr", i, "assoc.rds"))
