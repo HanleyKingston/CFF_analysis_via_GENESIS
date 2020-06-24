@@ -1,6 +1,5 @@
 #This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
 #both filters follows suggested filters from: https://gatk.broadinstitute.org/hc/en-us/articles/360035531112 (see:[C] Hard-filter SNPs on multiple expressions using VariantFiltration)
-#My gds file already excldues the X chromosome
 #
 #moderate filter also excludes:
 # MAF < 0.01
@@ -32,27 +31,27 @@ table(flag.metric.df$flag.info_QD.2, useNA = "ifany")
 #114175552   5964292
 QD <- flag.metric.df$flag.info_QD.2 == FALSE
 
-table(flag.metric.df$flag.qual.30)
+table(flag.metric.df$flag.qual.30, useNA = "ifany")
 #    FALSE
 #120139844
 qual <- flag.metric.df$flag.qual.30 == FALSE
 
-table(flag.metric.df$flag.info_SOR.3)
+table(flag.metric.df$flag.info_SOR.3, useNA = "ifany")
 #    FALSE      TRUE
 #116592646   3547198
 SOR <- flag.metric.df$flag.info_SOR.3 == FALSE
 
-table(flag.metric.df$flag.info_FS.60)
+table(flag.metric.df$flag.info_FS.60, useNA = "ifany")
 #    FALSE      TRUE
 #118469110   1670734
 FS <- flag.metric.df$flag.info_FS.60 == FALSE
 
-table(flag.metric.df$flag.info_MQ.40)
+table(flag.metric.df$flag.info_MQ.40, useNA = "ifany")
 #    FALSE      TRUE
 #110211257   9928587
 MQ <- flag.metric.df$flag.info_MQ.40 == FALSE
 
-table(flag.metric.df$flag.info_ReadPosRankSum.8)
+table(flag.metric.df$flag.info_ReadPosRankSum.8, useNA = "ifany")
 #    FALSE      TRUE
 #120137053      2791
 RankSum <- flag.metric.df$flag.info_ReadPosRankSum.8 == FALSE
@@ -72,7 +71,7 @@ table(flag.metric.df$index.snv_biAllelic, useNA = "ifany")
 # 19202784 100937060
 biAllelic <- flag.metric.df$index.snv_biAllelic == TRUE
 
-table(flag.metric.df$flag.missByVar.0.0, useNA = "ifany"5)
+table(flag.metric.df$flag.missByVar.0.0, useNA = "ifany")
 #    FALSE      TRUE
 #114437649   5702195
 missByVar <- flag.metric.df$flag.missByVar.0.05 == FALSE
