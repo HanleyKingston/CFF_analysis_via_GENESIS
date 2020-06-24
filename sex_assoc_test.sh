@@ -7,4 +7,4 @@ R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds sex_registry 
 sleep 30
 done
 
-#Run with: sh sexassoc_test.sh
+#Run with: sh sex_assoc_test.sh
