@@ -126,7 +126,7 @@ length(var_filter_SNVs)
 #Note: not filtering by HW (should have already been done and I don't have the family info to control for relatedness yet)
 
 
-saveRDS(var_filter_SNVs_and_indels , file = "var_filter_SNVs_and_indels .rds")
+saveRDS(var_filter_SNVs_and_indels , file = "var_filter_SNVs_and_indels.rds")
 saveRDS(var_filter_SNVs, file = "var_filter_SNVs.rds")
 
 
