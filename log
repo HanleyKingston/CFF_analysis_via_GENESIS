@@ -1574,3 +1574,14 @@ gds.ids.temp[c(2,115537942),]
 ## I regenerated the gds from CFF_5134_onlyGT.gds without filtering out the X chromosome
 #Note: this file is in the same (string) order as my merged file.
 
+
+# 6/22
+## How many varaints are above line of qqplot?
+sum(assoc$Score.pval < 10^(-10))
+#As a percent:
+sum(assoc$Score.pval < 10^(-10))/nrow(assoc)
+
+
+
+# Get TopMedPipeline installed
+/home/hkings/R/x86_64-conda_cos6-linux-gnu-library/3.6
