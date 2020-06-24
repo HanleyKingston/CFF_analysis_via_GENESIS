@@ -25,6 +25,7 @@ str(flag.metric.df)
 
 
 #filter criteria:
+#Note: Suggested filter, but not available: MQRankSum > 12.5
 
 table(flag.metric.df$flag.info_QD.2, useNA = "ifany")
 #    FALSE      TRUE
@@ -71,7 +72,7 @@ table(flag.metric.df$index.snv_biAllelic, useNA = "ifany")
 # 19202784 100937060
 biAllelic <- flag.metric.df$index.snv_biAllelic == TRUE
 
-table(flag.metric.df$flag.missByVar.0.0, useNA = "ifany")
+table(flag.metric.df$flag.missByVar.0.5, useNA = "ifany")
 #    FALSE      TRUE
 #114437649   5702195
 missByVar <- flag.metric.df$flag.missByVar.0.05 == FALSE
@@ -112,7 +113,7 @@ length(unique(flag.metric.df$variant_id)) == length(flag.metric.df$variant_id) #
 ## Extract the correct varaint ID... IMPORTANT: must make sure gds varaint IDs and flag.metric IDs match by position and chromosome (see "Check_or_match_gdsIDs_to_Filters.R")
 
 ### Moderate
-var_filter_SNVs_and_indels <- flag.metric.df$variant_id[RankSum & MQ & FS & SOR & qual & QD & (snvPASS | indelPASS)] 
+var_filter_SNVs_and_indels <- flag.metric.df$variant_id[RankSum & MQ & FS & SOR & qual & QD & (snvPASS | indelPASS)] #Add in missingness
 length(var_filter_SNVs_and_indels)
 #[1] 100635332
 
