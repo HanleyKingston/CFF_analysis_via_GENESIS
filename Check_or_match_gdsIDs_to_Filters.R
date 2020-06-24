@@ -42,7 +42,7 @@ if(sum(res$variant.id != res$variant_id_gds) != 0)
    print("Original varaint ID's were not identical")
 
 
-print(paste("number of variants that were not shared between files:" sum(res$variant.id != res$variant_id_gds)))
+print(paste("number of variants that were not shared between files:", sum(res$variant.id != res$variant_id_gds)))
 #[1] 105601274
 
 #spot_check:
