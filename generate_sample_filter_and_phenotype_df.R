@@ -8,6 +8,16 @@ sample_key <- read.table("sample_names_key.txt", header = TRUE)
 sum(participants$pid %in% sample_key$pid)
 #[1] 5161
 
+sum(duplicated(participants$pid))
+#[1] 0
+
+sum(duplicated(sample_key$sid))
+#[1] 0
+sum(duplicated(sample_key$vcf_id))
+#[1] 0
+sum(duplicated(sample_key$pid))
+#[1] 38
+
 
 #This only works because participants file has no duplicates... each dulpicated pid from sample_key will appear twice, so can filter after the fact
 participants2 <- merge(participants, sample_key, by = "pid", all = TRUE)
