@@ -8,7 +8,7 @@ argp <- arg_parser("Run KING-robust") %>%
                default = "") %>%
   add_argument("--variant_id", help = "File with vector of variant IDs") %>%
   add_argument("--sample_id", help = "File with vector of sample IDs") %>%
-  add_argument("--num_core", help = "num.thread argument for snpgdsIBDKING (if NA, detect the number of cores automatically)")
+  add_argument("--num_core", help = "num.thread argument for snpgdsIBDKING (if NA, detect the number of cores automatically)") %>%
   add_argument("--autosome_only", help = "whether to use autosomes only or include X", default = TRUE)
 argv <- parse_args(argp)
 
