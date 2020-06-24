@@ -51,6 +51,7 @@ if(res[res$variant_id_gds == rand, "pos"] == seqGetData(gds, "position")[rand]){
            print("Matching WAS succesful")
 }
 
+#If original varaint ID's were not succesful, save the GDS ID's matched to the filter IDs as a new file AND run the "Generate_varaint_filter_when_gds_doesn't_match.R" script in alternative scripts
 saveRDS(res, "flag.metric_with_gds_ids.rds")
 
 
