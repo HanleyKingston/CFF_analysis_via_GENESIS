@@ -47,18 +47,13 @@ if (!is.na(argv$covars)) {
 }
 
 
-if (argv$chromosome == FALSE) {
-  chromosome <- NULL
-} else {
-  chromosome <- argv$chromosome
-}
 
 print(chromosome)
 print(class(chromosome))
 
 gds.id <- seqGetData(gds, "sample.id")
 seqData <- SeqVarData(gds, sampleData = pheno)
-seqSetFilterChrom(gds, chromosome)
+if (!ia.na(argv$chromosome) { seqSetFilterChrom(gds, chromosome) }
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id, action = "intersect")
 iterator <- SeqVarBlockIterator(seqData, verbose=TRUE)
 
