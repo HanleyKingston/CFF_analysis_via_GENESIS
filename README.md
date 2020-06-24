@@ -142,6 +142,6 @@ Takes as an argument:
 ### Rscript combine_seperate_chr_files.R sex
 
 ## assoc_plots.R
-###  R -q --vanilla --args assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
-###  R -q --vanilla --args assoc.rds --out_prefix sex < assoc_plots.R &
+###  R -q --vanilla --args F508del_assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
+###  R -q --vanilla --args sex_assoc.rds --out_prefix sex < assoc_plots.R &
 
