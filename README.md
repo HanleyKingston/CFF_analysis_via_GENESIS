@@ -37,6 +37,8 @@ site: based on VCF_ID (likely to have some errors due to duplicate samples)
 F508_count: based on CFTR genotype column
 race_or_ethnicity: extracted based on binary race and ethnicity measures (note: hispanic white people are labeled hispanic and Native American white people are labeled Native American. Anyone else with mutliple races or ethnicities is labeled admixed_or_other
 
+## Check_or_match_gdsIDs_to_Filters.R
+
 ## Generate_variant_filter.R
 This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
 both filters follows suggested filters from: https://gatk.broadinstitute.org/hc/en-us/articles/360035531112 (see:[C] Hard-filter SNPs on multiple expressions using VariantFiltration)
