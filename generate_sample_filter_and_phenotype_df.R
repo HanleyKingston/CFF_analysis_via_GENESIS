@@ -29,6 +29,7 @@ phenotype_pruned <- participants2[match(gds.id, participants2$sid),]
 nrow(phenotype_pruned)
 #[1] 5134
 identical(as.character(phenotype_pruned$sid), gds.id)
+#[1] TRUE
 
 #Create include in analysis filter:
 #Read in keep_samples by sid fitler (base on QC and duplicates...)
@@ -56,7 +57,7 @@ table(phenotype_pruned$cftr_var_2)
 phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
 
-#Create a column of self-reported race:
+#Create a column of self-reported race (need to verify if this is self-report):
 phenotype_pruned$race_or_ethnicity <- NULL
 
 for(line in 1:nrow(phenotype_pruned)){
@@ -112,8 +113,6 @@ colnames(phenotype_pruned)
 #Create birthday 5-yr age cohorts:
 range(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birthdate_year"], na.rm = TRUE)
 #[1] 1943 2011
-(2011-1943)/5
-#[1] 13.6
 phenotype_pruned$age_cohort <- cut(phenotype_pruned$birthdate_year, 14)
 
     
@@ -123,7 +122,6 @@ table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "sex_r
 #2322 2634   10
     
 table(phenotype_pruned$age_cohort, useNA = "ifany")
-
 #          4          14          51          94         147         179
 #(1972,1977] (1977,1982] (1982,1987] (1987,1992] (1992,1996] (1996,2001]
 #        231         303         609         682         919        1084
@@ -131,7 +129,7 @@ table(phenotype_pruned$age_cohort, useNA = "ifany")
 #        701          83          33
 
 sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birth_cohort"]))
-#[1] 23
+#[1] 0
     
 sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"]))
 #[1] 0
