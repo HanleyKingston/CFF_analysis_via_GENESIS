@@ -72,5 +72,5 @@ message(nullmod$fixef)
 
 
 assoc <- assocTestSingle(iterator, nullmod)
-saveRDS(assoc, paste0("chr", argv$out_prefix, "assoc.rds"))
+saveRDS(assoc, paste0(argv$out_prefix, "assoc.rds"))
 seqClose(gds)
