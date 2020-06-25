@@ -90,8 +90,10 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 kingMat <- readRDS("6_23king_grm.rds")
 pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
 str(pc_part)
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23king_grm.rds 6_23king_grm.rds --out_prefix 6_23_1it --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_23pc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23king_grm.rds 6_23king_grm.rds --out_prefix 6_23_1it --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 0.125 --div_thresh -0.0625 < pcair.R > 6_23pc_air.log &
 #0.044194 = 2^(-9/2)
+#0.0625 = 2^(-4)
+#0.125 = 2^(-3)
 
 ## pcrelate.R
 ### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23_1itpcair.rds --out_prefix 6_23 --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_23pcrelate.log &
