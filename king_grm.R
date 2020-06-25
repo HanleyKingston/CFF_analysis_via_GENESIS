@@ -24,7 +24,7 @@ if (!is.na(argv$variant_id)) {
   variant_id <- NULL
 }
 
-if (!is.na(argv$variant_id)) {
+if (!is.na(argv$sample.id)) {
   sample_id <- readRDS(argv$sample_id)
 } else {
   sample_id <- NULL
