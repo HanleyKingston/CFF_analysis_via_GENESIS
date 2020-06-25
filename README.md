@@ -38,6 +38,7 @@ F508_count: based on CFTR genotype column
 race_or_ethnicity: extracted based on binary race and ethnicity measures (note: hispanic white people are labeled hispanic and Native American white people are labeled Native American. Anyone else with mutliple races or ethnicities is labeled admixed_or_other
 
 ## Check_or_match_gdsIDs_to_Filters.R
+Check that varaint filter variant IDs match teh GDS variant IDs by chromosome and position
 
 ## Generate_variant_filter.R
 This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
@@ -58,7 +59,7 @@ stringent filter also excludes:
 Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
 ## exclude_regions_beforeLD_prune.R
-This will create a dataframe of all of chr7 to excldue in LD_pruning analysis - note: ld_pruning.R script is not yet set up to take this as an input
+This will create a dataframe of all of chr7 to exclude from pruned SNP list for PC and GRM generation
 
 ## ld_pruning.R
 generate a vector of SNPs pruned by LD to include in PC and GRM creation
@@ -71,9 +72,29 @@ Takes Arguments:
 5. opt: maf: minimum MAF for variants to include (default=0.05)
 6. opt: missing: maximum missing call rate for variants to include, (default=0.05)
 7. opt: threshold: threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned) (default=sqrt(0.1))
-8. opt: window_size (default = 1)
+8. opt: window_size (default = 1) (slide.max.bp = argv$window_size * 1e6)
 
-### Rscript ld_pruning.R CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id keep_var_stringent.rds --window_size 1
+### R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id var_filter_SNVs.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --build hg38 --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_23ld_pruning.log &
+
+## king_grm.R
+### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_23 --variant_id pruned_snps.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_23king_grm.log &
+
+## kinship plots.R
+### Rscript plot_kinship.R 6_23king_out.rds --is_king --out_prefix 6_23_king
+
+## pcair.R
+To determine a kin_thresh: do this
+library(GENESIS)
+library(SeqArray
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+kingMat <- readRDS("6_23king_grm.rds")
+pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
+str(pc_part)
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23king_grm.rds 6_23king_grm.rds --out_prefix 6_23_1it --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_23pc_air.log &
+#0.044194 = 2^(-9/2)
+
+## pcrelate.R
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23_1itpcair.rds --out_prefix 6_23 --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_23pcrelate.log &
 
 
 ## pc_grm_troubleshoot.R
