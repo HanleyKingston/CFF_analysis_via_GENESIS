@@ -20,16 +20,15 @@ for (chromosome in unique(flag.metric.df$chr)) {
     variant_id_gds = seqGetData(gds, "variant.id"),
     stringsAsFactors = FALSE
   )
-  head(variants_gds)
   # Subset flag metrics file to this chromosome.
   flag_metrics_chr <- flag.metric.df %>%
     filter(chr == chromosome)
-  # Make sure that that no variant chromosome and position
+  # Make sure that that no duplicate variants by chromosome and position
+  stopifnot(all(!duplicated(flag_metrics_chr$pos)))
   stopifnot(all(!duplicated(variants_gds$position)))
   # Check that they have the same number of records
   stopifnot(nrow(variants_gds) == nrow(flag_metrics_chr))
-  variant_map <- flag_metrics_chr %>%
-    left_join(variants_gds, by = c("chr" = "chromosome", "pos" = "position"))
+  variant_map <- merge(flag_metrics_chr, variants_gds, by.x = "pos", by.y = "position")
   # Make sure no extra rows were added.
   stopifnot(nrow(variant_map) == nrow(flag_metrics_chr))
   res_list[[chromosome]] <- variant_map
