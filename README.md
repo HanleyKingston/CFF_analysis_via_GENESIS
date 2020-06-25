@@ -83,7 +83,7 @@ Takes Arguments:
 ### Rscript plot_kinship.R 6_23king_out.rds --is_king --out_prefix 6_23_king
 
 ## pcair.R
-To determine a kin_thresh: do this
+#To determine a kin_thresh:
 library(GENESIS)
 library(SeqArray
 gds <- seqOpen("CFF_sid_onlyGT.gds")
@@ -94,6 +94,11 @@ str(pc_part)
 #0.044194 = 2^(-9/2)
 #0.0625 = 2^(-4)
 #0.125 = 2^(-3)
+
+#Fast way to determine how many PCs to include:
+pca <- readRDS("6_23_1itpcair.rds")
+plot(seq(12),100*pca$varprop[1:12])
+
 
 ## pcrelate.R
 ### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23_1itpcair.rds --out_prefix 6_23 --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_23pcrelate.log &
@@ -139,7 +144,8 @@ Add PCs to phenotype data and produce an annotated dataframe to be used in pca_p
 
 ## pca_plots.R
 Plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs. and phenotype file as an annotated data frame. Takes PC-AiR and PC-Relate .rds objects and phenotype file as an annotated data frame
-### Rscript pca_plots.R CFF_LDsqrt0.1pcair.rds --out_prefix CFF_LDsqrt0.1 --phenotype_file annot.rds --group race_or_ethnicity
+### Rscript pca_plots.R 6_23_1itpcair.rds --out_prefix pcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+
 
 ## Exclude_identical_twin_from_samples.R
 Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
