@@ -1585,3 +1585,21 @@ sum(assoc$Score.pval < 10^(-10))/nrow(assoc)
 
 # Get TopMedPipeline installed
 /home/hkings/R/x86_64-conda_cos6-linux-gnu-library/3.6
+
+
+
+
+# 6/22
+## Re-ran everything with a patch to match the varaint.ids from the gds to those from the flag.metrics file
+King and kinship plots now look ok, although 80% of people have King kinship estimates below 0
+Association testing for F508 count has lambda around .5, but for sex as the outcome has lambda around 1
+
+#6/23 
+## Re-ran everything with a new GDS with chromosomes in the right order. I checked that the varaint.ids from the gds match those from the flag.metrics file
+Original problem with incorrect Kin and kinship plots (and way too many related individuals) reappeared
+
+
+
+#6/25
+
+
