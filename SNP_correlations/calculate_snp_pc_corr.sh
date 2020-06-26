@@ -6,7 +6,7 @@
 
 module load conda
 
-R -q --no-save --args --pca-file /pc_correlations6,15/6,15pcair.rds --gds-file CFF_sid_onlyGT.gds --block-size 32768 --chromosome $SGE_TASK_ID --outfile /pc_correlations6,15/snp_corr_chr${SGE_TASK_ID}.rds < calculate_snp_pc_corr.R
+R -q --no-save --args --pca-file /home/hkings/DATA/pc_correlations6_15/6_15pcair.rds --gds-file CFF_sid_onlyGT.gds --block-size 32768 --chromosome $SGE_TASK_ID --outfile /home/hkings/DATA/pc_correlations6_15/snp_corr_chr${SGE_TASK_ID}.rds < calculate_snp_pc_corr.R
 
 
 
