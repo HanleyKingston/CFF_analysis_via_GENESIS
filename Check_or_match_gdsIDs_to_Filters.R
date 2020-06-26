@@ -1,3 +1,5 @@
+#WARNING:Soemthing withthe final check of same or different variant IDs is not working, needs revision
+
 library(SeqVarTools)
 library(dplyr)
 
