@@ -77,31 +77,35 @@ Takes Arguments:
 ### R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id var_filter_SNVs.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --build hg38 --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_23ld_pruning.log &
 
 ## king_grm.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_23 --variant_id pruned_snps.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_23king_grm.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_25 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_25king_grm.log &
 
 ## kinship plots.R
-### Rscript plot_kinship.R 6_23king_out.rds --is_king --out_prefix 6_23_king
+### Rscript plot_kinship.R 6_25king_out.rds --is_king --out_prefix 6_25_king
 
 ## pcair.R
 #To determine a kin_thresh:
 library(GENESIS)
 library(SeqArray
 gds <- seqOpen("CFF_sid_onlyGT.gds")
-kingMat <- readRDS("6_23king_grm.rds")
+kingMat <- readRDS("6_25king_grm.rds")
 pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
 str(pc_part)
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23king_grm.rds 6_23king_grm.rds --out_prefix 6_23_1it --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh 0.125 --div_thresh -0.0625 < pcair.R > 6_23pc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25king_grm.rds 6_25king_grm.rds --out_prefix 6_25_1it --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_23_1itpc_air.log &
 #0.044194 = 2^(-9/2)
 #0.0625 = 2^(-4)
 #0.125 = 2^(-3)
 
 #Fast way to determine how many PCs to include:
-pca <- readRDS("6_23_1itpcair.rds")
+pca <- readRDS("6_25_1itpcair.rds")
 plot(seq(12),100*pca$varprop[1:12])
 
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_23_1itpcair.rds --out_prefix 6_23 --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_23pcrelate.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25_1itpcair.rds --out_prefix 6_25_1it --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_25_1itpcrelate.log &
+
+
+## kinship plots.R
+### Rscript plot_kinship.R 6_23_1itpcrelate.rds --out_prefix 6_23_1it_PR-rel
 
 
 ## pc_grm_troubleshoot.R
