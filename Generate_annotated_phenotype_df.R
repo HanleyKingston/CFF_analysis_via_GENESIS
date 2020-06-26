@@ -5,7 +5,7 @@ phenotype <- readRDS("phenotype.rds")
 phenotype$sample.id <- as.character(phenotype$sid)
 
 ##Read in PCA covariates
-pca <- readRDS("6_18pcair.rds")
+pca <- readRDS("6_25_1itpcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:8])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8")
 
@@ -13,7 +13,7 @@ keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
 #check:
 identical(keep_samples, pcs.df$sample.id)
-#[1] TRUE
+
 
 gds.id <- readRDS("gds_id.rds")
 #Alternatively, can extract from gds file with:
@@ -28,7 +28,7 @@ identical(gds.id[gds.id %in% keep_samples], pcs.df$sample.id)
 #Add PCA covariates to phenotype data by subject nomber
 merged_phen <- merge(phenotype, pcs.df, by = "sample.id", all.x=TRUE)
 sum(is.na(merged_phen$PC1))
-#[1] 163
+#[1] 168
 
 #order annotated df to match order of gds ids
 merged_phen <- merged_phen[match(gds.id, merged_phen$sample.id),]
