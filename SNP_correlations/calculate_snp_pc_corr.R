@@ -32,7 +32,7 @@ dim(pcs_unrel)
 # Map sample ids to ids in GDS Files.
 key <- readr::read_tsv("/labdata12/CF_WGS2/cff_gwas/tables/key_cffwgs.tsv")
 j <- match(rownames(pcs_unrel), key$sid)
-rownames(pcs_unrel) <- key$vcf_id[j]
+rownames(pcs_unrel) <- key$sid[j]
 
 
 gds <- seqOpen(gds_file)
@@ -40,7 +40,6 @@ gds <- seqOpen(gds_file)
 seqSetFilter(gds, sample.id = rownames(pcs_unrel))
 
 # Additional variant filtering?
-# Chr 1 for now
 idx_chr <- seqGetData(gds, "chromosome") == chromosome
 seqSetFilter(gds, variant.sel = idx_chr)
 
