@@ -101,11 +101,11 @@ plot(seq(12),100*pca$varprop[1:12])
 
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25_1itpcair.rds --out_prefix 6_25_1it --n_pcs 4 --variant_id pruned_snps.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_25_1itpcrelate.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25_1itpcair.rds --out_prefix 6_25_1it --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_25_1itpcrelate.log &
 
 
 ## kinship plots.R
-### Rscript plot_kinship.R 6_23_1itpcrelate.rds --out_prefix 6_23_1it_PR-rel
+### Rscript plot_kinship.R 6_25_1itpcrelate.rds --out_prefix 6_25_1it_PR-rel
 
 
 ## pc_grm_troubleshoot.R
