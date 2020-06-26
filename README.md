@@ -37,26 +37,9 @@ site: based on VCF_ID (likely to have some errors due to duplicate samples)
 F508_count: based on CFTR genotype column
 race_or_ethnicity: extracted based on binary race and ethnicity measures (note: hispanic white people are labeled hispanic and Native American white people are labeled Native American. Anyone else with mutliple races or ethnicities is labeled admixed_or_other
 
-## Check_or_match_gdsIDs_to_Filters.R
+## Generate_varaint_filters_from_SNPs_filtered.R
 Check that varaint filter variant IDs match teh GDS variant IDs by chromosome and position
-
-## Generate_variant_filter.R
-This generates a list of variant IDs based on filter criteria... I generated a more and less stringent filter
-both filters follows suggested filters from: https://gatk.broadinstitute.org/hc/en-us/articles/360035531112 (see:[C] Hard-filter SNPs on multiple expressions using VariantFiltration)
-my gds file already excldues the X chromosome
-
-moderate filter also excludes:
- MAF < 0.01
- SNPs and indels that don't pass VQSR filters (index.snvPASS = FALSE | index.indelPASS = FALSE)
-
-stringent filter also excludes:
-  MAF < 0.05
- missingness by variant > 0.05
- indels
- anything not biallelic
- SNPs that don't pass VQSR filters (index.snvPASS = FALSE)
-
-Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
+and generate variant filters for LD-pruning and association-testing steps
 
 ## exclude_regions_beforeLD_prune.R
 This will create a dataframe of all of chr7 to exclude from pruned SNP list for PC and GRM generation
@@ -74,13 +57,13 @@ Takes Arguments:
 7. opt: threshold: threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned) (default=sqrt(0.1))
 8. opt: window_size (default = 1) (slide.max.bp = argv$window_size * 1e6)
 
-### R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id var_filter_SNVs.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --build hg38 --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_23ld_pruning.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id SNPS_bi_GATK_VQSR.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --build hg38 --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_26ld_pruning.log &
 
 ## king_grm.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_25 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_25king_grm.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_26 --variant_id SNPS_bi_GATK_VQSR.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_26king_grm.log &
 
 ## kinship plots.R
-### Rscript plot_kinship.R 6_25king_out.rds --is_king --out_prefix 6_25_king
+### Rscript plot_kinship.R 6_26king_out.rds --is_king --out_prefix 6_26_king
 
 ## pcair.R
 #To determine a kin_thresh:
@@ -90,28 +73,34 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 kingMat <- readRDS("6_25king_grm.rds")
 pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
 str(pc_part)
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25king_grm.rds 6_25king_grm.rds --out_prefix 6_25_1it --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_23_1itpc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26king_grm.rds 6_26king_grm.rds --out_prefix 6_26_1it --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26_1itpc_air.log &
 #0.044194 = 2^(-9/2)
 #0.0625 = 2^(-4)
 #0.125 = 2^(-3)
 
-#Fast way to determine how many PCs to include:
+#Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
 pca <- readRDS("6_25_1itpcair.rds")
 plot(seq(12),100*pca$varprop[1:12])
 
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_25_1itpcair.rds --out_prefix 6_25_1it --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_25_1itpcrelate.log &
-
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26_1it --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26_1itpcrelate.log &
 
 ## kinship plots.R
-### Rscript plot_kinship.R 6_25_1itpcrelate.rds --out_prefix 6_25_1it_PR-rel
+### Rscript plot_kinship.R 6_26_1itpcrelate.rds --out_prefix 6_26_1it_PC-rel
 
 
-## pc_grm_troubleshoot.R
-generate PCs and GRM through 2 iteratons of PCair and PCrelate (and plot first 3 PCs and kinship)
+## pcair.R
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcr_mat.rds 6_26king_grm.rds --out_prefix 6_26 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26pc_air.log &
+#0.044194 = 2^(-9/2)
 
-Arguments (needs updating):
+## pcrelate.R
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
+
+## kinship plots.R
+### Rscript plot_kinship.R 6_26_pcrelate.rds --out_prefix 6_26_PC-rel
+
+Arguments for PC-Relate and PC-Air (needs updating):
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
 2. opt : out_prefix
 3. opt: variant_id: a vector of variants to keep (must match corresponding rownames in phenotype and gds) - use pruned_snps.rds from LD pruning step - saved as an R object
@@ -122,11 +111,9 @@ Arguments (needs updating):
 8. opt: text to uniquely identify plots and figures
 9. opt: keep_king: if passed TRUE, will also save the GRM from KING robust
 
-### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6,13 --variant_id pruned_snps.rds --sample_id keep_samples.rds --kin_thresh1 3 --div_thresh1 4.5 --kin_thresh 4.5 --div_thresh 4.5 --n_pcs 12 --keep_king < pc_grm_troubleshoot.R > pc_grm_troubleshoot_6,12.log &
-*include "& > LDsqrt0.1_PCs_grm_script.out" to run concurrently with other processes and save output to a file (saving output only saves some basic info, I'm working on making it so it prints the whole console to file)
 
 ## add_phenotype_identifiers_to_kinship_obj.R 
--Optional- this takes over a week to run!
+-Needs to be fixed to run efficiently-
 To color kinship plot based on ancestry, study, etc.
 Arguments:
 1. phenotype data frame as .rds object
@@ -135,13 +122,6 @@ Arguments:
 4. The type of relatedness object: either "King" or "PC_Relate"
 ### R -q --vanilla --args phenotype.rds keep_samples.rds higherLDking_obj.rds King < add_phenotype_identifiers_to_kinship_obj.R & > record.txt
 *This takes hours to run, so include &
-
-
-## PC_and_GRM_plots.R
-plots PCs w/ more features, simple plot of percent variance explained and relatedness plot. Suggest running in R, not as a script
-
-## kinship plots.R
-### Rscript plot_kinship.R higherLDpcr_obj.rds --out_prefix test
 
 ## Generate_annotated_phenotype_df.R
 Add PCs to phenotype data and produce an annotated dataframe to be used in pca_plots.R and assoc_test.R
