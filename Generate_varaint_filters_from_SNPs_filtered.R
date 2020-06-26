@@ -20,20 +20,16 @@ variants_gds <- data.frame(
 #Run this multiple times
 rand <- sample(1:nrow(SNPs),1)
 SNPs[SNPs$variant.id == rand, "pos"] == variants_gds[variants_gds$variant_id_gds == rand, "position"] & SNPs[SNPs$variant.id == rand, "chrom"] == variants_gds[variants_gds$variant_id_gds == rand, "chromosome"] 
-
+SNPs_for_LD_pruning <- SNPs$variant.id
 
 #Get a list of variants to use in LD-Pruning
-saveRDS(SNPs$variant.id, "SNPS_bi_GATK_VQSR.rds")
+saveRDS(SNPs_for_LD_pruning, "SNPS_bi_GATK_VQSR.rds")
 
 
-#et a list of variants to use in association testing
+#Get a list of variants to use in association testing
 #For association testing, also need to filter by missingness and MAF (this is given as an input to LD-pruning)
 ##Optional: plot minor allele frequency - note: PC-pruning also has an option to filter by MAF, so I will not include this in the filter
-library(SeqVarTools)
-gds <- seqOpen("CFF_sid_onlyGT.gds")
-
-
-seqResetFilter(gds) #If there is a filter on the gds file, this will fail spectacularly
+seqResetFilter(gds) #Note: if there is a filter on the gds file, this will fail spectacularly
 
 afreq <- alleleFrequency(gds) 
 maf <- pmin(afreq, 1-afreq)
@@ -45,17 +41,28 @@ sum(maf > 0.05)
 
 miss <- missingGenotypeRate(gds)
 sum(miss < 0.05)
-#To keep in association testing
+#[1] 114432954 #To keep in association testing
 
 
 
 maf_keep <- seqGetData(gds, "variant.id")[maf > 0.05]
+miss_keep <- seqGetData(gds, "variant.id")[miss < 0.05]
+
+SNPs_for_assoc_test <- intersect(SNPs_for_LD_pruning, intersect(maf_keep, miss_keep))
+
+
+length(SNPs_for_assoc_test)
+#[1] 5490867
+
+saveRDS(SNPs_for_assoc_test, "SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
 
 
 
 #To test filter:
 SNPS_bi_GATK_VQSR <- readRDS("SNPS_bi_GATK_VQSR.rds")
 seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR)
+## of selected variants: 84,360,856
 
-SNPS_bi_GATK_VQSR_MAF0.05_Miss0.05 <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_Miss0.05.rds")
-seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR_MAF0.05_Miss0.05)
+SNPS_bi_GATK_VQSR_MAF0.05_miss0.05 <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
+seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR_MAF0.05_miss0.05)
+## of selected variants: 5,490,867
