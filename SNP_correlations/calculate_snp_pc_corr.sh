@@ -10,4 +10,4 @@ R -q --no-save --args --pca-file 6_25_1itpcair.rds --gds-file CFF_sid_onlyGT.gds
 
 
 
-#Run with qsub -q new.q -v R_LIBS=/home/amstilp/devel/analysis_pipeline_cff_wgs/R_library calculate_snp_pc_corr.sh
+#Run with qsub -q power.q -v R_LIBS=/home/amstilp/devel/analysis_pipeline_cff_wgs/R_library calculate_snp_pc_corr.sh
