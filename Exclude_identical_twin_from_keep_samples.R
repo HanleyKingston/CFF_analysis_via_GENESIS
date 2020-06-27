@@ -4,7 +4,7 @@
 #Identify identical twins & remove from analysis
 
 #Read in PCrelate object and existing keep_samples vector
-pcrel2 <- readRDS(file = "6_25_1itpcrelate.rds")
+pcrel2 <- readRDS(file = "6_26_pcrelate.rds")
 kinship <- pcrel2$kinBtwn
 keep_samples <- readRDS(file = "keep_samples.rds")
 
