@@ -19,6 +19,7 @@ library(RColorBrewer)
 
 assoc <- readRDS(argv$assoc_file)
 
+lambda <- median(-2*log(assoc$Score.pval))/1.39
 
 ## qq plot
 n <- nrow(assoc)
