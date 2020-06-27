@@ -14,7 +14,7 @@ argp <- add_argument(argp, "--missing", help="maximum missing call rate for vari
 argp <- add_argument(argp, "--r_threshold", help="r threshold for LD", default=sqrt(0.1))
 argp <- add_argument(argp, "--window_size", help="window size in Mb", default=10)
 argp <- add_argument(argp, "--autosome_only", help = "whether to include autosomes only or also X-chromosome", default=TRUE)
-argp < -add_argument(argp, "--chromosome", help = "chromosome number")
+argp <- add_argument(argp, "--chromosome", help = "chromosome number")
 argv <- parse_args(argp)
 print(argv)
 
@@ -28,8 +28,8 @@ variant.id <- if (!is.na(argv$variant_id)) readRDS(argv$variant_id) else NULL
 # open GDS file
 gds <- seqOpen(gds.file)
   
-if (!ia.na(argv$chromosome) {
-  seqSetFilterChrom(gds, chromosome)
+if (!is.na(argv$chromosome)) {
+  seqSetFilterChrom(gds, argv$chromosome)
   chrom_vars <- seqGetData(gds, "variant.id")
   variant.id <- intersect(variant.id, chrom_vars)
   seqResetFilter(gds)
