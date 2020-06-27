@@ -14,7 +14,6 @@ argp <- add_argument(argp, "--missing", help="maximum missing call rate for vari
 argp <- add_argument(argp, "--r_threshold", help="r threshold for LD", default=sqrt(0.1))
 argp <- add_argument(argp, "--window_size", help="window size in Mb", default=10)
 argp <- add_argument(argp, "--autosome_only", help = "whether to include autosomes only or also X-chromosome", default=TRUE)
-argp <- add_argument(argp, "--exclude_regions", help = "a dataframe of regions to exclude from pruned_SNPs, with colnames: chrom, start.base, end.base, comment ... note: only used if build is also provided")
 argp < -add_argument(argp, "--chromosome", help = "chromosome number")
 argv <- parse_args(argp)
 print(argv)
