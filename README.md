@@ -44,7 +44,11 @@ and generate variant filters for LD-pruning and association-testing steps
 ## exclude_regions_beforeLD_prune.R
 This will create a dataframe of all of chr7 to exclude from pruned SNP list for PC and GRM generation
 
-## ld_pruning.R
+## ld_pruning.sh
+### sh ld_pruning.sh
+runs ld_pruning.R with the following arguments:
+R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id SNPS_bi_GATK_VQSR.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_26ld_pruning.log &
+
 generate a vector of SNPs pruned by LD to include in PC and GRM creation
 
 Takes Arguments:
@@ -57,10 +61,11 @@ Takes Arguments:
 7. opt: threshold: threshold for LD-pruning (given as the correlation value which should be the square route of R^2) - variants above the threshold (ie. in greater LD, are pruned) (default=sqrt(0.1))
 8. opt: window_size (default = 1) (slide.max.bp = argv$window_size * 1e6)
 
-### R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id SNPS_bi_GATK_VQSR.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --build hg38 --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_26ld_pruning.log &
+### Rscript combine_chr_LD_files.R
+
 
 ## king_grm.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_26 --variant_id SNPS_bi_GATK_VQSR.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_26king_grm.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix 6_26 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > 6_26king_grm.log &
 
 ## kinship plots.R
 ### Rscript plot_kinship.R 6_26king_out.rds --is_king --out_prefix 6_26_king
@@ -73,7 +78,7 @@ gds <- seqOpen("CFF_sid_onlyGT.gds")
 kingMat <- readRDS("6_25king_grm.rds")
 pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
 str(pc_part)
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26king_grm.rds 6_26king_grm.rds --out_prefix 6_26_1it --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26_1itpc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26king_grm.rds 6_26king_grm.rds --out_prefix 6_26_1it --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26_1itpc_air.log &
 #0.044194 = 2^(-9/2)
 #0.0625 = 2^(-4)
 #0.125 = 2^(-3)
@@ -84,18 +89,18 @@ plot(seq(12),100*pca$varprop[1:12])
 
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26_1it --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26_1itpcrelate.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26_1it --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26_1itpcrelate.log &
 
 ## kinship plots.R
 ### Rscript plot_kinship.R 6_26_1itpcrelate.rds --out_prefix 6_26_1it_PC-rel
 
 
 ## pcair.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcr_mat.rds 6_26king_grm.rds --out_prefix 6_26 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26pc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcr_mat.rds 6_26king_grm.rds --out_prefix 6_26 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26pc_air.log &
 #0.044194 = 2^(-9/2)
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id CFF_5134_onlyGT_prunedSites.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
 
 ## kinship plots.R
 ### Rscript plot_kinship.R 6_26_pcrelate.rds --out_prefix 6_26_PC-rel
