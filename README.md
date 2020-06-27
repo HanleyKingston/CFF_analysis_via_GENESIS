@@ -47,7 +47,7 @@ This will create a dataframe of all of chr7 to exclude from pruned SNP list for 
 ## ld_pruning.sh
 ### sh ld_pruning.sh
 runs ld_pruning.R with the following arguments:
-R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id SNPS_bi_GATK_VQSR.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --exclude_regions exclude_regions_chr7.rds < ld_pruning.R > 6_26ld_pruning.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds --sample_id keep_samples.rds --variant_id pre_LD_SNP_filter.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE < ld_pruning.R > 6_26ld_pruning.log &
 
 generate a vector of SNPs pruned by LD to include in PC and GRM creation
 
@@ -84,7 +84,7 @@ str(pc_part)
 #0.125 = 2^(-3)
 
 #Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
-pca <- readRDS("6_25_1itpcair.rds")
+pca <- readRDS("6_26_1itpcair.rds")
 plot(seq(12),100*pca$varprop[1:12])
 
 
@@ -133,14 +133,13 @@ Add PCs to phenotype data and produce an annotated dataframe to be used in pca_p
 
 ## pca_plots.R
 Plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs. and phenotype file as an annotated data frame. Takes PC-AiR and PC-Relate .rds objects and phenotype file as an annotated data frame
-### Rscript pca_plots.R 6_23_1itpcair.rds --out_prefix pcair_1it --phenotype_file annot.rds --group race_or_ethnicity
+### Rscript pca_plots.R 6_26pcair.rds --out_prefix 6_26pcair --phenotype_file annot.rds --group race_or_ethnicity
 
 
 ## Exclude_identical_twin_from_samples.R
 Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
-assoc_test.R
 
-## assoc_test.sh
+## assoc/assoc_test.sh
 ### sh assoc_test.sh
 Runs assoc_test.R with the following arguments:
 CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$f" --covars "PC1 PC2 PC3" --variant_id var_filter_SNVs_MAF0.05.rds --sample_id keep_samples.rds --chromosome "$f" < assoc_test2.R &
@@ -154,14 +153,14 @@ CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$
 5. opt: sample_id: a character vector of samples to keep (must match corresponding smaple IDs in phenotype and gds files) - saved as an R object2. LD-pruning R object (a list of variants to incldue)
 7. opt: chromosome to fitler by
 
-## combine_seperate_chr_files.R
+## combine_chr_assoc_files.R
 recombines association test files into one file (assoc.rds) - chromosomes will be in numerical order
 Takes as an argument:
 1. prefix for input and output (input files should be in the form: "prefix"chr1assoc.rds)
-### Rscript combine_seperate_chr_files.R F508del
-### Rscript combine_seperate_chr_files.R sex
+### Rscript combine_chr_assoc_files.R F508del
+### Rscript combine_chr_assoc_files.R sex
 
-## assoc_plots.R
+## assoc/assoc_plots.R
 ###  R -q --vanilla --args F508del_assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
 ###  R -q --vanilla --args sex_assoc.rds --out_prefix sex < assoc_plots.R &
 
