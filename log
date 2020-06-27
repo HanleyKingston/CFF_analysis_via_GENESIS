@@ -1601,5 +1601,16 @@ Original problem with incorrect Kin and kinship plots (and way too many related 
 
 
 #6/25
+## Re-ran King, PCs and GRM using William's pruned SNP list, then realized his list is from only F508 homozygotes, so decided to re-run
+
+
+6/26
+## Re-running everything
+Modified LD-pruning to run each chromosome seperately, also exlcuded long-rangeLD regions and all of chr7
+length(CFF_5134_onlyGT_prunedSites.rds) #William's pruned SNP list
+#[1] 269482
+
+length(6_26_prunedSNPs.rds) #My pruned SNP list - does it make sense that mmine is shorter?
+#[1] 171975
 
 
