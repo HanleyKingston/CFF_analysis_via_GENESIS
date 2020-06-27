@@ -5,8 +5,11 @@ library(SNPRelate)
 
 # open GDS file
 gds <- seqOpen("CFF_sid_onlyGT.gds") #This is the merged gds file ("CFF_5134_onlyGT.gds") from the seqArray_onlyGT folder, but I changed the sample.id's from the VCF_ids to the sids
-variant_id <- readRDS("var_filter_SNVs_MAF0.05.rds")
+variant_id <- readRDS("pre_LD_SNP_filter.rds")
+#QC: https://github.com/HanleyKingston/CFF_analysis_via_GENESIS/blob/master/Generate_varaint_filters_from_SNPs_filtered.R
+#Long range LD regions and chr7 excluded: https://github.com/HanleyKingston/CFF_analysis_via_GENESIS/blob/master/exclude_regions_beforeLD_prune.R
 sample_id <- readRDS("keep_samples.rds")
+#https://github.com/HanleyKingston/CFF_analysis_via_GENESIS/blob/master/generate_sample_filter_and_phenotype_df.R
 
 # run LD pruning
 snpset <- snpgdsLDpruning(gds,
@@ -17,8 +20,9 @@ snpset <- snpgdsLDpruning(gds,
                           method = "corr",
                           slide.max.bp = 1 * 1e6, 
                           ld.threshold = sqrt(0.1)
+                          autosome.only - TRUE
                           )
-
+#NOTE: this output was from a previous run with a similar varaint ID input, this time I ren in parallele and the log did not capture the right info
 #SNV pruning based on LD:
 #Calculating allele counts/frequencies ...
 #[==================================================] 100%, completed, 9.0m
@@ -50,58 +54,30 @@ snpset <- snpgdsLDpruning(gds,
 #Chromosome 7: 0.15%, 9,708/6,373,532
 #Chromosome 8: 0.14%, 8,827/6,159,400
 #Chromosome 9: 0.16%, 8,395/5,371,174
-#177,539 markers are selected in total.
+#177,539 markers are selected in total. #For this run, actually 171975 (most of this difference is because I filtered out chr7 and other problematic regions ahead beforehand on this run
 
 
 # convert list with one element per chrom to vector
 pruned <- unlist(snpset, use.names=FALSE)
 length(pruned)
-#[1] 177539
+#[1] 171975
 
 seqResetFilter(gds)
 ## of selected samples: 5,134
 ## of selected variants: 120,139,844
 
-# Also filter out 4 problematic LD regions and excldue chromosome 7
-filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
-
-add_regions <- data.frame(t(c(7, 1, 159345973, "to exclude deltaF508")))
-colnames(add_regions) <- colnames(filt)
-rownames(add_regions) <- "chr7"
-filt <- rbind(filt, add_regions)
-
-chrom <- seqGetData(gds, "chromosome")
-pos <- seqGetData(gds, "position")
-pca.filt <- rep(TRUE, length(chrom))
-for (f in 1:nrow(filt)) {
-    pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
-}
-seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
-## of selected variants: 116,399,609
-}
-  
-PCAcorr_snps <- seqGetData(gds, "variant.id")
-saveRDS(PCAcorr_snps, "PCAcorr_snps.rds")
-
-pruned_excludedRegions_andChr7 <- intersect(pruned, PCAcorr_snps)
-length(pruned_excludedRegions_andChr7)
-#[1] 171679
-
-saveRDS(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.rds")
-write(pruned_excludedRegions_andChr7, "pruned_excludedRegions_andChr7.txt", ncol = 1) 
-
-
+saveRDS(pruned, "6_26_prunedSNPs.rds")
 
 # King (restart R)
 library(SeqArray)
 library(SNPRelate)
 
 gds <- seqOpen("CFF_sid_onlyGT.gds")
-variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+variant_id <- readRDS("6_26_prunedSNPs.rds")
 sample_id <- readRDS("keep_samples.rds")
 
 king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id,
-                      type = "KING-robust")
+                      type = "KING-robust", autosome.only = TRUE)
 #IBD analysis (KING method of moment) on genotypes:
 #Calculating allele counts/frequencies ...
 #[==================================================] 100%, completed, 6.8m
@@ -118,8 +94,8 @@ king <- snpgdsIBDKING(gds, snp.id = variant_id, sample.id = sample_id,
 kingMat <- king$kinship
 colnames(kingMat) <- rownames(kingMat) <- king$sample.id
 
-saveRDS(king, paste0("6,18", "king_obj.rds"))
-saveRDS(kingMat, paste0("6,18", "king_grm.rds")) #Note: should save a sparse matrix if using for association testing but not to give to PC-AiR
+saveRDS(king, paste0("6_26", "king_obj.rds"))
+saveRDS(kingMat, paste0("6_26", "king_grm.rds")) #Note: should save a sparse matrix if using for association testing but not to give to PC-AiR
 
 
 
@@ -127,11 +103,11 @@ saveRDS(kingMat, paste0("6,18", "king_grm.rds")) #Note: should save a sparse mat
 library(ggplot2)
 library(SNPRelate)
 
-rel <- readRDS("6,18king_obj.rds")
+rel <- readRDS("6_26king_obj.rds")
 
 kinship.df <- snpgdsIBDSelection(rel)
 
-png(paste0("6,18_king", "_kinship.png"))
+png(paste0("6_26_king", "_kinship.png"))
 ggplot(kinship.df, aes_string("IBS0", "kinship")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
@@ -149,17 +125,18 @@ library(SeqArray)
 library(GENESIS)
 
 gds <- seqOpen("CFF_sid_onlyGT.gds")
-variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+variant_id <- readRDS("6_26_prunedSNPs.rds")
 sample_id <- readRDS("keep_samples.rds")
-kingMat <- readRDS("6,18king_grm.rds")
+kingMat <- readRDS("6_26king_grm.rds")
 
+#NOTE: pcairpartition results are from an earlier run (actual varaints in LD_pruned will differ slightly due to randomness)
 pc_part1 <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-3), div.thresh = -2^(-4.5), divobj = kingMat)
 #Using kinobj and divobj to partition samples into unrelated and related sets
-#Identifying relatives for each sample using kinship threshold 0.125
+#Identifying relatives for each sample using kinship threshold 0.0441941738241592
 #Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
 #Partitioning samples into unrelated and related sets...
 #Warning message:
-#In pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-3), div.thresh = -2^(-4.5),  :
+#In pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5),  :
 #  some samples in unrel.set are not in kinobj or divobj; they will not be included
 str(pc_part1)
 # $ rels  : chr [1:952] "S48216" "S71706" "S95760" "S11026" ...
@@ -179,25 +156,14 @@ str(pc_part3)
 mypcair <- pcair(gds, kinobj = kingMat, kin.thresh = 2^(-4.5),
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id, div.thresh = -2^(-4.5))
-#Using kinobj and divobj to partition samples into unrelated and related sets
-#Working with 4971 samples
-#Identifying relatives for each sample using kinship threshold 0.0441941738241592
-#Identifying pairs of divergent samples using divergence threshold -0.0441941738241592
-#Partitioning samples into unrelated and related sets...
-#Unrelated Set: 3994 Samples
-#Related Set: 977 Samples
-#Performing PCA on the Unrelated Set...
-#Principal Component Analysis (PCA) on genotypes:
-#Calculating allele counts/frequencies ...
-#...
+#Working space: 3,979 samples, 171,975 SNVs #Unrelateds
 
 
-
-saveRDS(mypcair, paste0("6,18_1it", "pcair.rds"))
+saveRDS(mypcair, paste0("6_26_1it", "pcair.rds"))
 
 
 # plot 1st iteration PCs with script
-Rscript pca_plots.R 6,18_1itpcair.rds --out_prefix 6,18_1it --phenotype_file annot.rds --group race_or_ethnicity
+Rscript pca_plots.R 6_26_1itpcair.rds --out_prefix 6_26_1it --phenotype_file annot.rds --group race_or_ethnicity
 
 #Plot correaltion by PCs
 qsub -q new.q calculate_snp_pc_corr.sh
@@ -211,9 +177,9 @@ library(GENESIS)
 library(SeqVarTools)
 
 gds <- seqOpen("CFF_sid_onlyGT.gds")
-variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
+variant_id <- readRDS("6_26_prunedSNPs.rds")
 sample_id <- readRDS("keep_samples.rds")
-mypcair <- readRDS("6,18_1itpcair.rds")
+mypcair <- readRDS("6_26_1itpcair.rds")
 
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
 ## of selected samples: 4,971
@@ -232,7 +198,7 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(3)],
 #...
 
 
-saveRDS(mypcrel, paste0("6,18_1it", "pcr_obj.rds"))
+saveRDS(mypcrel, paste0("6_26_1it", "pcr_obj.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, scaleKin = 1)
 #Using 4971 samples provided
 #Identifying clusters of relatives...
@@ -247,11 +213,11 @@ saveRDS(pcr_mat, paste0("6,18_1it", "pcr_mat.rds"))
 library(ggplot2)
 library(SNPRelate)
 
-rel <- readRDS("6,18_1itpcr_obj.rds")
+rel <- readRDS("6_26_1itpcr_obj.rds")
 
 kinship.df <- rel$kinBtwn
 
-png(paste0("6,18", "1it_kinship.png"))
+png(paste0("6_26", "1it_kinship.png"))
 ggplot(kinship.df, aes_string("k0", "kin")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
@@ -268,8 +234,8 @@ library(GENESIS)
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
 sample_id <- readRDS("keep_samples.rds")
-kingMat <- readRDS("6,18king_grm.rds")
-pcrelate_matrix <- readRDS("6,18_1itpcr_mat.rds")
+kingMat <- readRDS("6_26king_grm.rds")
+pcrelate_matrix <- readRDS("6_26_1itpcr_mat.rds")
 
 pc_part1 <- pcairPartition(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
 str(pc_part1)
@@ -279,12 +245,12 @@ mypcair <- pcair(gds, kinobj = pcrelate_matrix, kin.thresh = 2^(-4.5),
                  divobj = kingMat, snp.include = variant_id,
                  sample.include = sample_id, div.thresh = -2^(-4.5))
 
-saveRDS(mypcair, paste0("6,18", "pcair.rds"))
+saveRDS(mypcair, paste0("6_26", "pcair.rds"))
 
 
 
 # plot 1st iteration PCs with script
-Rscript pca_plots.R 6,18pcair.rds --out_prefix 6,18 --phenotype_file annot.rds --group race_or_ethnicity
+Rscript pca_plots.R 6_26pcair.rds --out_prefix 6_26 --phenotype_file annot.rds --group race_or_ethnicity
 
 #Plot correaltion by PCs
 qsub -q new.q calculate_snp_pc_corr.sh
@@ -301,7 +267,7 @@ library(SeqVarTools)
 gds <- seqOpen("CFF_sid_onlyGT.gds")
 variant_id <- readRDS("pruned_excludedRegions_andChr7.rds")
 sample_id <- readRDS("keep_samples.rds")
-mypcair <- readRDS("6,18_1itpcair.rds")
+mypcair <- readRDS("6_26_1itpcair.rds")
 
 seqSetFilter(gds, variant.id = variant_id, sample.id = sample_id)
 ## of selected samples: 4,971
@@ -319,7 +285,7 @@ mypcrel <- pcrelate(iterator, pcs = mypcair$vectors[, seq(3)],
 #Running PC-Relate analysis for 4971 samples using 171679 SNPs in 18 blocks...
 #...
 
-saveRDS(mypcrel, paste0("6,18", "pcr_obj.rds"))
+saveRDS(mypcrel, paste0("6_26", "pcr_obj.rds"))
 pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^(-4.5), scaleKin = 2)
 #Using 4971 samples provided
 #Identifying clusters of relatives...
@@ -327,7 +293,7 @@ pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^(-4.5), scaleKin = 2)
 #Creating block matrices for clusters...
 #3079 samples with no relatives included
 #Putting all samples together into one block diagonal matrix
-saveRDS(pcr_mat, paste0("6,18", "pcr_mat.rds"))
+saveRDS(pcr_mat, paste0("6_26", "pcr_mat.rds"))
 
 
 
@@ -339,7 +305,7 @@ rel <- readRDS("6,18pcr_obj.rds")
 
 kinship.df <- rel$kinBtwn
 
-png(paste0("6,18", "kinship.png"))
+png(paste0("6_26", "kinship.png"))
 ggplot(kinship.df, aes_string("k0", "kin")) +
     geom_hline(yintercept=2^(-seq(3,9,2)/2), linetype="dashed", color = "grey") +
     geom_point(alpha=0.2) + #Note: if you get a "partial transparancy is not supported..." error remove "alpha" argument
