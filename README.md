@@ -96,7 +96,7 @@ plot(seq(12),100*pca$varprop[1:12])
 
 
 ## pcair.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcr_mat.rds 6_26king_grm.rds --out_prefix 6_26 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26pc_air.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcr_mat.rds 6_26king_grm.rds --out_prefix 6_26 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > 6_26pc_air.log &
 #0.044194 = 2^(-9/2)
 
 ## pcrelate.R
@@ -157,10 +157,10 @@ CFF_sid_onlyGT.gds annot.rds 6_18pcr_mat.rds F508_count gaussian --out_prefix "$
 recombines association test files into one file (assoc.rds) - chromosomes will be in numerical order
 Takes as an argument:
 1. prefix for input and output (input files should be in the form: "prefix"chr1assoc.rds)
-### Rscript combine_chr_assoc_files.R F508del
-### Rscript combine_chr_assoc_files.R sex
+### Rscript combine_chr_assoc_files.R F508del &
+### Rscript combine_chr_assoc_files.R sex &
 
 ## assoc/assoc_plots.R
-###  R -q --vanilla --args F508del_assoc.rds --out_prefix CFF_F508 < assoc_plots.R &
-###  R -q --vanilla --args sex_assoc.rds --out_prefix sex < assoc_plots.R &
+###  R -q --vanilla --args F508delassoc.rds --out_prefix 6_26CFF_F508 --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args sexassoc.rds --out_prefix 6_26sex  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
 
