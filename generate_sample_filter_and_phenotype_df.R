@@ -144,6 +144,9 @@ sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "b
 sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"]))
 #[1] 0
 
+#Sex_registry needs to be 0-1 for association testing
+unique(phenotype_pruned$sex_registry)
+phenotype_pruned$sex_registry <- ifelse(phenotype_pruned$sex_registry == "F", 0, 1)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
 phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
