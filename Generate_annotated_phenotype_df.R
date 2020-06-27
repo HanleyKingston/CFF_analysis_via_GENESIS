@@ -5,7 +5,7 @@ phenotype <- readRDS("phenotype.rds")
 phenotype$sample.id <- as.character(phenotype$sid)
 
 ##Read in PCA covariates
-pca <- readRDS("6_26pcair.rds")
+pca <- readRDS("6_26_pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:8])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8")
 
