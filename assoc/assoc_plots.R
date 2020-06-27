@@ -62,4 +62,4 @@ p <- ggplot(assoc, aes(reorder(chr, sort(as.numeric(chr))),
     theme(legend.position="none") +
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
     xlab("chromosome") + ylab(expression(-log[10](p)))
-ggsave(paste0(argv$out_prefix, "mannh.png"), plot=p, width=10, height=5)
+ggsave(paste0(argv$out_prefix, "manh.png"), plot=p, width=10, height=5)
