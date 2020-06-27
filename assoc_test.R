@@ -47,10 +47,6 @@ if (!is.na(argv$covars)) {
 }
 
 
-
-print(chromosome)
-print(class(chromosome))
-
 gds.id <- seqGetData(gds, "sample.id")
 seqData <- SeqVarData(gds, sampleData = pheno)
 if (!ia.na(argv$chromosome) { seqSetFilterChrom(gds, chromosome) }
