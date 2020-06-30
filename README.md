@@ -168,6 +168,6 @@ Takes as an argument:
 ### Rscript combine_chr_assoc_files.R sex &
 
 ## assoc/assoc_plots.R
-###  R -q --vanilla --args F508delassoc.rds --out_prefix 6_26CFF_F508 --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args F508delassoc.rds --out_prefix 6_26F508del --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
 ###  R -q --vanilla --args sexassoc.rds --out_prefix 6_26sex  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
 
