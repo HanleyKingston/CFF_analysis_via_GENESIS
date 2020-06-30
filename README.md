@@ -100,10 +100,10 @@ plot(seq(12),100*pca$varprop[1:12])
 #0.044194 = 2^(-9/2)
 
 ## pcrelate.R
-### qrsh -q new.q R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
+### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
 
 ## kinship plots.R
-### Rscript plot_kinship.R 6_26_pcrelate.rds --out_prefix 6_26_PC-rel
+### Rscript plot_kinship.R 6_26pcrelate.rds --out_prefix 6_26_PC-rel &
 
 Arguments for PC-Relate and PC-Air (needs updating):
 1. req: gds_file: .gds file (with a chracter vector of sid as sample IDs)
@@ -133,11 +133,18 @@ Add PCs to phenotype data and produce an annotated dataframe to be used in pca_p
 
 ## pca_plots.R
 Plots a scree plot (percent variance explained), cord plot, and pairwise PC comparisons to further anylize PCs. and phenotype file as an annotated data frame. Takes PC-AiR and PC-Relate .rds objects and phenotype file as an annotated data frame
-### Rscript pca_plots.R 6_26pcair.rds --out_prefix 6_26pcair --phenotype_file annot.rds --group race_or_ethnicity
+### Rscript pca_plots.R 6_26pcair.rds --out_prefix 6_26 --phenotype_file annot.rds --group race_or_ethnicity
 
 
 ## Exclude_identical_twin_from_samples.R
 Create a new sample filter that excludes idenitcal twins to be used in assoc_test.R
+
+## generate_null_model.R
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds F508_count poisson --out_prefix "F508del" --covars "PC1 PC2 PC3 PC4 site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_F508del.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds F508_count poisson --out_prefix "F508del_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_F508del_noPCs.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds sex_registry binomial --out_prefix "sex" --covars "PC1 PC2 PC3 PC4 site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_sex.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds sex_registry binomial --out_prefix "sex_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_sex_noPCs.log &
+
 
 ## assoc/assoc_test.sh
 ### sh assoc_test.sh
