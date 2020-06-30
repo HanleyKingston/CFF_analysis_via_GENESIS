@@ -36,12 +36,6 @@ if (!is.na(argv$sample_id)) {
   sample_id <- NULL
 }
 
-if (!is.na(argv$covars)) {
-  covars <- strsplit(argv$covars, " ") %>% unlist
-} else {
-  covars <- NULL
-}
-
 gds.id <- seqGetData(gds, "sample.id")
 seqData <- SeqVarData(gds, sampleData = pheno)
 if (!is.na(argv$chromosome)) { seqSetFilterChrom(gds, argv$chromosome) }
