@@ -7,4 +7,4 @@ R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "F508del_noPCs_c
 sleep 30
 done
 
-#Run with: sh sex_assoc_test.sh
+#Run with: sh F508del_assoc_test_noPCs.sh
