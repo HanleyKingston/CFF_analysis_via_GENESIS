@@ -12,7 +12,7 @@ argp <- arg_parser("Run association test") %>%
                default = "") %>%
   add_argument("--covars",
                help = "Covariate variable names (space-separated)") %>%
-  add_argument("--sample_id", help = "File with vector of sample IDs") %>%
+  add_argument("--sample_id", help = "File with vector of sample IDs")
 
 argv <- parse_args(argp)
 
@@ -23,15 +23,9 @@ library(GENESIS)
 sessionInfo()
 print(argv)
 
-gds <- seqOpen(argv$gds_file)
 pheno <- readRDS(argv$pheno_file)
 
-if (!is.na(argv$variant_id)) {
-  variant_id <- readRDS(argv$variant_id)
-} else {
-  variant_id <- NULL
-}
-if (!is.na(argv$variant_id)) {
+if (!is.na(argv$sample_id)) {
   sample_id <- readRDS(argv$sample_id)
 } else {
   sample_id <- NULL
