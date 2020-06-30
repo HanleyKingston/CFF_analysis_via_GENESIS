@@ -100,7 +100,7 @@ plot(seq(12),100*pca$varprop[1:12])
 #0.044194 = 2^(-9/2)
 
 ## pcrelate.R
-### R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
+### qrsh -q new.q R -q --vanilla --args CFF_sid_onlyGT.gds 6_26pcair.rds --out_prefix 6_26 --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26pcrelate.log &
 
 ## kinship plots.R
 ### Rscript plot_kinship.R 6_26_pcrelate.rds --out_prefix 6_26_PC-rel
