@@ -8,4 +8,4 @@ R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "sex_noPCs_chr_$
 sleep 30
 done
 
-#Run with: sh sex_assoc_test.sh
+#Run with: sh sex_assoc_test_noPCs.sh
