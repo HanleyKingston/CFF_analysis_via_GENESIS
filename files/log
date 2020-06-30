@@ -1614,3 +1614,10 @@ length(6_26_prunedSNPs.rds) #My pruned SNP list - does it make sense that mmine 
 #[1] 171975
 
 
+# 6/30
+Association testing:
+F508 ~ SNPs + PCs 1-4 + site + GRM
+F508 ~ SNPs + site + GRM
+sex ~ SNPs + PCs 1-4 + site + GRM
+sex ~ SNPs + site + GRM
+
