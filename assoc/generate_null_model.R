@@ -52,4 +52,4 @@ nullmod <- fitNullModel(pheno, outcome = argv$outcome, covars = covars,
 message("Null model fixed effects:")
 message(nullmod$fixef)
 
-saveRDS(nullmod, "Nullmod")
+saveRDS(nullmod, "Nullmod.rds")
