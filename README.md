@@ -166,8 +166,15 @@ Takes as an argument:
 1. prefix for input and output (input files should be in the form: "prefix"chr1assoc.rds)
 ### Rscript combine_chr_assoc_files.R F508del &
 ### Rscript combine_chr_assoc_files.R sex &
+### Rscript combine_chr_assoc_files.R F508del_noPCs &
+### Rscript combine_chr_assoc_files.R sex_noPCs &
+
 
 ## assoc/assoc_plots.R
 ###  R -q --vanilla --args F508delassoc.rds --out_prefix 6_26F508del --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
 ###  R -q --vanilla --args sexassoc.rds --out_prefix 6_26sex  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args F508del_noPCsassoc.rds --out_prefix 6_26F508del_noPCs  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args F508del_noPCsassoc.rds --out_prefix 6_26F508del_noPCs_higher_y_lim  --qq_ylim 10 --Man_ylim 9 < assoc_plots.R &
+###  R -q --vanilla --args sex_noPCsassoc.rds --out_prefix 6_26sex_noPCs  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+
 
