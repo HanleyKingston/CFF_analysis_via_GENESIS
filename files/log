@@ -1615,9 +1615,15 @@ length(6_26_prunedSNPs.rds) #My pruned SNP list - does it make sense that mmine 
 
 
 # 6/30
+## Ran 2nd iteration of PCs and GRM. Plots look good!
+#Still need to look at PC correlation plots, but don't want to interfere with assocaition testing so may wait until tonight.
+#Based on scree plot and paracord plot, want to use the fist 3 PCs, will use 1st 4 to be safe and this matched what William is doing
+
 Association testing:
 F508 ~ SNPs + PCs 1-4 + site + GRM
 F508 ~ SNPs + site + GRM
 sex ~ SNPs + PCs 1-4 + site + GRM
 sex ~ SNPs + site + GRM
 
+assoc test for F508 without PCs still has a surprisingly low lambda:
+assoc <- readRDS("F508del_noPCsassoc.rds")
