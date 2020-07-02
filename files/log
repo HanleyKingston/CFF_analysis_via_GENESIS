@@ -1619,11 +1619,105 @@ length(6_26_prunedSNPs.rds) #My pruned SNP list - does it make sense that mmine 
 #Still need to look at PC correlation plots, but don't want to interfere with assocaition testing so may wait until tonight.
 #Based on scree plot and paracord plot, want to use the fist 3 PCs, will use 1st 4 to be safe and this matched what William is doing
 
-Association testing:
-F508 ~ SNPs + PCs 1-4 + site + GRM
-F508 ~ SNPs + site + GRM
-sex ~ SNPs + PCs 1-4 + site + GRM
-sex ~ SNPs + site + GRM
-
 assoc test for F508 without PCs still has a surprisingly low lambda:
-assoc <- readRDS("F508del_noPCsassoc.rds")
+
+
+## What I did:
+
+## generate_null_model.R
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds F508_count poisson --out_prefix "F508del" --covars "PC1 PC2 PC3 PC4 site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_F508del.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds F508_count poisson --out_prefix "F508del_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_F508del_noPCs.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds sex_registry binomial --out_prefix "sex" --covars "PC1 PC2 PC3 PC4 site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_sex.log &
+### R -q --vanilla --args annot.rds 6_26pcr_mat.rds sex_registry binomial --out_prefix "sex_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > null_model_sex_noPCs.log &
+
+
+## assoc/assoc_test.sh
+### sh assoc_test.sh
+Association testing:
+#F508 ~ SNPs + PCs 1-4 + site + GRM
+### R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "F508del_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model F508del_nullmod.rds < assoc_test.R > F508del_assoc_test.log &
+#F508 ~ SNPs + site + GRM
+### R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model F508del_noPCs_nullmod.rds < assoc_test.R > F508del_assoc_test_noPCs.log &
+#sex ~ SNPs + PCs 1-4 + site + GRM
+### R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "sex_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model sex_nullmod.rds < assoc_test.R > sex_assoc_test.log &
+#sex ~ SNPs + site + GRM
+### R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "sex_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model sex_noPCs_nullmod.rds < assoc_test.R > sex_assoc_test_noPCs.log &
+
+
+## combine_chr_assoc_files.R
+recombines association test files into one file (assoc.rds) - chromosomes will be in numerical order
+Takes as an argument:
+1. prefix for input and output (input files should be in the form: "prefix"chr1assoc.rds)
+### Rscript combine_chr_assoc_files.R F508del &
+### Rscript combine_chr_assoc_files.R sex &
+### Rscript combine_chr_assoc_files.R F508del_noPCs &
+### Rscript combine_chr_assoc_files.R sex_noPCs &
+
+
+## assoc/assoc_plots.R
+###  R -q --vanilla --args F508delassoc.rds --out_prefix 6_26F508del --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args sexassoc.rds --out_prefix 6_26sex  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args F508del_noPCsassoc.rds --out_prefix 6_26F508del_noPCs  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+###  R -q --vanilla --args F508del_noPCsassoc.rds --out_prefix 6_26F508del_noPCs_higher_y_lim  --qq_ylim 10 --Man_ylim 9 < assoc_plots.R &
+###  R -q --vanilla --args sex_noPCsassoc.rds --out_prefix 6_26sex_noPCs  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+
+
+#Testing with alternative variants from GSA-24v1-0_C2.bed:
+bed <- read.table("GSA-24v1-0_C2.bed", skip = 1, header = FALSE)
+colnames(bed) <- c("chr", "start_pos", "end_pos", "rs_ID")
+bed$chr <- sub("chr", "", bed$chr)
+bed$rs_ID <- sub("*-", "", bed$rs_ID)
+bed <- bed[bed$chr != "M" & bed$chr != "Y",]
+
+#Note from Liz (6/18 Slack): SNV's position is at end (no start)
+
+nrow(bed)
+#[1] 617154
+
+
+
+library(SeqVarTools)
+library(dplyr)
+
+gds <- seqOpen("CFF_sid_onlyGT.gds")
+
+
+# Want to map variant id in bed file to variant id in gds.
+res_list <- list()
+for (chromosome in unique(bed$chr)) {
+  #Make a datframe of gds variant info
+  seqSetFilterChrom(gds, chromosome)
+  # Get variant info for that chromosome from the gds.
+  variants_gds <- data.frame(
+    position = seqGetData(gds, "position"),
+    chromosome = seqGetData(gds, "chromosome"),
+    variant_id_gds = seqGetData(gds, "variant.id"),
+    stringsAsFactors = FALSE
+  )
+  # Subset flag metrics file to this chromosome.
+  bed_chr <- bed %>%
+    filter(chr == chromosome)
+  #Remove duplicates (note: the first of each duplicate has an rs_ID that ends in ".1"
+  bed_chr <- bed_chr[!duplicated(bed_chr$end_pos),]
+  # Make sure that that no duplicate variants by chromosome and position
+  stopifnot(all(!duplicated(bed_chr$end_pos)))
+  stopifnot(all(!duplicated(variants_gds$position)))
+  shared_variants <- 
+  variant_map <- merge(bed_chr, variants_gds, by.x = "end_pos", by.y = "position", all = FALSE)
+  res_list[[chromosome]] <- variant_map
+  seqResetFilter(gds)
+}
+res <- bind_rows(res_list)
+
+nrow(res)
+#[1] 566747
+
+
+#spot_check:
+rand <- sample(1:nrow(res),1)
+if(res[res$variant_id_gds == rand, "pos"] == seqGetData(gds, "position")[rand]){
+           print("Matching WAS succesful")
+}
+
+
+
