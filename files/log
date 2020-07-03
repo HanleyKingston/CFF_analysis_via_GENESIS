@@ -1692,6 +1692,7 @@ for (chromosome in unique(bed$chr)) {
     position = seqGetData(gds, "position"),
     chromosome = seqGetData(gds, "chromosome"),
     variant_id_gds = seqGetData(gds, "variant.id"),
+    rs_ID = seqGetData(gds, "annotation/id"),
     stringsAsFactors = FALSE
   )
   # Subset flag metrics file to this chromosome.
@@ -1714,10 +1715,41 @@ nrow(res)
 
 
 #spot_check:
-rand <- sample(1:nrow(res),1)
-if(res[res$variant_id_gds == rand, "pos"] == seqGetData(gds, "position")[rand]){
+rand <- sample(res$variant_id_gds,1)
+if(res[res$variant_id_gds == rand, "end_pos"] == seqGetData(gds, "position")[rand]){
            print("Matching WAS succesful")
 }
 
+#Compair rsIDs
+rand <- sample(res$variant_id_gds,1)
+res[res$variant_id_gds == rand, c("rs_ID.x", "rs_ID.y")]
 
 
+#Generate a variant filter based on the gds_ids in the snp file:
+SNP_chip_vars <- res$variant_id_gds
+saveRDS(SNP_chip_vars, "SNP_chip_vars.rds") 
+
+
+#Also exclude non-problematic regions:
+non_prob_SNPs <- readRDS("non_prob_snps.rds")
+
+
+#Save final filter to pass to LD-pruning
+pre_LD_SNP_filter <- intersect(non_prob_SNPs, SNP_chip_vars)
+length(pre_LD_SNP_filter)
+#[1] 540350
+saveRDS(pre_LD_SNP_filter, "/home/hkings/DATA/SNP_chip/SNP_chip_pre_LD_SNP_filter.rds")
+
+
+
+#LD-pruning with new SNPs:
+sh ld_pruning.sh
+#Contains:
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix "chr_$f" --sample_id keep_samples.rds --variant_id /home/hkings/DATA/SNP_chip/SNP_chip_vars.rds --maf 0.05 --missing 0.05 --window_size 1 --autosome_only TRUE --chromosome "$f" < ld_pruning.R > /home/hkings/DATA/SNP_chip/ld_pruning.log &
+
+Rscript combine_seperate_chr_files.R  /home/hkings/DATA/SNP_chip/
+# int [1:83396] 22639 25200 28728 32030 32215 33277 35640 36577 37281 37598 ...
+
+
+King:
+R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > SNP_chip_king_grm.log &
