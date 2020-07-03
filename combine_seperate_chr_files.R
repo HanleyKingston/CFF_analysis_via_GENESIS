@@ -10,4 +10,4 @@ chr <- append(chr, chr_temp)
  str(chr)
  #int [1:171975] 1683 2190 2215 3755 6388 10751 10852 11502 13043 13086 ...
 
-saveRDS(chr, paste0(args[1], "6_26_prunedSNPs.rds"))
+saveRDS(chr, paste0(args[1], "prunedSNPs.rds"))
