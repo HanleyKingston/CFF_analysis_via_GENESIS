@@ -1753,3 +1753,10 @@ Rscript combine_seperate_chr_files.R  /home/hkings/DATA/SNP_chip/
 
 King:
 R -q --vanilla --args CFF_sid_onlyGT.gds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --autosome_only TRUE < king_grm.R > SNP_chip_king_grm.log &
+
+
+PC-AiR:
+R -q --vanilla --args CFF_sid_onlyGT.gds /home/hkings/DATA/SNP_chip/SNP_chipking_grm.rds /home/hkings/DATA/SNP_chip/SNP_chipking_grm.rds --out_prefix SNP_chip_1it --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > SNP_chip_1it_pc_air.log &
+
+PC_Relate:
+R -q --vanilla --args CFF_sid_onlyGT.gds /home/hkings/DATA/SNP_chip/SNP_chip_1itpcair.rds --out_prefix SNP_chip_1it --n_pcs 4 --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > /home/hkings/DATA/SNP_chip/SNP_chip_1itpcrelate.log &
