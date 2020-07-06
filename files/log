@@ -1662,6 +1662,36 @@ Takes as an argument:
 ###  R -q --vanilla --args sex_noPCsassoc.rds --out_prefix 6_26sex_noPCs  --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
 
 
+
+# 7/2
+#Checking null model:
+null <- readRDS("2_26.2_30/F508del_noPCs_nullmod.rds")
+str(null)
+null$fixef
+#              Estimate Std. Error   z value     Pr(>|z|)
+#(Intercept) 0.33069073 0.01992812 16.594173 7.679425e-62
+#siteUNC     0.18561620 0.02705183  6.861503 6.813964e-12
+#siteUW      0.04743039 0.03009600  1.575970 1.150327e-01
+
+
+##How does this compair to the version with PCs?
+null <- readRDS("2_26.2_30/F508del_nullmod.rds")
+null$fixef
+#                    Est         SE       Stat         pval
+#(Intercept)  0.33078459 0.01998226 274.031996 1.500296e-61
+#PC1         -5.80516077 0.92889596  39.056593 4.116964e-10
+#PC2         -2.22295848 0.80913618   7.547784 6.008392e-03
+#PC3         -7.01774132 0.86403918  65.967167 4.584974e-16
+#PC4          0.81700377 0.80141349   1.039285 3.079877e-01
+#siteUNC      0.17543213 0.02713888  41.786359 1.018113e-10
+#siteUW       0.03451781 0.03013608   1.311937 2.520442e-01
+#Note: site has a similar fixed effect with and without includsion of PCs...
+#Not sure how to look at the impact of the GRM matrix pn null model
+
+
+
+# 7/2
+
 #Testing with alternative variants from GSA-24v1-0_C2.bed:
 bed <- read.table("GSA-24v1-0_C2.bed", skip = 1, header = FALSE)
 colnames(bed) <- c("chr", "start_pos", "end_pos", "rs_ID")
@@ -1759,4 +1789,69 @@ PC-AiR:
 R -q --vanilla --args CFF_sid_onlyGT.gds /home/hkings/DATA/SNP_chip/SNP_chipking_grm.rds /home/hkings/DATA/SNP_chip/SNP_chipking_grm.rds --out_prefix SNP_chip_1it --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --kin_thresh 0.044194 --div_thresh -0.044194 < pcair.R > SNP_chip_1it_pc_air.log &
 
 PC_Relate:
-R -q --vanilla --args CFF_sid_onlyGT.gds /home/hkings/DATA/SNP_chip/SNP_chip_1itpcair.rds --out_prefix SNP_chip_1it --n_pcs 4 --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > /home/hkings/DATA/SNP_chip/SNP_chip_1itpcrelate.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds /home/hkings/DATA/SNP_chip/SNP_chip_1itpcair.rds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip_1it --n_pcs 4 --variant_id /home/hkings/DATA/SNP_chip/prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > /home/hkings/DATA/SNP_chip/SNP_chip_1itpcrelate.log &
+
+Look at PC-Relate plots:
+Rscript plot_kinship.R /home/hkings/DATA/SNP_chip/SNP_chip_1itpcrelate.rds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip_1it &
+#Looks normal
+
+Followed steps to generate an annotated dataframe using: Generate_annotated_phenotype_df.R
+pca <- readRDS("/home/hkings/DATA/SNP_chip/SNP_chip_1itpcair.rds")
+doublecheck that F508del count makes sense:
+table(phenotype$F508_count)
+#   0    1    2
+# 369 1770 2938
+#Check:
+head(phenotype[phenotype$F508_count == 0, c("cftr_var_1_wgs", "cftr_var_2_wgs")])
+head(phenotype[phenotype$F508_count == 1, c("cftr_var_1_wgs", "cftr_var_2_wgs")])
+head(phenotype[phenotype$F508_count == 2, c("cftr_var_1_wgs", "cftr_var_2_wgs")])
+
+saveRDS(annot, file = "/home/hkings/DATA/SNP_chip/SNP_chip_annot.rds")
+
+#Look at PCs:
+Rscript pca_plots.R /home/hkings/DATA/SNP_chip/SNP_chip_1itpcair.rds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip --phenotype_file /home/hkings/DATA/SNP_chip/SNP_chip_annot.rds --group race_or_ethnicity
+#They look normal
+
+## Because the PC and kinship plots look normal, will test for association with the 1st iteration PCs and GRM
+### Generate null model:
+R -q --vanilla --args /home/hkings/DATA/SNP_chip/SNP_chip_annot.rds /home/hkings/DATA/SNP_chip/SNP_chip_1itpcr_mat.rds F508_count poisson --out_prefix "/home/hkings/DATA/SNP_chip/SNP_chip_1itF508del_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > /home/hkings/DATA/SNP_chip/SNP_chip_1itnull_model_F508del_noPCs.log &
+
+Look at null model:
+null <- readRDS("/home/hkings/DATA/SNP_chip/SNP_chip_1itF508del_noPCs_nullmod.rds")
+null$fixef
+#              Estimate Std. Error   z value     Pr(>|z|)
+#(Intercept) 0.33069073 0.01992812 16.594173 7.679425e-62
+#siteUNC     0.18561620 0.02705183  6.861503 6.813964e-12
+#siteUW      0.04743039 0.03009600  1.575970 1.150327e-01
+#This is identical to what I've gotten before (...because doesn't include PCs... need to understand what the null model does with the GRM)
+
+
+#/home/hkings/DATA/SNP_chip/F508del_assoc_test_noPCs.sh contains:
+##!/bin/bash
+
+for f in {1..22}; do
+echo "Assoc_testing '$f' "
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "SNP_chip_1it_F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/SNP_chip/SNP_chip_1itF508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_assoc_test_noPCs.log &
+
+sleep 30
+done
+
+#Run with: sh /home/hkings/DATA/SNP_chip/F508del_assoc_test_noPCs.sh
+
+
+# 7/5
+## Redo association test for no PCs case for F508 count
+R -q --vanilla --args annot.rds /home/hkings/DATA/2_26.2_30/6_26pcr_mat.rds F508_count poisson --out_prefix "/home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/null_model_F508del_noPCs.log &
+
+
+#/home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.sh contains:
+##!/bin/bash
+
+for f in {1..22}; do
+echo "Assoc_testing '$f' "
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.log &
+
+sleep 30
+done
+
+#Run with: sh /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.sh
