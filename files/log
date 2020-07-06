@@ -1917,21 +1917,20 @@ save(keep_samples, file = "Topmed/Topmed_keep_samples.RData")
 
 ## Generate config file in R with inputs for null model
 nullmod_config <- c(
-  "out_prefix" = "Topmed/TopMed_F508del_noPCs",
-  "phenotype_file" = "Topmed/Topmed_annot.RData",
-  "sample_include_file" = "Topmed/keep_samples.RData",
-  "relatedness_matrix_file" = "Topmed/Topmed_pcr_mat.RData",
-  "pca_file" = "Topmed/Topmed_pca.RData",
+  "out_prefix" = "/home/hkings/DATA/Topmed/Topmed_F508del",
+  "phenotype_file" = "/home/hkings/DATA/Topmed/Topmed_annot.RData",
+  "sample_include_file" = "/home/hkings/DATA/Topmed/Topmed_keep_samples.RData",
+  "relatedness_matrix_file" = "/home/hkings/DATA/Topmed/Topmed_pcr_mat.RData",
+  "pca_file" = "/home/hkings/DATA/Topmed/Topmed_pca.RData",
   "outcome" = "F508_carrier",
   "binary" = "TRUE",
   # space separated list of covariates, excluding PCs.
-  "covars" = "sex_registry site",
-  # Random choice here for prototyping purposes. Will need to do a better selection later.
+  "covars" = "site",
   "n_pcs" = "4"
 )
 nullmod_config
 
-writeConfig(nullmod_config, "Topmed/Topmed_null_model.config")
+writeConfig(nullmod_config, "Topmed_null_model.config")
 
 
 vars <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
@@ -1939,15 +1938,22 @@ save(vars, file = "Topmed/Topmed_keep_vars.RData")
 
 ## Association test setup
 assoc_config <- c(
-  "out_prefix" = "knorma",
-  "gds_file" = "CFF_sid_onlyGT.gds",
+  "out_prefix" = "/home/hkings/DATA/Topmed/TopMed_F508del",
+  "gds_file" = "/home/hkings/DATA/CFF_sid_onlyGT.gds",
   # These two files are created by the null model code.
-  "null_model_file" = "Topmed/TopMed_F508del_noPCs_null_model.RData",
-  "phenotype_file" = "Topmed/TopMed_F508del_noPCs_phenotypes.RData",
-  "variant_include_file" = "Topmed/Topmed_keep_vars.RData",
+  "null_model_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_null_model.RData",
+  "phenotype_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_phenotypes.RData",
+  "variant_include_file" = "/home/hkings/DATA/Topmed/Topmed_keep_vars.RData",
   "pass_only" = FALSE,
   "genome_build" = "hg38"
 )
 assoc_config
 
-writeConfig(assoc_config, "assoc_single.config")
+writeConfig(assoc_config, "Topmed_assoc_single.config")
+
+## Submit jobs to Cruncher
+cd /home/hkings/DATA/Topmed/
+
+/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/null_model.py --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json /home/hkings/DATA/Topmed/Topmed_null_model.config
+
+
