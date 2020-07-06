@@ -83,8 +83,8 @@ str(pc_part)
 #0.0625 = 2^(-4)
 #0.125 = 2^(-3)
 
-#Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
-pca <- readRDS("6_26_1itpcair.rds")
+#Fast way to determine how many PCs to include (note: should also look at PC correlation plots):  
+pca <- readRDS("6_26_1itpcair.rds")  
 plot(seq(12),100*pca$varprop[1:12])
 
 
