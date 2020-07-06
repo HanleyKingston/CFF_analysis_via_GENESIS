@@ -1825,33 +1825,65 @@ null$fixef
 #siteUW      0.04743039 0.03009600  1.575970 1.150327e-01
 #This is identical to what I've gotten before (...because doesn't include PCs... need to understand what the null model does with the GRM)
 
+### Generate assoc test
+#Will use SNPs from the intersection on the full SNP list and my QC'd SNP list
+SNP_chip_vars <- readRDS("/home/hkings/DATA/SNP_chip/SNP_chip_vars.rds")
+QC_SNPs <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
+#Note: Both of these have been checked to line up against the gds file, although if I was using them for my final analysis, I would check them against eachother
+length(SNP_chip_vars)
+#[1] 566747
+length(QC_SNPs)
+#[1] 5490867
+sum(SNP_chip_vars %in% QC_SNPs)
+[1] 260731 #Only half... this is consistent with the number excldued due to MAF and missingness threholds in QC
+
+SNPs_for_assoc <- intersect(SNP_chip_vars, QC_SNPs)
+length(SNPs_for_assoc)
+
+saveRDS(SNPs_for_assoc, "/home/hkings/DATA/SNP_chip/SNPs_for_assoc.rds")
+
 
 #/home/hkings/DATA/SNP_chip/F508del_assoc_test_noPCs.sh contains:
 ##!/bin/bash
 
 for f in {1..22}; do
 echo "Assoc_testing '$f' "
-R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "SNP_chip_1it_F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/SNP_chip/SNP_chip_1itF508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_assoc_test_noPCs.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "/home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_noPCs_chr_$f" --variant_id /home/hkings/DATA/SNP_chip/SNPs_for_assoc.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/SNP_chip/SNP_chip_1itF508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_assoc_test_noPCs.log &
 
 sleep 30
 done
 
 #Run with: sh /home/hkings/DATA/SNP_chip/F508del_assoc_test_noPCs.sh
 
+### Combine assoc files:
+Rscript combine_chr_assoc_files.R /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_noPCs &
+
+### plot assoc results
+R -q --vanilla --args /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_noPCsassoc.rds --out_prefix /home/hkings/DATA/SNP_chip/SNP_chip_1it_F508del_noPCs --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
+
 
 # 7/5
 ## Redo association test for no PCs case for F508 count
 R -q --vanilla --args annot.rds /home/hkings/DATA/2_26.2_30/6_26pcr_mat.rds F508_count poisson --out_prefix "/home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs" --covars "site" --sample_id keep_samples_noTwins.rds < generate_null_model.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/null_model_F508del_noPCs.log &
-
 
 #/home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.sh contains:
 ##!/bin/bash
 
 for f in {1..22}; do
 echo "Assoc_testing '$f' "
-R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.log &
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "null_model /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_chr_$f" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome "$f" --null_model /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.log &
 
 sleep 30
 done
 
-#Run with: sh /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.sh
+### sh /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.sh
+
+#For some reason this excluded chr13, so re-run that
+R -q --vanilla --args CFF_sid_onlyGT.gds annot.rds --out_prefix "/home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_chr_13" --variant_id SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id keep_samples_noTwins.rds --chromosome 13 --null_model /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs_nullmod.rds < assoc_test.R > /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_assoc_test_noPCs.log &
+
+
+### Combine assoc files:
+Rscript combine_chr_assoc_files.R /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs &
+
+### plot assoc results
+R -q --vanilla --args /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCsassoc.rds --out_prefix /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCs --qq_ylim 10 --Man_ylim 6 < assoc_plots.R &
