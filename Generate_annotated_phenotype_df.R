@@ -5,15 +5,11 @@ phenotype <- readRDS("phenotype.rds")
 phenotype$sample.id <- as.character(phenotype$sid)
 
 ##Read in PCA covariates
-pca <- readRDS("6_26_pcair.rds")
+pca <- readRDS("6_26.6_30/6_26pcair.rds")
 pcs.df <- as.data.frame(pca$vectors[,1:8])
 colnames(pcs.df) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8")
 
-keep_samples <- readRDS("keep_samples.rds")
 pcs.df$sample.id <- row.names(pcs.df)
-#check:
-identical(keep_samples, pcs.df$sample.id)
-
 
 gds.id <- readRDS("gds_id.rds")
 #Alternatively, can extract from gds file with:
@@ -52,6 +48,7 @@ metadata <- data.frame(labelDescription = c(
   "whether participant should be included in analysis based on QC - note: use keep_samples filter to exclude, not this column",
   "recruitment site - may have errors",
   "count of F508 deletion",
+  "carrier of one of more coppies of F508 deletion. 1 = Yes",
   "self-reported race or ethnicity - note, hispanic whites are reported as hispanic and white Native Americans as Native American",
   "does participant self-report as white - not: need to check if this is actually self-report",
   "does participant self-report as black",
@@ -76,7 +73,6 @@ metadata <- data.frame(labelDescription = c(
 annot <- AnnotatedDataFrame(merged_phen, metadata)
 
 #Save annot as an R object
-saveRDS(annot, file = "annot.rds")
+saveRDS(annot, file = "6_26.6_30/annot.rds")
 
-library(dplyr)
 head(pData(annot))
