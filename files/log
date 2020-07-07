@@ -1910,12 +1910,13 @@ library(tidyverse)
 key <- readr::read_tsv("/labdata12/CF_WGS2/cff_gwas/tables/key_cffwgs.tsv")
 
 annot <- readRDS("/home/hkings/DATA/6_26.6_30/annot.rds")
-pData(annot) <- pData(annot)[,-1]
+#Drop sample.id column (want to fill this with VCF_id and PC columns because Topmed pipeline gets these from the PC-Air output)
+pData(annot) <- subset(pData(annot), select = -c(sample.id, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8))
 pData(annot)$sample.id <- pData(annot)$vcf_id
 save(annot, file = "Topmed_annot.RData")
 
 keep_samples <- readRDS("/home/hkings/DATA/keep_samples.rds")
-keep_samples2 <- key[key$sid %in% keep_samples, "vcf_id", drop=FALSE]
+keep_samples2 <- key[key$sid %in% keep_samples, "vcf_id", drop=TRUE]
 save(keep_samples2, file = "Topmed_keep_samples.RData")
 
 if (!file.exists("Topmed_pca.RData")) {
@@ -1960,24 +1961,23 @@ nullmod_config <- c(
 )
 nullmod_config
 
-writeConfig(nullmod_config, "Topmed_null_model.config")
-
+writeConfig(nullmod_config, "/home/hkings/DATA/Topmed/Topmed_null_model.config")
 
 
 ## Association test setup
 assoc_config <- c(
   "out_prefix" = "/home/hkings/DATA/Topmed/TopMed_F508del",
-  "gds_file" = "/home/hkings/DATA/CFF_5134_onlyGT.gds",
+  "gds_file" = "/home/hkings/DATA/Topmed/CFF_5134_onlyGT.gds",
   # These two files are created by the null model code.
-  "null_model_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_null_model.RData",
-  "phenotype_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_phenotypes.RData",
+  "null_model_file" = "/home/hkings/DATA/Topmed/Topmed_F508del_null_model.RData",
+  "phenotype_file" = "/home/hkings/DATA/Topmed/Topmed_F508del_phenotypes.RData",
   "variant_include_file" = "/home/hkings/DATA/Topmed/Topmed_keep_vars.RData",
   "pass_only" = FALSE,
   "genome_build" = "hg38"
 )
 assoc_config
 
-writeConfig(assoc_config, "Topmed_assoc_single.config")
+writeConfig(assoc_config, "/home/hkings/DATA/Topmed/Topmed_assoc_single.config")
 
 ## Submit jobs to Cruncher
 cd /home/hkings/DATA/Topmed/
@@ -1985,8 +1985,56 @@ cd /home/hkings/DATA/Topmed/
 #Null model
 /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/null_model.py --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json /home/hkings/DATA/Topmed/Topmed_null_model.config
 
-#Association testing
+
+#Exit node 
+## Association testing
 /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/assoc.py single --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json -c 21-22 /home/hkings/DATA/Topmed/Topmed_assoc_single.config
+
+
+
+#OR, to run from /labdata12/CF_WGS2/temp_Hanley_null_mod:
+cd /labdata12/CF_WGS2/temp_Hanley_null_mod/
+
+## Generate config file in R with inputs for null model
+nullmod_config <- c(
+  "out_prefix" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_F508del",
+  "phenotype_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_annot.RData",
+  "sample_include_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_keep_samples.RData",
+  "relatedness_matrix_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_grm.RData",
+  "pca_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_pca.RData",
+  "outcome" = "F508_carrier",
+  "binary" = "TRUE",
+  # space separated list of covariates, excluding PCs.
+  "covars" = "site",
+  "n_pcs" = "4"
+)
+nullmod_config
+
+writeConfig(nullmod_config, "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_null_model.config")
+
+
+## Association test setup
+assoc_config <- c(
+  "out_prefix" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/TopMed_F508del",
+  "gds_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/CFF_5134_onlyGT.gds",
+  # These two files are created by the null model code.
+  "null_model_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_F508del_null_model.RData",
+  "phenotype_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_F508del_phenotypes.RData",
+  "variant_include_file" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_keep_vars.RData",
+  "pass_only" = FALSE,
+  "genome_build" = "hg38"
+)
+assoc_config
+
+
+writeConfig(assoc_config, "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_assoc_single.config")
+
+
+/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/null_model.py --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json /labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_null_model.config
+
+/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/assoc.py single --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json -c 21-22 /labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_assoc_single.config
+
+
 
 
 # 7/7
@@ -1999,6 +2047,79 @@ calculate_snp_pc_corr.sh contains:
 
 module load conda
 
-R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr_--outfile /home/hkings/DATA/6_26.6_30/snp_corr.png < plot_snp_pc_corr.R
+R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr --outfile /home/hkings/DATA/6_26.6_30/snp_corr.png --npcs 6 < plot_snp_pc_corr.R
 
 #Run with: qsub -q new.q -v R_LIBS=/home/amstilp/devel/analysis_pipeline_cff_wgs/R_library /home/hkings/DATA/6_26.6_30/plot_snp_pc_corr.sh
+
+
+#Not working. Will try running in R
+#Note: must be in directory with correlation files
+
+library(argparser)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+infile_prefix <- "/home/hkings/DATA/6_26.6_30/snp_corr"
+outfile <- "/home/hkings/DATA/6_26.6_30/snp_corr.png"
+n_pcs <- 6
+
+infile_pattern <- sprintf("%s_chr\\d+?.rds", basename(infile_prefix))
+infile_pattern
+#[1] "snp_corr__chr\\d+?.rds"
+
+files <- list.files(dirname(infile_prefix), pattern = infile_pattern)
+
+corr_list <- lapply(files, function(x) readRDS(x))
+
+
+# Put in chr/pos order.
+corr <- bind_rows(corr_list) %>%
+  mutate(chromosome = ordered(chromosome, levels = c(1:22, "X"))) %>%
+  arrange(chromosome, position)
+
+# Add variant filtering.
+
+# Reshape data to long format for plotting.
+dat <- corr %>%
+  pivot_longer(cols = starts_with("PC"), names_to = "PC", values_to = "corr") %>%
+  mutate(
+    abs_corr = abs(corr)
+  ) %>%
+  arrange(chromosome, position) %>%
+  mutate(xpos = 1:n()) %>%
+  filter(!is.na(corr))
+
+
+# Thin points - up to 10,000 points from evenly spaced bins.
+dat_thinned <- dat %>%
+  group_by(PC) %>%
+  mutate(bin = ntile(corr, 10)) %>%
+  ungroup() %>%
+  group_by(PC, bin) %>%
+  sample_n(min(n(), 10000))
+
+chrs <- sort(unique(dat_thinned$chromosome))
+cmap <- setNames(rep(c("grey20", "grey50"), length.out = length(chrs)), chrs)
+chr_labels <- dat_thinned %>% group_by(chromosome) %>% summarise(xpos = mean(xpos))
+
+p <-
+  ggplot(dat_thinned, aes( x = xpos, y = abs_corr)) +
+  geom_point(aes(color = chromosome), size = 0.2) +
+  scale_color_manual(values = cmap, breaks = names(cmap)) +
+  facet_grid(rows = vars(PC)) +
+  theme_bw() +
+  ylim(c(0, 1)) +
+  theme(
+    legend.position = "none",
+    panel.grid = element_blank()
+    #panel.grid.minor = element_blank()
+  ) +
+  # Chromosome labels at midpoint of the chromosome.
+  scale_x_continuous(label = chr_labels$chromosome, breaks = chr_labels$xpos) +
+  xlab("Chromosome") +
+  ylab("abs(r)")
+
+
+ggsave(outfile, plot = p)
+
