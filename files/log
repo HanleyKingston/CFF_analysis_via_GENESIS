@@ -1898,6 +1898,8 @@ R -q --vanilla --args /home/hkings/DATA/2_26.2_30/redo_noPCsF508/F508del_noPCsas
 
 # 7/6
 ## Running in Topmed pipeline
+cd /home/hkings/DATA
+
 .libPaths("/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/R_library/")
 library(TopmedPipeline)
 library(GENESIS)
@@ -1905,22 +1907,50 @@ library(Biobase)
 library(tidyverse)
 
 #Saved 6_26 files As RData files in Topmed folder
-annot <- readRDS("6_26.6_30/annot.rds")
-save(annot, file = "Topmed/Topmed_annot.RData")
-pcr <- readRDS("6_26.6_30/6_26pcr_mat.rds")
-save(pcr, file="Topmed/Topmed_pcr_mat.RData")
-pca <- readRDS("6_26.6_30/6_26pcair.rds")
-save(pca, file =  "Topmed/Topmed_pca.RData")
-keep_samples <- readRDS("keep_samples.rds")
-save(keep_samples, file = "Topmed/Topmed_keep_samples.RData")
+key <- readr::read_tsv("/labdata12/CF_WGS2/cff_gwas/tables/key_cffwgs.tsv")
+
+annot <- readRDS("/home/hkings/DATA/6_26.6_30/annot.rds")
+pData(annot) <- pData(annot)[,-1]
+pData(annot)$sample.id <- pData(annot)$vcf_id
+save(annot, file = "Topmed_annot.RData")
+
+keep_samples <- readRDS("/home/hkings/DATA/keep_samples.rds")
+keep_samples2 <- key[key$sid %in% keep_samples, "vcf_id", drop=FALSE]
+save(keep_samples2, file = "Topmed_keep_samples.RData")
+
+if (!file.exists("Topmed_pca.RData")) {
+  pcs <- readRDS("/home/hkings/DATA/6_26.6_30/6_26pcair.rds")
+  # Map ids to match the VCF ids. Note this is only mapping the vectors element, but I think that's ok...
+  j <- match(rownames(pcs$vectors), key$sid)
+  stopifnot(all.equal(rownames(pcs$vectors), key$sid[j]))
+  rownames(pcs$vectors) <- key$vcf_id[j]
+  save(pcs, file = "Topmed_pca.RData")
+}
+
+
+if (!file.exists("Topmed_pcr_mat.RData")) {
+  grm <- readRDS("/home/hkings/DATA/6_26.6_30/6_26pcrelate.rds")
+  # Map grm_mat ids to match the VCF ids.
+  grm_mat <- pcrelateToMatrix(grm, thresh = NULL)
+  stopifnot(all.equal(rownames(grm_mat), colnames(grm_mat)))
+  j <- match(rownames(grm_mat), key$sid)
+  stopifnot(all.equal(rownames(grm_mat), key$sid[j]))
+  rownames(grm_mat) <- key$vcf_id[j]
+  colnames(grm_mat) <- key$vcf_id[j]
+  save(grm_mat, file = "Topmed_grm.RData")
+}
+
+
+vars <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
+save(vars, file = "Topmed/Topmed_keep_vars.RData")
 
 
 ## Generate config file in R with inputs for null model
 nullmod_config <- c(
-  "out_prefix" = "/home/hkings/DATA/Topmed/Topmed_F508del",
+  "out_prefix" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_F508del",
   "phenotype_file" = "/home/hkings/DATA/Topmed/Topmed_annot.RData",
   "sample_include_file" = "/home/hkings/DATA/Topmed/Topmed_keep_samples.RData",
-  "relatedness_matrix_file" = "/home/hkings/DATA/Topmed/Topmed_pcr_mat.RData",
+  "relatedness_matrix_file" = "/home/hkings/DATA/Topmed/Topmed_grm.RData",
   "pca_file" = "/home/hkings/DATA/Topmed/Topmed_pca.RData",
   "outcome" = "F508_carrier",
   "binary" = "TRUE",
@@ -1933,13 +1963,11 @@ nullmod_config
 writeConfig(nullmod_config, "Topmed_null_model.config")
 
 
-vars <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
-save(vars, file = "Topmed/Topmed_keep_vars.RData")
 
 ## Association test setup
 assoc_config <- c(
   "out_prefix" = "/home/hkings/DATA/Topmed/TopMed_F508del",
-  "gds_file" = "/home/hkings/DATA/CFF_sid_onlyGT.gds",
+  "gds_file" = "/home/hkings/DATA/CFF_5134_onlyGT.gds",
   # These two files are created by the null model code.
   "null_model_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_null_model.RData",
   "phenotype_file" = "/home/hkings/DATA/Topmed/TopMed_F508del_noPCs_phenotypes.RData",
@@ -1954,6 +1982,23 @@ writeConfig(assoc_config, "Topmed_assoc_single.config")
 ## Submit jobs to Cruncher
 cd /home/hkings/DATA/Topmed/
 
+#Null model
 /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/null_model.py --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json /home/hkings/DATA/Topmed/Topmed_null_model.config
 
+#Association testing
+/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/assoc.py single --cluster_file /labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/cluster_cfg.json -c 21-22 /home/hkings/DATA/Topmed/Topmed_assoc_single.config
 
+
+# 7/7
+## Get PC-correlation plots to work
+calculate_snp_pc_corr.sh contains:
+#$ -S /bin/sh
+#$ -N plot_snp_pc_corr
+#$ -cwd
+#$ -j y
+
+module load conda
+
+R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr_--outfile /home/hkings/DATA/6_26.6_30/snp_corr.png < plot_snp_pc_corr.R
+
+#Run with: qsub -q new.q -v R_LIBS=/home/amstilp/devel/analysis_pipeline_cff_wgs/R_library /home/hkings/DATA/6_26.6_30/plot_snp_pc_corr.sh
