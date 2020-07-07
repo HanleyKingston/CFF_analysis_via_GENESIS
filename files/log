@@ -1948,7 +1948,7 @@ save(vars, file = "Topmed/Topmed_keep_vars.RData")
 
 ## Generate config file in R with inputs for null model
 nullmod_config <- c(
-  "out_prefix" = "/labdata12/CF_WGS2/temp_Hanley_null_mod/Topmed_F508del",
+  "out_prefix" = "/home/hkings/DATA/Topmed/Topmed_F508del",
   "phenotype_file" = "/home/hkings/DATA/Topmed/Topmed_annot.RData",
   "sample_include_file" = "/home/hkings/DATA/Topmed/Topmed_keep_samples.RData",
   "relatedness_matrix_file" = "/home/hkings/DATA/Topmed/Topmed_grm.RData",
@@ -2047,7 +2047,7 @@ calculate_snp_pc_corr.sh contains:
 
 module load conda
 
-R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr --outfile /home/hkings/DATA/6_26.6_30/snp_corr.png --npcs 6 < plot_snp_pc_corr.R
+R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr_ --outfile /home/hkings/DATA/6_26.6_30/snp_corr.png --npcs 6 < plot_snp_pc_corr.R
 
 #Run with: qsub -q new.q -v R_LIBS=/home/amstilp/devel/analysis_pipeline_cff_wgs/R_library /home/hkings/DATA/6_26.6_30/plot_snp_pc_corr.sh
 
@@ -2122,4 +2122,17 @@ p <-
 
 
 ggsave(outfile, plot = p)
+#This worked except for some reason it only saved 3 PCs even though it siad it was saving 7
 
+
+cd /home/hkings/DATA/6_26.6_30
+
+#plot_snp_pc_corr.R now contains
+R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr --outfile /home/hkings/DATA/6_26.6_30/snp_corr.png --npcs 6 < /home/hkings/DATA/plot_snp_pc_corr.R
+
+
+
+
+# 7/7
+Set up seperate folders for full association tests using the topmed pipeline
+Generation of config files is in a readme in each subfolder
