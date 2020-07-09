@@ -1,3 +1,5 @@
+.libPaths("/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/R_library/")
+
 library(argparser)
 library(dplyr)
 library(tidyr)
