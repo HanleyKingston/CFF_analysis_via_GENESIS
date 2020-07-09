@@ -2127,11 +2127,40 @@ ggsave(outfile, plot = p)
 
 cd /home/hkings/DATA/6_26.6_30
 
-#plot_snp_pc_corr.R now contains
+#plot_snp_pc_corr.sh now contains
 R -q --no-save --args --infile-prefix /home/hkings/DATA/6_26.6_30/snp_corr --outfile /home/hkings/DATA/6_26.6_30/snp_corr.png --npcs 6 < /home/hkings/DATA/plot_snp_pc_corr.R
+#Error: Problem with `mutate()` input `chromosome`.
+#âœ– object 'chromosome' not found
+
+
+#Shouldn't incldue full file path to infile-prefix
+R -q --no-save --args --infile-prefix snp_corr --outfile snp_corr.png --npcs 6 < /home/hkings/DATA/plot_snp_pc_corr.R
+#Error: corr_list <- lapply(files, function(x) readRDS(x))
+Error in readRDS(x) : unknown input format
 
 
 
+library(argparser)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+infile_prefix <- "snp_corr"
+outfile <- "/home/hkings/DATA/6_26.6_30/snp_corr.png"
+n_pcs <- 6
+
+infile_pattern <- sprintf("%s_chr\\d+?.rds", basename(infile_prefix))
+infile_pattern
+#[1] "snp_corr__chr\\d+?.rds"
+
+files <- list.files(dirname(infile_prefix), pattern = infile_pattern)
+
+corr_list <- lapply(files, function(x) readRDS(x))
+
+corr <- bind_rows(corr_list) %>%
+  mutate(chromosome = ordered(chromosome, levels = c(1:22, "X"))) %>%
+  arrange(chromosome, position)
+#This works! Why doesn't it work in my script?
 
 # 7/7
 Set up seperate folders for full association tests using the topmed pipeline
