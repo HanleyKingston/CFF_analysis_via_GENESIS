@@ -2,6 +2,7 @@ library(SeqArray)
 library(GENESIS)
 
 #Make a dataframe of chr 7 SNPs to incldue in filter of SNPs to exclude in LD-steps
+#Should just be able to do this with seqSetFilterChrom but it doesn't take the intersection so not sure how to handle that
 exclude_regions <- data.frame(t(c(7, 1, 159345973, "exclude_chr7_to_exclude_deltaF508")))
 colnames(exclude_regions) <- c("chrom", "start.base", "end.base", "comment")
 rownames(exclude_regions) <- "chr7"
@@ -21,7 +22,10 @@ for (f in 1:nrow(filt)) {
     pca.filt[chrom == filt$chrom[f] & filt$start.base[f] < pos & pos < filt$end.base[f]] <- FALSE
 }
 seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
+# of selected variants: 118,543,519
 
+#Check
+unique(seqGetData(gds, "chromosome")) #There are still some variants on chr7
 
 non_prob_snps <- seqGetData(gds, "variant.id")
 saveRDS(non_prob_snps, "non_prob_snps.rds")
@@ -34,6 +38,7 @@ length(variant.id)
 
 #Save final filter to pass to LD-pruning
 pre_LD_SNP_filter <- intersect(non_prob_snps, variant.id)
+
 length(pre_LD_SNP_filter)
 #[1] 81569276
 saveRDS(pre_LD_SNP_filter, "pre_LD_SNP_filter.rds")
