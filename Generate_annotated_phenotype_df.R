@@ -49,6 +49,7 @@ metadata <- data.frame(labelDescription = c(
   "recruitment site - may have errors",
   "count of F508 deletion",
   "carrier of one of more coppies of F508 deletion. 1 = Yes",
+  "F508del homozygote, 1 = yes (homozygotes for non-F508del alleles are excldued)",
   "self-reported race or ethnicity - note, hispanic whites are reported as hispanic and white Native Americans as Native American",
   "does participant self-report as white - not: need to check if this is actually self-report",
   "does participant self-report as black",
