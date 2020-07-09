@@ -77,8 +77,8 @@ table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_
 # 349 4617
 
 #Create column of deltaF508 heterozygote or homozygote
-phenotype_pruned$F508_hom <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
-                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, NA))
+phenotype_pruned$F508_hom <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 1,
+                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 0, NA))
 table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_hom)
 #   1    2
 #1724 2893
