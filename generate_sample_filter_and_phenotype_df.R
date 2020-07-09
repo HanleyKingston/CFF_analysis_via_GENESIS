@@ -70,12 +70,20 @@ table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_
 #   0    1    2
 # 349 1724 2893
 
-
-
+#Create column of deltaF508 carrier
 phenotype_pruned$F508_carrier <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0)
 table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_carrier)
 #   0    1
 # 349 4617
+
+#Create column of deltaF508 heterozygote or homozygote
+phenotype_pruned$F508_hom <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
+                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, NA))
+table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_hom)
+#   1    2
+#1724 2893
+
+
 
 #Create a column of self-reported race (need to verify if this is self-report):
 phenotype_pruned$race_or_ethnicity <- NULL
@@ -159,7 +167,7 @@ unique(phenotype_pruned$sex_registry)
 phenotype_pruned$sex_registry <- ifelse(phenotype_pruned$sex_registry == "F", 0, 1)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "F508_carrier", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
     
 saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
 
