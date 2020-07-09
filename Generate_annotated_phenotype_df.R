@@ -1,5 +1,6 @@
 #Load phenotype data:
 phenotype <- readRDS("phenotype.rds")
+keep_samples <- readRDS("keep_samples.rds")
 
 ##The null model requires a sample ID column:
 phenotype$sample.id <- as.character(phenotype$sid)
