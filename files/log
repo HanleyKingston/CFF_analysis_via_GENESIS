@@ -2201,6 +2201,7 @@ R -q --vanilla --args /home/hkings/DATA/CFF_sid_onlyGT.gds annot.rds 6_26pcr_mat
 #Calls: fitNullModel ... .computeSigmaQuantities -> chol -> chol -> .local -> as -> asMethod
 #Execution halted
 
+#This was from using the wrong outcome. I fixed above
 
 
 ## Try running in R
@@ -2255,3 +2256,69 @@ message(nullmod$fixef)
 assoc <- assocTestSingle(iterator, nullmod)
 saveRDS(assoc, argv$out_file)
 seqClose(gds)
+
+
+
+# 7/19
+## Check which PCs are correlated with chr7
+chr7 <- readRDS("/home/hkings/DATA/6_26.6_30/snp_corr_chr7.rds")
+colnames(chr7) <- c("variant.id", "chromosome", "position", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6")
+
+#From dbSNP: F508del = rs113993960
+#chr7:117559591-117559594
+
+
+#Look at 10 bp on either side of F508del
+chr7[chr7$position > 117559581 & chr7$position < 117559604,]
+
+#        variant.id chromosome  position         PC1          PC2          PC3
+#4847470   54413957          7 117559586 0.009482818 -0.010815004 -0.005325868
+#4847471   54413958          7 117559588 0.001785449 -0.008038704 -0.003921802
+#4847472   54413959          7 117559590 0.193141764  0.076486192  0.211967259
+#4847473   54413960          7 117559594 0.007650481  0.006598179  0.009616552
+#4847474   54413961          7 117559601 0.004660073  0.004650214  0.007844143
+#                 PC4           PC5         PC6
+#4847470 -0.011617509  1.564818e-02 -0.01973384
+#4847471 -0.011353335  1.633033e-02 -0.02043901
+#4847472 -0.031192602  4.078805e-02 -0.03525805
+#4847473 -0.007339455  4.311553e-03  0.00292458
+#4847474 -0.017247009 -4.066192e-05  0.01279516
+
+PCs 1 and 3 appear to have some correlation with the CFTR F508del region
+
+### Look at entiure CFTR gene: 117,480,025 to 117,668,665
+CFTR <- chr7[chr7$position > 117480025 & chr7$position < 117668665, ]
+CFTR[,4:9] <- abs(CFTR[,4:9])
+
+CFTR_max <- abs(CFTR)
+CFTR_max <- sapply(CFTR_max, max, na.rm = TRUE)
+CFTR_max
+#      PC1       PC2       PC3       PC4       PC5       PC6
+#0.5108710 0.2807433 0.4594791 0.2141001 0.2920012 0.4948701
+
+for(i in 1:6){
+number <-sum(chr7[4:9][i] > CFTR_max[i], na.rm = TRUE)
+print(number)
+percent <- 100*sum(chr7[4:9][i] > CFTR_max[i], na.rm = TRUE)/nrow(na.omit(chr7[4:9][i]))
+print(percent)
+}
+
+#This is the number and percent of variants greater than the highest peak in CFTR
+#[1] 478
+#[1] 0.008038718
+#[1] 369
+#[1] 0.006205621
+#[1] 64
+#[1] 0.001076314
+#[1] 1861
+#[1] 0.03129718
+#[1] 1329
+#[1] 0.02235033
+#[1] 126
+#[1] 0.002118993
+
+
+
+#I can't figure out how to get the positions associated with these maxima
+
+
