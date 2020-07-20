@@ -2199,8 +2199,7 @@ R -q --vanilla --args /home/hkings/DATA/CFF_sid_onlyGT.gds annot.rds 6_26pcr_mat
 
 R -q --vanilla --args one_run_7_23_assoc.rds --out_prefix one_run_7_13_F508 --qq_ylim 10 --Man_ylim 6 < /home/hkings/DATA/assoc_plots.R &
 
-
-R -q --vanilla --args /home/hkings/DATA/CFF_sid_onlyGT.gds annot.rds 6_26pcr_mat.rds F508_count poisson --out_file one_run_7_23_assoc.rds --covars "site" --variant_id /home/hkings/DATA/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id /home/hkings/DATA/keep_samples.rds < /home/hkings/DATA/association_test.R > one_run_7_13_assoc_test.log &
+#I got a lambda of 0.48 (which matches what I got using parallelization)... It seems like everything is decreased by half :( !!!
 
 
 #Error in asMethod(object) : not a positive definite matrix
@@ -2326,5 +2325,85 @@ print(percent)
 
 
 #I can't figure out how to get the positions associated with these maxima
+
+
+
+
+
+# 7/20
+##Re-generate correlation plots with CFTR region highlighted - can't figure out how to do
+.libPaths("/labdata12/CF_WGS2/amstilp/analysis_pipeline_cff_wgs/R_library/")
+
+library(argparser)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+infile_prefix <- "/home/hkings/DATA/6_26.6_30/snp_corr"
+outfile <- "/home/hkings/DATA/6_26.6_30/snp_corr.png"
+n_pcs <- 6
+
+infile_pattern <- sprintf("%s_chr\\d+?.rds", basename(infile_prefix))
+infile_pattern
+#[1] "snp_corr__chr\\d+?.rds"
+
+files <- list.files(dirname(infile_prefix), pattern = infile_pattern)
+
+corr_list <- lapply(files, function(x) readRDS(x))
+
+
+# Put in chr/pos order.
+corr <- bind_rows(corr_list) %>%
+  mutate(chromosome = ordered(chromosome, levels = 1:22)) %>%
+  arrange(chromosome, position)
+
+# Add variant filtering.
+
+# Reshape data to long format for plotting.
+dat <- corr %>%
+  pivot_longer(cols = starts_with("PC"), names_to = "PC", values_to = "corr") %>%
+  mutate(
+    abs_corr = abs(corr)
+  ) %>%
+  arrange(chromosome, position) %>%
+  mutate(xpos = 1:n()) %>%
+  filter(!is.na(corr))
+
+
+# Thin points - up to 10,000 points from evenly spaced bins.
+dat_thinned <- dat %>%
+  group_by(PC) %>%
+  mutate(bin = ntile(corr, 10)) %>%
+  ungroup() %>%
+  group_by(PC, bin) %>%
+  sample_n(min(n(), 10000))
+
+chrs <- sort(unique(dat_thinned$chromosome))
+cmap <- setNames(rep(c("grey20", "grey50"), length.out = length(chrs)), chrs)
+chr_labels <- dat_thinned %>% group_by(chromosome) %>% summarise(xpos = mean(xpos))
+
+
+dat_thinned$CFTR <- ifelse(dat_thinned$chromosome == "7" & dat_thinned$position > 117480025 & dat_thinned$position < 117668665, "CFTR", "notCFTR")
+
+p <-
+  ggplot(dat_thinned, aes( x = xpos, y = abs_corr)) +
+  geom_point(aes(color = CFTR), size = 0.2) +
+  scale_color_manual(values = cmap, breaks = names(cmap)) +
+  facet_grid(rows = vars(PC)) +
+  theme_bw() +
+  ylim(c(0, 1)) +
+  theme(
+    legend.position = "none",
+    panel.grid = element_blank()
+    #panel.grid.minor = element_blank()
+  ) +
+  # Chromosome labels at midpoint of the chromosome.
+  scale_x_continuous(label = chr_labels$chromosome, breaks = chr_labels$xpos) +
+  xlab("Chromosome") +
+  ylab("abs(r)")
+
+
+ggsave("CFTR_SNP_corr.png", plot = p)
+
 
 
