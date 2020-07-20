@@ -2407,3 +2407,60 @@ ggsave("CFTR_SNP_corr.png", plot = p)
 
 
 
+
+
+# 7/20
+## Look for APOE in CFTR varaints
+library(SeqArray)
+gds <- seqOpen("/home/hkings/DATA/CFF_5134_onlyGT.gds")
+vars <- seqGetData(gds, "variant.id")
+chrom <- seqGetData(gds, "chromosome")
+pos <- seqGetData(gds, "position")
+
+var.df <- data.frame(var.id = vars, chrom = chrom, pos = pos)
+str(var.df)
+#'data.frame':   120139844 obs. of  3 variables:
+# $ var.id: int  1 2 3 4 5 6 7 8 9 10 ...
+# $ chrom : Factor w/ 23 levels "1","10","11",..: 1 1 1 1 1 1 1 1 1 1 ...
+# $ pos   : int  10109 10114 10116 10117 10119 10122 10128 10137 10138 10140 ...
+
+
+#From https://www.snpedia.com/index.php/APOE
+#rs429358	rs7412	Name
+#C	        T	    ε1
+#T	        T	    ε2
+#T	        C	    ε3
+#C	        C	    ε4
+
+#rs429358: Position: chr19:44908684 (GRCh38.p12) (from https://www.ncbi.nlm.nih.gov/snp/rs429358)
+#rs7412: Position: chr19:44908822 (GRCh38.p12) (from https://www.ncbi.nlm.nih.gov/snp/rs7412#clinical_significance)
+
+allele1 <- var.df[var.df$chrom == "19" & var.df$pos == 44908684, "var.id"]
+allele2 <- var.df[var.df$chrom == "19" & var.df$pos == 44908822, "var.id"]
+
+seqSetFilter(gds, variant.id = c(allele1, allele2))
+# of selected variants: 2
+
+APOE_genotypes <- getGenotypeAlleles(gds)
+
+APOE_genotypes <- [APOE_genotypes$
+str(APOE_genotypes)
+# chr [1:5134, 1:2] "T/T" "T/T" "T/T" "T/T" "T/T" "T/T" "T/C" "T/T" "T/C" ...
+# - attr(*, "dimnames")=List of 2
+#  ..$ sample : chr [1:5134] "JHU_BL_01_1" "JHU_BL_02_1" "JHU_BL_03_1" "JHU_BL_04_1" ...
+#  ..$ variant: chr [1:2] "108506823" "108506828"
+
+E <- ifelse(APOE_genotypes[,1] == "C/C" & APOE_genotypes[,2] == "C", "E4", ifelse()
+
+#To look at entire APOE gene:
+
+#APOE genomic coordinates: 19:44,905,795-44,909,394 (from NCBI)
+APOE_vars <- var.df[var.df$chrom == "19" & var.df$pos > 44905795 & var.df$pos < 44909394, "var.id"]
+str(APOE_vars)
+# int [1:137] 108506722 108506723 108506724 108506725 108506726 108506727 108506728 108506729 108506730 108506731 ...
+
+seqSetFilter(gds, variant.id = APOE_vars)
+# of selected variants: 137
+
+
+
