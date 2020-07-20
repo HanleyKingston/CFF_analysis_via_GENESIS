@@ -2191,10 +2191,16 @@ print(sessionInfo())
 #This is the same. I'm out of ideas... will have to jsut run this in R
 
 
-# 7/13
+# 7/13-
 ## Rerun associartion testing without segregating by chromosome
 #Run from /home/hkings/DATA/6_26.6_30/ on node 18
 R -q --vanilla --args /home/hkings/DATA/CFF_sid_onlyGT.gds annot.rds 6_26pcr_mat.rds F508_count poisson --out_file one_run_7_23_assoc.rds --covars "PC1 PC2 PC3 PC4 site" --variant_id /home/hkings/DATA/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id /home/hkings/DATA/keep_samples.rds < /home/hkings/DATA/association_test.R > one_run_7_23_assoc_test.log &
+
+
+R -q --vanilla --args one_run_7_23_assoc.rds --out_prefix one_run_7_13_F508 --qq_ylim 10 --Man_ylim 6 < /home/hkings/DATA/assoc_plots.R &
+
+
+R -q --vanilla --args /home/hkings/DATA/CFF_sid_onlyGT.gds annot.rds 6_26pcr_mat.rds F508_count poisson --out_file one_run_7_23_assoc.rds --covars "site" --variant_id /home/hkings/DATA/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds --sample_id /home/hkings/DATA/keep_samples.rds < /home/hkings/DATA/association_test.R > one_run_7_13_assoc_test.log &
 
 
 #Error in asMethod(object) : not a positive definite matrix
