@@ -2464,3 +2464,77 @@ seqSetFilter(gds, variant.id = APOE_vars)
 
 
 
+
+# 7/21
+## Find if past hits are replicated
+### From UNC/NCSU: hits in SaKnorm (see Liz email 7/21)
+#locus	rsid	hg38	alleles	  AS_pval	slide_pval
+#MUC4/MUC20	rs3103933	3:195758569	A>C,G,T	  2.12E-05	  1e-05 to 1e-06
+#SLC9A3	rs57221529	5:586509	A>G	3.47E-04	  just below 1e-05
+#HLA-DRA/HLA Class II	rs116003090/rs9391781	6:32467073	G>A,C,T	4.85E-06	  probably obscured by PNPLA1, near 1e-05
+#EHF/APIP	rs10742326	11:34788463	G>A	3.20E-04	  1e-04 to 1e-05?
+#AGTR2/SLC6A14	rs5952223	X:116255308 	C>T	8.56E-05	1.00E-08
+
+### Are these hits included in QC'd variants?
+library(SeqArray)
+library(SeqVarTools)
+
+gds <- seqOpen("/labdata12/CF_WGS2/draft_shared/variants/CFF_5134_onlyGT.gds")
+SNPs <- readr::read_tsv("/labdata12/CF_WGS2/draft_shared/variants/snp_filtered_bi.tsv")
+
+gds_vars <- variantInfo(gds)
+head(gds_vars)
+#  variant.id chr   pos    ref    alt
+#1          1   1 10109 AACCCT      A
+#2          2   1 10114     TA CA,T,*
+#...
+
+SNPs[SNPs$chrom == 3 & SNPs$pos == 195758569, "variant.id"]
+#1   27697517
+SNPs[SNPs$chrom == 5 & SNPs$pos == 586509, "variant.id"]
+#1   35611591
+SNPs[SNPs$chrom == 6 & SNPs$pos == 32467073, "variant.id"]
+#1   44130699
+SNPs[SNPs$chrom == 11 & SNPs$pos == 34788463, "variant.id"]
+#1   74576948
+#Did not include X chromosome... will run again with X
+SNPs[SNPs$chrom == "X" & SNPs$pos == 116255308, "variant.id"]
+
+gds_vars[gds_vars$variant.id == 27697517,]
+#         variant.id chr       pos ref alt
+#27697517   27697517   3 195758569   A   G
+gds_vars[gds_vars$variant.id == 35611591,]
+#         variant.id chr    pos ref alt
+#35611591   35611591   5 586509   A   G
+gds_vars[gds_vars$variant.id == 44130699,]
+#         variant.id chr      pos ref alt
+#44130699   44130699   6 32467073   G   C
+gds_vars[gds_vars$variant.id == 74576948,]
+#         variant.id chr      pos ref alt
+#74576948   74576948  11 34788463   G   A
+
+#Because snp_filtered_bi.tsv does not filter by missingngess or MAF, need to test that seperately for these variants
+seqSetFilter(gds, variant.id = c(27697517, 35611591, 44130699, 74576948))
+## of selected variants: 4
+
+miss <- missingGenotypeRate(gds)
+miss
+#[1] 0.0000000000 0.0001947799 0.0000000000 0.0001947799
+afreq <- alleleFrequency(gds) 
+maf <- pmin(afreq, 1-afreq)
+maf
+#[1] 0.2943124 0.2128385 0.3304441 0.4180791
+
+
+
+## Where do these hits fall in my Knorma results?
+load("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_assoc_single_chr1.RData")
+assoc_full <- assoc
+
+for(i in 2:22){
+load(paste0("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_assoc_single_", "chr", i, ".RData"))
+chr <- rbind(assoc_full, assoc)
+}
+
+
+saveRDS("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_6PCs_assoc_single_allChr.rds")
