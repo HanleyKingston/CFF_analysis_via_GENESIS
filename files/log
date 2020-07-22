@@ -2468,12 +2468,13 @@ seqSetFilter(gds, variant.id = APOE_vars)
 # 7/21
 ## Find if past hits are replicated
 ### From UNC/NCSU: hits in SaKnorm (see Liz email 7/21)
-#locus	rsid	hg38	alleles	  AS_pval	slide_pval
+#locus	rsid	hg38	alleles	  AS_pval	slide_pval 
 #MUC4/MUC20	rs3103933	3:195758569	A>C,G,T	  2.12E-05	  1e-05 to 1e-06
-#SLC9A3	rs57221529	5:586509	A>G	3.47E-04	  just below 1e-05
+#SLC9A3	rs57221529	5:586509	A>G	3.47E-04	  just below 1e-05  
 #HLA-DRA/HLA Class II	rs116003090/rs9391781	6:32467073	G>A,C,T	4.85E-06	  probably obscured by PNPLA1, near 1e-05
 #EHF/APIP	rs10742326	11:34788463	G>A	3.20E-04	  1e-04 to 1e-05?
 #AGTR2/SLC6A14	rs5952223	X:116255308 	C>T	8.56E-05	1.00E-08
+
 
 ### Are these hits included in QC'd variants?
 library(SeqArray)
@@ -2528,13 +2529,60 @@ maf
 
 
 ## Where do these hits fall in my Knorma results?
-load("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_assoc_single_chr1.RData")
+load("/labdata12/CF_WGS2/shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_6PCs_assoc_single_chr1.RData")
 assoc_full <- assoc
 
 for(i in 2:22){
-load(paste0("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_assoc_single_", "chr", i, ".RData"))
-chr <- rbind(assoc_full, assoc)
+load(paste0("/labdata12/CF_WGS2/shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_6PCs_assoc_single_", "chr", i, ".RData"))
+assoc_full <- rbind(assoc_full, assoc)
 }
 
+nrow(assoc_full)
+#[1] 5490867
 
-saveRDS("/labdata12/CF_WGS2/draft_shared/analyses/hkings/knorma_assoc/knorma_6PCs/data/Topmed_Knorma_6PCs_assoc_single_allChr.rds")
+
+subset(assoc_full, variant.id == 27697517 | variant.id == 35611591 | variant.id == 44130699 | variant.id == 74576948)[,c("variant.id", "chr", "pos", "Score.pval")]
+#        variant.id  chr       pos   Score.pval  AS_pval     slide_pval          rsid UNC_NCSU           nearbye_hit_from_Paul(pos)  rsid_Knorma_PC_air_from_Paul    P_value_from_Paul
+#1259670   27697517   3 195758569 1.111614e-04  2.12E-05	1e-05 to 1e-06      rs3103933               195758569                   rs3103933                       8.82e-6 
+#1667063   35611591   5    586509 9.010374e-04  3.47E-04	just below 1e-05    rs57221529              74451456                    rs294975                        3.13e-06
+#2104632   44130699   6  32467073 3.482529e-06  4.85E-06	near 1e-05          rs116003090/rs9391781   32467073                    rs9391781                       4.85e-05
+#3619975   74576948  11  34788463 6.134021e-04  3.20E-04	1e-04 to 1e-05?     rs10742326              34829636                    rs2915186                       9.15e-05
+#Note: AS_pval and slide_pval came from Liz's estimates from Corvol et al. (2015) PMC4589222 (I added them in after
+
+
+### Find hits in Paul's table near hits from Corvol
+#Make UNC_NCSU into a table of position ranges
+UNC_NCSU_hits <- subset(assoc_full, variant.id == 27697517 | variant.id == 35611591 | variant.id == 44130699 | variant.id == 74576948)[,c("variant.id", "chr", "pos", "Score.pval")]
+
+UNC_NCSU_hits$start_pos <- UNC_NCSU_hits$pos - 1000000
+UNC_NCSU_hits$end_pos <- UNC_NCSU_hits$pos + 1000000
+
+#Read table from Paul in as SNP table
+Paul_top_SNPs <- read.table("/labdata12/CF_WGS2/shared/external/paul_knorma/knorma_pcair_top.txt", header = TRUE)
+
+SNPs_in_range <- function(SNP_table, ranges_table){
+  matches <- list()
+  j=1
+  for(position in SNP_table$pos){
+	   for(i in 1:nrow(ranges_table)){
+		     if(ranges_table$start_pos[i] <= position & ranges_table$end_pos[i] >= position & SNP_table$chr[j] == ranges_table$chr[i]){
+               if(SNP_table[SNP_table$chr == ranges_table$chr[i] & SNP_table$pos == position
+               print(SNP_table[SNP_table$chr == ranges_table$chr[i] & SNP_table$pos == position,c("chr", "pos", "Score.pval")])
+		     }
+	   }
+     j = j + 1
+   }
+}
+#This isn't working... need to figure out how to make dataframes in for-loops
+
+#NEater table:
+variant.id  chr       pos            HK_pval    AS_pval        slide_pval              rsid UNC_NCSU                     PG_pos            PG_rsid             PG_pval_value
+27697517   3 195758569   1.11e-04   2.12E-05     1e-05 to 1e-06      rs3103933                             195758569     rs3103933        8.82e-6 
+35611591   5    586509       9.01-04    3.47E-04	just below 1e-05    rs57221529                          74451456       rs294975          3.13e-06
+44130699   6  32467073    3.48e-06  4.85E-06	near 1e-05              rs116003090/rs9391781   32467073       rs9391781        4.85e-05
+74576948  11  34788463   6.13e-04  3.20E-04	1e-04 to 1e-05?     rs10742326                          34829636       rs2915186       9.15e-05
+*AS = Adrienne
+HK = Hanley
+PG = Paul
+
+SNPs_in_range(Paul_top_SNPs, UNC_NCSU_hits)
