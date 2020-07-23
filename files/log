@@ -2544,7 +2544,7 @@ nrow(assoc_full)
 subset(assoc_full, variant.id == 27697517 | variant.id == 35611591 | variant.id == 44130699 | variant.id == 74576948)[,c("variant.id", "chr", "pos", "Score.pval")]
 #        variant.id  chr       pos   Score.pval  AS_pval     slide_pval          rsid UNC_NCSU           nearbye_hit_from_Paul(pos)  rsid_Knorma_PC_air_from_Paul    P_value_from_Paul
 #1259670   27697517   3 195758569 1.111614e-04  2.12E-05	1e-05 to 1e-06      rs3103933               195758569                   rs3103933                       8.82e-6 
-#1667063   35611591   5    586509 9.010374e-04  3.47E-04	just below 1e-05    rs57221529              74451456                    rs294975                        3.13e-06
+#1667063   35611591   5    586509 9.010374e-04  3.47E-04	just below 1e-05    rs57221529                                                       
 #2104632   44130699   6  32467073 3.482529e-06  4.85E-06	near 1e-05          rs116003090/rs9391781   32467073                    rs9391781                       4.85e-05
 #3619975   74576948  11  34788463 6.134021e-04  3.20E-04	1e-04 to 1e-05?     rs10742326              34829636                    rs2915186                       9.15e-05
 #Note: AS_pval and slide_pval came from Liz's estimates from Corvol et al. (2015) PMC4589222 (I added them in after
@@ -2575,14 +2575,20 @@ SNPs_in_range <- function(SNP_table, ranges_table){
 }
 #This isn't working... need to figure out how to make dataframes in for-loops
 
-#NEater table:
-variant.id  chr       pos            HK_pval    AS_pval        slide_pval              rsid UNC_NCSU                     PG_pos            PG_rsid             PG_pval_value
-27697517   3 195758569   1.11e-04   2.12E-05     1e-05 to 1e-06      rs3103933                             195758569     rs3103933        8.82e-6 
-35611591   5    586509       9.01-04    3.47E-04	just below 1e-05    rs57221529                          74451456       rs294975          3.13e-06
-44130699   6  32467073    3.48e-06  4.85E-06	near 1e-05              rs116003090/rs9391781   32467073       rs9391781        4.85e-05
-74576948  11  34788463   6.13e-04  3.20E-04	1e-04 to 1e-05?     rs10742326                          34829636       rs2915186       9.15e-05
-*AS = Adrienne
-HK = Hanley
-PG = Paul
 
 SNPs_in_range(Paul_top_SNPs, UNC_NCSU_hits)
+
+
+
+
+# 7/23
+Troubleshooting getting F508 gaussian model to run
+#Problem is with GRM
+#Try convering all neg to 0 wit hkin_to_matrix threshold
+
+library(SeqArray)
+library(SeqVarTools)
+library(GENESIS)
+
+mypcrel <- readRDS("/home/hkings/DATA/6_26.6_30/6_26pcrelate.rds")
+pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^-11/2, scaleKin = 2)
