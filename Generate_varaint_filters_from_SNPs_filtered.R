@@ -8,18 +8,16 @@ nrow(SNPs)
 #[1] 84360856
 
 #spot_check that variants match GDS file by position and chromosome - must be TRUE!
-gds <- seqOpen("CFF_sid_onlyGT.gds")
+gds <- seqOpen("CFF_5134_onlyGT.gds")
 
-variants_gds <- data.frame(
-    position = seqGetData(gds, "position"),
-    chromosome = seqGetData(gds, "chromosome"),
-    variant_id_gds = seqGetData(gds, "variant.id"),
-    stringsAsFactors = FALSE
-  )
+variants_gds <- variantInfo(gds)
 
-#Run this multiple times
+
+
+#Run this multiple times to verify gds variant IDs and snp_fitlered_bi variant IDs match by chromosome and position
 rand <- sample(1:nrow(SNPs),1)
-SNPs[SNPs$variant.id == rand, "pos"] == variants_gds[variants_gds$variant_id_gds == rand, "position"] & SNPs[SNPs$variant.id == rand, "chrom"] == variants_gds[variants_gds$variant_id_gds == rand, "chromosome"] 
+SNPs[SNPs$variant.id == rand, "pos"] == variants_gds[variants_gds$variant.id == rand, "pos"] & SNPs[SNPs$variant.id == rand, "chrom"] == variants_gds[variants_gds$variant.id == rand, "chr"] 
+
 SNPs_for_LD_pruning <- SNPs$variant.id
 
 #Get a list of variants to use in LD-Pruning
@@ -29,6 +27,7 @@ saveRDS(SNPs_for_LD_pruning, "SNPS_bi_GATK_VQSR.rds")
 #Get a list of variants to use in association testing
 #For association testing, also need to filter by missingness and MAF (this is given as an input to LD-pruning)
 ##Optional: plot minor allele frequency - note: PC-pruning also has an option to filter by MAF, so I will not include this in the filter
+
 seqResetFilter(gds) #Note: if there is a filter on the gds file, this will fail spectacularly
 
 afreq <- alleleFrequency(gds) 
