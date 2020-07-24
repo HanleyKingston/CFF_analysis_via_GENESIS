@@ -1,10 +1,18 @@
 library(SeqArray)
 library(GENESIS)
 
+#If want to exclude jsut a specific region from chr7, do this:
+#exclude_regions <- data.frame(t(c(7, 1, 159345973, "exclude_chr7_to_exclude_deltaF508")))
+#colnames(exclude_regions) <- c("chrom", "start.base", "end.base", "comment")
+#rownames(exclude_regions) <- "chr7"
+#exclude_regions <- as.data.frame(exclude_regions)
+
+saveRDS(exclude_regions, "exclude_regions_chr7.rds")
 
 #Filter out problematic LD regions
 filt <- get(data(list=paste("pcaSnpFilters", "hg38", sep="."), package="GWASTools"))
-gds <- seqOpen("CFF_5134_onlyGT.gds")
+#filt <- rbind(filt, exclude_regions)
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
 chrom <- seqGetData(gds, "chromosome")
 pos <- seqGetData(gds, "position")
 pca.filt <- rep(TRUE, length(chrom))
@@ -16,19 +24,23 @@ seqSetFilter(gds, variant.sel=pca.filt, action="intersect", verbose=TRUE)
 
 non_prob_snps <- seqGetData(gds, "variant.id")
 
-saveRDS(non_prob_snps, "non_prob_snps.rds")
+#To exclude all of Chr7:
+nochr7 <- seqSetFilterChrom(gds, c(1:6, 8:22, "X"))
+# of selected variants: 113,766,312
+noChr7 <- seqGetData(gds, "variant.id")
+length(noChr7)
+#[1] 113766312
 
 
+#Read in variant ID's from LD-pruning:
+pruned <- readRDS("/labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds")                 
+length(pruned)
+#[1] 177718
 
-#Read in variant ID's that passed QC:
-variant.id <- readRDS("SNPS_bi_GATK_VQSR.rds")
-length(variant.id)
-#[1] 84360856
+#Exclude chr7 and problem SNPs from QC'd variants
+PC_GRM_SNPs_excluded_regions <- intersect(non_prob_snps, intersect(noChr7, pruned))
 
+length(PC_GRM_SNPs_excluded_regions)
+#[1] 166117
 
-#Save final filter to pass to LD-pruning
-pre_LD_SNP_filter <- intersect(non_prob_snps, variant.id)
-
-length(pre_LD_SNP_filter)
-#[1] 81569276
-saveRDS(pre_LD_SNP_filter, "pre_LD_SNP_filter.rds")
+saveRDS((PC_GRM_SNPs_excluded_regions, "(PC_GRM_SNPs_excluded_regions.rds")
