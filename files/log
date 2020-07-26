@@ -2592,3 +2592,17 @@ library(GENESIS)
 
 mypcrel <- readRDS("/home/hkings/DATA/6_26.6_30/6_26pcrelate.rds")
 pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^-11/2, scaleKin = 2)
+
+#Blah! Internet crashed and work didn't save. Here's waht I've tried (note: this is the normal error): "Error in asMethod(object) : not a positive definite matrix"
+#With and without inverse residuals - doesn't make a difference, will do without until this is resolved
+#changing start argument in R (couldn't get it to work in pipeline) - I think it should be 4967 (number of samples in GRM + 1) but tried 3, 5000, 4966... results in a different error: matrix not symnetrical
+#Without GRM - this works
+#Without site, without sex, and without sex and site
+#restricted to JHU samples (& sex as covariate)
+
+
+
+
+# 7/26
+#Re-run analysis with William's LD-pruned list (first compair against mine)
+
