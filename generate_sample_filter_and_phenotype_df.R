@@ -168,9 +168,14 @@ unique(phenotype_pruned$sex_registry)
 phenotype_pruned$sex_registry <- ifelse(phenotype_pruned$sex_registry == "F", 0, 1)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_selectCol  <- phenotype_pruned[,c("pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("vcf_id", "pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
     
 saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
+    
+
+    
+##Next step: drop twins from keep_samples file and Convert to annoted dataframe:
+   
 
 
 
