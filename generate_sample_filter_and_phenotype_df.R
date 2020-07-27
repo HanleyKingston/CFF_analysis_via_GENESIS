@@ -1,10 +1,10 @@
 "%notin%" <- Negate("%in%")
 
-participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
+participants <- read.delim("/labdata12/CF_WGS2/shared/tables/participants_cffwgs.tsv", sep = "\t", header = TRUE)
 nrow(participants)
 #[1] 5161
 
-sample_key <- read.table("sample_names_key.txt", header = TRUE)
+sample_key <- key <- readr::read_tsv("/labdata12/CF_WGS2/shared/tables/key_cffwgs.tsv")
 sum(participants$pid %in% sample_key$pid)
 #[1] 5161
 
@@ -28,17 +28,18 @@ sum(duplicated(participants2$pid))
 #[1] 38
 
 
-#Read in sample_key and completely remove any samples without matching VCF_IDs
-gds.id <- readRDS("gds_id.rds")
+#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df & order to match gds file:
+library(SeqArray)
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
+gds.id <- seqGetData(gds, "sample.id")
 length(gds.id)
 #[1] 5134
-sum(participants2$sid %in% gds.id)
+sum(participants2$vcf_id %in% gds.id)
 
-#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df & order to match gds file:
-phenotype_pruned <- participants2[match(gds.id, participants2$sid),]
+phenotype_pruned <- participants2[match(gds.id, participants2$vcf_id),]
 nrow(phenotype_pruned)
 #[1] 5134
-identical(as.character(phenotype_pruned$sid), gds.id)
+identical(as.character(phenotype_pruned$vcf_id), gds.id)
 #[1] TRUE
 
 #Create include in analysis filter:
