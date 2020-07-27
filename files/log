@@ -2614,3 +2614,28 @@ summary(participants$knorma)
 
 #Regenerate annot file with participants file from shared/tables folder
 #edited generate_sample_filter_and_phenotype_df to reflect this...
+
+pruned_HK <- readRDS("/home/hkings/DATA/pruned_snps.rds")
+pruned_WG <- readRDS("/labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds")
+length(pruned_HK)
+#[1] 171909
+#[1] 127109
+length(pruned_WG)
+#[1] 177718
+
+sum(pruned_HK %in% pruned_WG)
+#[1] 127109
+
+pre_LD <- readRDS("/home/hkings/DATA/pre_LD_SNP_filter.rds")
+length(pre_LD)
+#[1] 81569276
+
+load("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/Topmed_keep_vars.RData") # as vars_HK
+load("/labdata12/CF_WGS2/shared/analyses/wwgordon/data_for_pipeline/snp_filtered_bi.RData") #as vars_WG
+length(vars_HK)
+#[1] 5490867
+length(vars_WG)
+#[1] 87106997
+
+
+
