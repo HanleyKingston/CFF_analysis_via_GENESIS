@@ -2,13 +2,13 @@ library(SeqArray)
 library(SeqVarTools)
 
 #snp_filtered_bi.tsv is only bi-allelic SNPs that pass GATK and VQSR filters
-SNPs <- read.table("snp_filtered_bi.tsv", sep = "\t", header = TRUE)                 
+SNPs <- read.table("/labdata12/CF_WGS2/shared/variants/snp_filtered_bi.tsv", sep = "\t", header = TRUE)                 
 
 nrow(SNPs)
-#[1] 84360856
+#[1] 87106997
 
 #spot_check that variants match GDS file by position and chromosome - must be TRUE!
-gds <- seqOpen("CFF_5134_onlyGT.gds")
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
 
 variants_gds <- variantInfo(gds)
 
@@ -51,7 +51,8 @@ SNPs_for_assoc_test <- intersect(SNPs_for_LD_pruning, intersect(maf_keep, miss_k
 
 
 length(SNPs_for_assoc_test)
-#[1] 5490867
+#[1] 5658280
+
 
 saveRDS(SNPs_for_assoc_test, "SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
 
@@ -60,8 +61,36 @@ saveRDS(SNPs_for_assoc_test, "SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
 #To test filter:
 SNPS_bi_GATK_VQSR <- readRDS("SNPS_bi_GATK_VQSR.rds")
 seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR)
-## of selected variants: 84,360,856
+## of selected variants: 87,106,997
 
 SNPS_bi_GATK_VQSR_MAF0.05_miss0.05 <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
 seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR_MAF0.05_miss0.05)
-## of selected variants: 5,490,867
+## of selected variants: 5,658,280
+
+
+#get MAF ( >0.01) and MISS (<0.02) to match Paul's
+seqResetFilter(gds) #Note: if there is a filter on the gds file, this will fail spectacularly
+
+
+sum(maf > 0.01)
+#[1] 14841927 #To keep in association testing
+
+
+miss <- missingGenotypeRate(gds)
+sum(miss < 0.02)
+#[1] 113288995 #To keep in association testing
+
+
+
+maf_keep <- seqGetData(gds, "variant.id")[maf > 0.01]
+miss_keep <- seqGetData(gds, "variant.id")[miss < 0.02]
+
+SNPs_for_assoc_test_match_Paul <- intersect(SNPs_for_LD_pruning, intersect(maf_keep, miss_keep))
+
+
+length(SNPs_for_assoc_test_match_Paul)
+#[1] 8186172
+
+
+saveRDS(SNPs_for_assoc_test_match_Paul, "SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.rds")
+
