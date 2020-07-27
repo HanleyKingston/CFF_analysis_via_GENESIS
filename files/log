@@ -2605,4 +2605,12 @@ pcr_mat <- pcrelateToMatrix(mypcrel, thresh = 2^-11/2, scaleKin = 2)
 
 # 7/26
 #Re-run analysis with William's LD-pruned list (first compair against mine)
+#Check participants file matches his:
+participants <- read.delim("participants_cffwgs.tsv", sep = "\t", header = TRUE)
+summary(participants$knorma)
+#-1.9200  0.0000  0.6600  0.6187  1.2300  3.0000     584
+#This matches the master file... good, but will use the participants file from share/tables to be safe
 
+
+#Regenerate annot file with participants file from shared/tables folder
+#edited generate_sample_filter_and_phenotype_df to reflect this...
