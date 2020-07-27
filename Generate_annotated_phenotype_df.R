@@ -35,7 +35,8 @@ identical(merged_phen$sample.id, gds.id)
 ##annotate data:
 library(Biobase)
 metadata <- data.frame(labelDescription = c(
-  "sample.id - use in analyses",
+  "vcf_id - ude in analysis",
+  "sample.id",
   "participant ID",
   "subject ID - matches sample.id",
   "chromosomal sex",
@@ -75,6 +76,6 @@ metadata <- data.frame(labelDescription = c(
 annot <- AnnotatedDataFrame(merged_phen, metadata)
 
 #Save annot as an R object
-saveRDS(annot, file = "6_26.6_30/annot.rds")
+saveRDS(annot, file = "annot.rds")
 
 head(pData(annot))
