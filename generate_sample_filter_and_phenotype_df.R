@@ -1,3 +1,4 @@
+library(tidyverse)
 "%notin%" <- Negate("%in%")
 
 participants <- read.delim("/labdata12/CF_WGS2/shared/tables/participants_cffwgs.tsv", sep = "\t", header = TRUE)
@@ -44,18 +45,17 @@ identical(as.character(phenotype_pruned$vcf_id), gds.id)
 
 #Create include in analysis filter:
 #Read in keep_samples by sid fitler (base on QC and duplicates...)
-keep_samples <- scan("keep_samples.txt", "character", sep = "\n")
-#Read 4966 items
-sum(keep_samples %in% gds.id)
+drops <- read_tsv("/labdata12/CF_WGS2/cff_gwas/tables/SampleDropandFlag.tsv")
+keep_samples <- drops[is.na(drops$SampleDrop) & drops$allcf_include == TRUE, "vcf_id", drop = TRUE]
+length(keep_samples)
 #[1] 4966
-saveRDS(keep_samples, "keep_samples.rds")
 
-phenotype_pruned$include_in_analysis <- ifelse(phenotype_pruned$sid %in% keep_samples, "include", "exclude")
+saveRDS(keep_samples, "/labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds")
 
 
 #Create a column for site (This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed)
 phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id)
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"])
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,"site"])
 # JHU  UNC   UW
 #1831 1785 1350
 
@@ -67,20 +67,20 @@ table(phenotype_pruned$cftr_var_2)
 
 phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_count)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_count)
 #   0    1    2
 # 349 1724 2893
 
 #Create column of deltaF508 carrier
 phenotype_pruned$F508_carrier <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0)
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_carrier)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_carrier)
 #   0    1
 # 349 4617
 
 #Create column of deltaF508 heterozygote or homozygote
 phenotype_pruned$F508_hom <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 1,
                                       ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 0, NA))
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$F508_hom)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_hom)
 #   1    2
 #1724 2893
 
@@ -120,7 +120,7 @@ for(line in 1:nrow(phenotype_pruned)){
   phenotype_pruned$race_or_ethnicity[line] <- race_or_ethnicity
   }
               
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include",]$race_or_ethnicity)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$race_or_ethnicity)
 #admixed_or_other            asian            black            natAm
 #              64               13               93               25
 #           white   white_hispanic
@@ -140,13 +140,13 @@ colnames(phenotype_pruned)
 
     
 #Create birthday 5-yr age cohorts:
-range(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birthdate_year"], na.rm = TRUE)
+range(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "birthdate_year"], na.rm = TRUE)
 #[1] 1943 2011
 phenotype_pruned$age_cohort <- cut(phenotype_pruned$birthdate_year, 14)
 
     
 #Count NA's for covariates in study (should these be included in analyses?)    
-table(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "sex_registry"], useNA = "ifany")
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "sex_registry"], useNA = "ifany")
 #   F    M <NA>
 #2322 2634   10
     
@@ -157,10 +157,10 @@ table(phenotype_pruned$age_cohort, useNA = "ifany")
 #(2001,2006] (2006,2011]        <NA>
 #        701          83          33
 
-sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include", "birth_cohort"]))
+sum(is.na(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "birth_cohort"]))
 #[1] 0
     
-sum(is.na(phenotype_pruned[phenotype_pruned$include_in_analysis == "include","site"]))
+sum(is.na(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,"site"]))
 #[1] 0
 
 #Sex_registry needs to be 0-1 for association testing
@@ -168,9 +168,9 @@ unique(phenotype_pruned$sex_registry)
 phenotype_pruned$sex_registry <- ifelse(phenotype_pruned$sex_registry == "F", 0, 1)
 
 #To make more managable, I'm just selecting phenotypes I'm interested in
-phenotype_pruned_selectCol  <- phenotype_pruned[,c("vcf_id", "pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "include_in_analysis", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("vcf_id", "pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
     
-saveRDS(phenotype_pruned_selectCol, "phenotype.rds")
+saveRDS(phenotype_pruned_selectCol, "/labdata12/CF_WGS2/shared/analyses/hkings/phenotype.rds")
     
 
     
