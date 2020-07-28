@@ -2655,10 +2655,15 @@ Rscript /home/hkings/DATA/plot_kinship.R /labdata12/CF_WGS2/shared/analyses/hkin
 #To determine a kin_thresh:
 library(GENESIS)
 library(SeqArray)
-gds <- seqOpen("CFF_sid_onlyGT.gds")
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
 kingMat <- readRDS("7_28king_grm.rds")
-pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat) str(pc_part)
+pc_part <- pcairPartition(gds, kinobj = kingMat, kin.thresh = 2^(-4.5), div.thresh = -2^(-4.5), divobj = kingMat)
+str(pc_part)
+#List of 2
+# $ rels  : chr [1:986] "UW_EPIC_3102" "UW_EPIC_1517" "JHU_TSS_922_2620_1" "JHU_TSS_922_2636_1" ...
+# $ unrels: chr [1:3980] "JHU_BL_01_1" "JHU_BL_02_1" "JHU_BL_04_1" "JHU_BL_05_1" ...
 
+#Run PC-Air
 R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_1itpc_air.log &
 
 #Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
