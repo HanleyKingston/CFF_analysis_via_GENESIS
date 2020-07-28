@@ -2667,12 +2667,13 @@ str(pc_part)
 R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_1itpc_air.log &
 
 #Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
-pca <- readRDS("6_26_1itpcair.rds")
+pca <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcair.rds")
 plot(seq(12),100*pca$varprop[1:12])
 
 ## PC-Relate - 1it
-R -q --vanilla --args CFF_sid_onlyGT.gds 6_26_1itpcair.rds --out_prefix 6_26_1it --n_pcs 4 --variant_id 6_26_prunedSNPs.rds --sample_id keep_samples.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < pcrelate.R > 6_26_1itpcrelate.log &
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_1itpcrelate.log &
+#Didn't include scan.block.size argumetn but default (5000) will incompas all samples
 
-Rscript plot_kinship.R 6_26_1itpcrelate.rds --out_prefix 6_26_1it_PC-rel
+Rscript plot_kinship.R /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --out_prefix 6_26_1it_PC-rel
 
 
