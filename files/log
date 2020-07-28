@@ -2638,6 +2638,9 @@ length(vars_WG)
 #[1] 87106997
 
 
+
+
+
 # 7/28
 ## Redo assoc testing starting with William's pruned variant list
 R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --autosome_only FALSE < /home/hkings/DATA/king_grm.R > 7_28king_grm.log &
