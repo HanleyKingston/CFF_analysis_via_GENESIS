@@ -2683,6 +2683,22 @@ R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /l
 R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --scale_kin 2 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_2itpcrelate.log &
 
 
+## Convert PCs and GRM to RData
+PCA <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds")
+save(PCA, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/B_7_28pcair.RData")
+
+GRM <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcr_mat.rds")
+save(GRM, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/B_7_28pcr_mat.RData")
+
+vars1 <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
+save(vars1, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.RData")
+
+vars2 <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.rds")
+save(vars2, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.RData")
+
+
+
+
 ## Excldue identical twins from analysis
 "%notin%" <- Negate("%in%")
 
@@ -2771,6 +2787,10 @@ annot <- AnnotatedDataFrame(merged_phen, metadata)
 saveRDS(annot, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/annot.rds")
 
 head(pData(annot))
+
+
+
+
 
 
 
