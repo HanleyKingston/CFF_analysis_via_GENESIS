@@ -2645,7 +2645,7 @@ length(vars_WG)
 ## Redo assoc testing starting with William's pruned variant list
 
 ## KING
-R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --autosome_only FALSE < /home/hkings/DATA/king_grm.R > 7_28king_grm.log &
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --autosome_only FALSE < /home/hkings/DATA/king_grm.R > 7_28king_grm.log &
 
 
 Rscript /home/hkings/DATA/plot_kinship.R /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_out.rds --is_king --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28_king
@@ -2664,20 +2664,113 @@ str(pc_part)
 # $ unrels: chr [1:3980] "JHU_BL_01_1" "JHU_BL_02_1" "JHU_BL_04_1" "JHU_BL_05_1" ...
 
 #Run PC-Air
-R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_1itpc_air.log &
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_1itpc_air.log &
 
 #Fast way to determine how many PCs to include (note: should also look at PC correlation plots):
 pca <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcair.rds")
 plot(seq(12),100*pca$varprop[1:12])
 
 ## PC-Relate - 1it
-R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_1itpcrelate.log &
-#Didn't include scan.block.size argumetn but default (5000) will incompas all samples
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --scale_kin 1 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_1itpcrelate.log &
+#Didn't include scan.block.size argumetn but default (5000) will encompass all samples
 
 Rscript plot_kinship.R /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --out_prefix 6_26_1it_PC-rel
 
 ## PC-Air
-R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcr_mat.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_2itpc_air.log &
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds  /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/A_7_28pcr_mat.rds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28king_grm.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --kin_thresh 0.044194 --div_thresh -0.044194 < /home/hkings/DATA/pcair.R > 7_28_2itpc_air.log &
 
 ## PC-Relate
-R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds --scale_kin 2 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_2itpcrelate.log &
+R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28 --n_pcs 4 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --scale_kin 2 --small_samp_correct --variant_block 100000 < /home/hkings/DATA/pcrelate.R > 7_28_2itpcrelate.log &
+
+
+## Excldue identical twins from analysis
+"%notin%" <- Negate("%in%")
+
+
+#Identify identical twins & remove from analysis
+
+#Read in PCrelate object and existing keep_samples vector
+pcrel2 <- readRDS(file = "/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcrelate.rds")
+kinship <- pcrel2$kinBtwn
+keep_samples <- readRDS(file = "/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds")
+
+#Find likely identical twins
+kinship[kinship$kin > 0.45, c("kin", "k2", "ID1", "ID2")]
+
+#Remove identical twins from keep_samples vector
+exclude_twins <- kinship[kinship$kin > 0.45, "ID1"] #ID1 is always the lowest of the 2 number IDs
+keep_samples_noTwins <- keep_samples[keep_samples %notin% exclude_twins]
+
+save(keep_samples_noTwins, file = "/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_noTwins.RData")
+
+length(keep_samples_noTwins)
+#[1] 4939
+
+
+
+## Generate annotated dataframe
+
+#Load phenotype data:
+phenotype <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/phenotype.rds")
+load("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/keep_samples_noTwins.RData")
+
+##The null model requires a sample ID column:
+phenotype$sample.id <- as.character(phenotype$vcf_id)
+
+##Read in PCA covariates
+pca <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds")
+
+#check samples match gds
+library(SeqVarTools)
+gds.id <- seqGetData(seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds"), "sample.id")
+##Check that phenotype sample ids match pc IDs (after applying filter to samples)
+identical(gds.id, phenotype$sample.id)
+#[1] TRUE
+
+
+#order annotated df to match order of gds ids
+merged_phen <- phenotype[match(gds.id, phenotype$sample.id),]
+identical(merged_phen$sample.id, gds.id)
+#[1] TRUE
+
+##annotate data:
+library(Biobase)
+metadata <- data.frame(labelDescription = c(
+  "vcf_id - use as sample.id",
+  "participant ID",
+  "subject ID",
+  "chromosomal sex",
+  "sex in registry (M or F)",
+  "birthdate year",
+  "fist CFTR variant - for deltaF508 carriers, F508del is listed first",
+  "second CFTR variant",
+  "age at death",
+  "knorma score",
+  "VCF ID - don't use",
+  "recruitment site - extracted from VCF_ID - may have errors",
+  "count of F508 deletion",
+  "carrier of one of more coppies of F508 deletion. 1 = Yes",
+  "F508del homozygote, 1 = yes (homozygotes for non-F508del alleles are excldued)",
+  "self-reported race or ethnicity - note, hispanic whites are reported as hispanic and white Native Americans as Native American",
+  "does participant self-report as white - not: need to check if this is actually self-report",
+  "does participant self-report as black",
+  "does participant self-report as Native American",
+  "does participant self-report as Asian",
+  "does participant self-report as Pacific Islander",
+  "does participant self-report as a race not included above",
+  "does participant self-report as Hispanic",
+  "5-year age groupings by birth year",
+  "sample.id - taken from vcf_id - use in analysis"
+))
+
+
+#Generate annotated dataframe
+annot <- AnnotatedDataFrame(merged_phen, metadata)
+
+#Save annot as an R object
+saveRDS(annot, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/annot.rds")
+
+head(pData(annot))
+
+
+
