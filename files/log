@@ -2641,8 +2641,189 @@ length(vars_WG)
 
 
 
-# 7/28
+
+
+# 7/28 - 7/30
 ## Redo assoc testing starting with William's pruned variant list
+
+
+## Update phenotype file
+library(tidyverse)
+"%notin%" <- Negate("%in%")
+
+participants <- read.delim("/labdata12/CF_WGS2/shared/tables/participants_cffwgs.tsv", sep = "\t", header = TRUE)
+nrow(participants)
+#[1] 5161
+
+sample_key <- key <- readr::read_tsv("/labdata12/CF_WGS2/shared/tables/key_cffwgs.tsv")
+sum(participants$pid %in% sample_key$pid)
+#[1] 5161
+
+sum(duplicated(participants$pid))
+#[1] 0
+
+sum(duplicated(sample_key$sid))
+#[1] 0
+sum(duplicated(sample_key$vcf_id))
+#[1] 0
+sum(duplicated(sample_key$pid))
+#[1] 38
+
+
+#This only works because participants file has no duplicates... each dulpicated pid from sample_key will appear twice, so can filter after the fact
+participants2 <- merge(participants, sample_key, by = "pid", all = TRUE)
+nrow(participants2)
+#[1] 5199
+
+sum(duplicated(participants2$pid))
+#[1] 38
+
+
+#Filtering sample key fist on sid ensures that the right partiicpant samples of the duplicated pids are included  in the participant phenotype df & order to match gds file:
+library(SeqArray)
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
+gds.id <- seqGetData(gds, "sample.id")
+length(gds.id)
+#[1] 5134
+sum(participants2$vcf_id %in% gds.id)
+
+phenotype_pruned <- participants2[match(gds.id, participants2$vcf_id),]
+nrow(phenotype_pruned)
+#[1] 5134
+identical(as.character(phenotype_pruned$vcf_id), gds.id)
+#[1] TRUE
+
+#Create include in analysis filter:
+#Read in keep_samples by sid fitler (base on QC and duplicates...)
+drops <- read_tsv("/labdata12/CF_WGS2/cff_gwas/tables/SampleDropandFlag.tsv")
+keep_samples <- drops[is.na(drops$SampleDrop) & drops$allcf_include == TRUE, "vcf_id", drop = TRUE]
+length(keep_samples)
+#[1] 4966
+
+saveRDS(keep_samples, "/labdata12/CF_WGS2/shared/analyses/hkings/keep_samples_allCF.rds")
+
+
+#Create a column for site (This may not be perfectly accurate because some individuals were included in multiple studies and some vcf_ids have changed)
+phenotype_pruned$site  <- sub("_.*", "", phenotype_pruned$vcf_id)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,"site"])
+# JHU  UNC   UW
+#1831 1785 1350
+
+colnames(phenotype_pruned)
+
+#Create column of deltaF508 count
+table(phenotype_pruned$cftr_var_1) #F508del is by far the most common and does not seem to appear under any other name
+table(phenotype_pruned$cftr_var_2)
+
+phenotype_pruned$F508_count <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 2,
+                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0))
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_count)
+#   0    1    2
+# 349 1724 2893
+
+#Create column of deltaF508 carrier
+phenotype_pruned$F508_carrier <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 1, 0)
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_carrier)
+#   0    1
+# 349 4617
+
+#Create column of deltaF508 heterozygote or homozygote
+phenotype_pruned$F508_hom <- ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" & phenotype_pruned$cftr_var_2_wgs == "F508del", 1,
+                                      ifelse(phenotype_pruned$cftr_var_1_wgs == "F508del" | phenotype_pruned$cftr_var_2_wgs == "F508del", 0, NA))
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$F508_hom)
+#   1    2
+#1724 2893
+
+
+
+#Create a column of self-reported race (need to verify if this is self-report):
+phenotype_pruned$race_or_ethnicity <- NULL
+
+for(line in 1:nrow(phenotype_pruned)){
+  if(rowSums(phenotype_pruned[line,c(6:12)], na.rm = TRUE) != 1){
+      if(any(is.na(phenotype_pruned[line,c(6:12)]))){
+        race_or_ethnicity <- NA
+        }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$race_natAm == 1){
+          race_or_ethnicity <- "natAm" #Note: for purposes of plotting, because the dataset is majority white, people who are white and native american will be recorded as native american
+        }else if(phenotype_pruned[line,]$race_white == 1 & phenotype_pruned[line,]$hispanic == 1){
+          race_or_ethnicity <- "white_hispanic"
+        }else if(phenotype_pruned[line,]$race_black == 1 & phenotype_pruned[line,]$hispanic == 1){
+          race_or_ethnicity <- "black_hispanic"
+        }else{
+          race_or_ethnicity <- "admixed_or_other"
+          }                    
+      }else if(phenotype_pruned[line,]$race_white == 1){
+        race_or_ethnicity <- "white"
+      }else if(phenotype_pruned[line,]$race_black == 1){
+        race_or_ethnicity <- "black"
+      }else if(phenotype_pruned[line,]$race_natAm == 1){
+        race_or_ethnicity <- "natAm"
+      }else if(phenotype_pruned[line,]$race_asian == 1){
+        race_or_ethnicity <- "asian"
+      }else if(phenotype_pruned[line,]$race_pac == 1){
+        race_or_ethnicity <- "pac"
+      }else if(!is.na(phenotype_pruned[line,]$hispanic) & phenotype_pruned[line,]$hispanic == 1){
+        race_or_ethnicity <- "hispanic"
+      }else{
+        race_or_ethnicity <- "admixed_or_other"
+        }
+  phenotype_pruned$race_or_ethnicity[line] <- race_or_ethnicity
+  }
+              
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,]$race_or_ethnicity)
+#admixed_or_other            asian            black            natAm
+#              64               13               93               25
+#           white   white_hispanic
+#            4603              139
+
+        
+#Plot count of deltaF508 per study site:
+counts <- table(phenotype_pruned$F508_count, phenotype_pruned$site)
+
+png("F508_count_by_study.png")
+barplot(counts, main="Count of DeltaF508 per study Site",
+  xlab="Study", legend = rownames(counts), beside = TRUE)
+dev.off()
+
+  
+colnames(phenotype_pruned)
+
+    
+#Create birthday 5-yr age cohorts:
+range(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "birthdate_year"], na.rm = TRUE)
+#[1] 1943 2011
+phenotype_pruned$age_cohort <- cut(phenotype_pruned$birthdate_year, 14)
+
+    
+#Count NA's for covariates in study (should these be included in analyses?)    
+table(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "sex_registry"], useNA = "ifany")
+#   F    M <NA>
+#2322 2634   10
+    
+table(phenotype_pruned$age_cohort, useNA = "ifany")
+#          4          14          51          94         147         179
+#(1972,1977] (1977,1982] (1982,1987] (1987,1992] (1992,1996] (1996,2001]
+#        231         303         609         682         919        1084
+#(2001,2006] (2006,2011]        <NA>
+#        701          83          33
+
+sum(is.na(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples, "birth_cohort"]))
+#[1] 0
+    
+sum(is.na(phenotype_pruned[phenotype_pruned$vcf_id %in% keep_samples,"site"]))
+#[1] 0
+
+#Sex_registry needs to be 0-1 for association testing
+unique(phenotype_pruned$sex_registry)
+phenotype_pruned$sex_registry <- ifelse(phenotype_pruned$sex_registry == "F", 0, 1)
+
+#To make more managable, I'm just selecting phenotypes I'm interested in
+phenotype_pruned_selectCol  <- phenotype_pruned[,c("vcf_id", "pid", "sid", "sex_wgs", "sex_registry", "birthdate_year", "cftr_var_1_wgs", "cftr_var_2_wgs", "age_death", "knorma", "vcf_id", "site", "F508_count", "F508_carrier", "F508_hom", "race_or_ethnicity", "race_white", "race_black", "race_natAm", "race_asian", "race_pac", "race_other", "hispanic", "age_cohort")]
+    
+saveRDS(phenotype_pruned_selectCol, "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/phenotype.rds")
+
+
+
 
 ## KING
 R -q --vanilla --args /labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds --out_prefix /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/7_28 --variant_id /labdata12/CF_WGS2/shared/variants/CFF_5034_onlyGT_filtered_bi_pruned.rds --sample_id /labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/keep_samples_allCF.rds --autosome_only FALSE < /home/hkings/DATA/king_grm.R > 7_28king_grm.log &
@@ -2690,11 +2871,6 @@ save(PCA, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/B_
 GRM <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcr_mat.rds")
 save(GRM, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/B_7_28pcr_mat.RData")
 
-vars1 <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
-save(vars1, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.RData")
-
-vars2 <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.rds")
-save(vars2, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.RData")
 
 
 
@@ -2732,9 +2908,6 @@ load("/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/keep_samples_n
 
 ##The null model requires a sample ID column:
 phenotype$sample.id <- as.character(phenotype$vcf_id)
-
-##Read in PCA covariates
-pca <- readRDS("/labdata12/CF_WGS2/shared/analyses/hkings/PCs_and_GRMs/B_7_28pcair.rds")
 
 #check samples match gds
 library(SeqVarTools)
@@ -2784,12 +2957,108 @@ metadata <- data.frame(labelDescription = c(
 annot <- AnnotatedDataFrame(merged_phen, metadata)
 
 #Save annot as an R object
-saveRDS(annot, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/annot.rds")
+save(annot, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/annot.RData")
 
 head(pData(annot))
 
 
 
+## Generate variant filters from SNPs_filtered object
+library(SeqArray)
+library(SeqVarTools)
+
+#snp_filtered_bi.tsv is only bi-allelic SNPs that pass GATK and VQSR filters
+SNPs <- read.table("/labdata12/CF_WGS2/shared/variants/snp_filtered_bi.tsv", sep = "\t", header = TRUE)                 
+
+nrow(SNPs)
+#[1] 87106997
+
+#spot_check that variants match GDS file by position and chromosome - must be TRUE!
+gds <- seqOpen("/labdata12/CF_WGS2/shared/variants/CFF_5134_onlyGT.gds")
+
+variants_gds <- variantInfo(gds)
+
+
+
+#Run this multiple times to verify gds variant IDs and snp_fitlered_bi variant IDs match by chromosome and position
+rand <- sample(1:nrow(SNPs),1)
+SNPs[SNPs$variant.id == rand, "pos"] == variants_gds[variants_gds$variant.id == rand, "pos"] & SNPs[SNPs$variant.id == rand, "chrom"] == variants_gds[variants_gds$variant.id == rand, "chr"] 
+
+SNPs_for_LD_pruning <- SNPs$variant.id
+
+#Get a list of variants to use in LD-Pruning
+saveRDS(SNPs_for_LD_pruning, "SNPS_bi_GATK_VQSR.rds")
+
+
+#Get a list of variants to use in association testing
+#For association testing, also need to filter by missingness and MAF (this is given as an input to LD-pruning)
+##Optional: plot minor allele frequency - note: PC-pruning also has an option to filter by MAF, so I will not include this in the filter
+
+seqResetFilter(gds) #Note: if there is a filter on the gds file, this will fail spectacularly
+
+afreq <- alleleFrequency(gds) 
+maf <- pmin(afreq, 1-afreq)
+sum(maf <= 0.05)
+#[1] 110327959
+sum(maf > 0.05)
+#[1] 9811885 #To keep in association testing
+
+
+miss <- missingGenotypeRate(gds)
+sum(miss < 0.05)
+#[1] 114432954 #To keep in association testing
+
+
+
+maf_keep <- seqGetData(gds, "variant.id")[maf > 0.05]
+miss_keep <- seqGetData(gds, "variant.id")[miss < 0.05]
+
+SNPs_for_assoc_test <- intersect(SNPs_for_LD_pruning, intersect(maf_keep, miss_keep))
+
+
+length(SNPs_for_assoc_test)
+#[1] 5658280
+
+
+save(SNPs_for_assoc_test, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.RData")
+
+
+
+#To test filter:
+SNPS_bi_GATK_VQSR <- readRDS("SNPS_bi_GATK_VQSR.rds")
+seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR)
+## of selected variants: 87,106,997
+
+SNPS_bi_GATK_VQSR_MAF0.05_miss0.05 <- readRDS("SNPS_bi_GATK_VQSR_MAF0.05_miss0.05.rds")
+seqSetFilter(gds, variant.id = SNPS_bi_GATK_VQSR_MAF0.05_miss0.05)
+## of selected variants: 5,658,280
+
+
+#get MAF ( >0.01) and MISS (<0.02) to match Paul's
+seqResetFilter(gds) #Note: if there is a filter on the gds file, this will fail spectacularly
+
+
+sum(maf > 0.01)
+#[1] 14841927 #To keep in association testing
+
+
+miss <- missingGenotypeRate(gds)
+sum(miss < 0.02)
+#[1] 113288995 #To keep in association testing
+
+
+
+maf_keep <- seqGetData(gds, "variant.id")[maf > 0.01]
+miss_keep <- seqGetData(gds, "variant.id")[miss < 0.02]
+
+SNPs_for_assoc_test_match_Paul <- intersect(SNPs_for_LD_pruning, intersect(maf_keep, miss_keep))
+
+
+length(SNPs_for_assoc_test_match_Paul)
+#[1] 8186172
+
+
+save(SNPs_for_assoc_test_match_Paul, file = "/labdata12/CF_WGS2/shared/analyses/hkings/data_for_pipeline/SNPS_bi_GATK_VQSR_MAF0.01_miss0.02.RData")
 
 
 
