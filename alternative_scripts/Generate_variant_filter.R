@@ -16,7 +16,7 @@
 #Note: can also filter by MAF and missingness in GENESIS's LD-pruning, but I chose to do it here so I can use the same filter for the association testing
 
 
-flag.metric.df <- readRDS("flag.metric_with_gds_ids.rds")
+flag.metric.df <- readRDS("/home/hkings/DATA/old_files/flag.metric_with_gds_ids.rds")
 
 #alt:
 #load("flag.metric.RData")
