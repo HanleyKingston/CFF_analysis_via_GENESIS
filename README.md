@@ -1,3 +1,4 @@
+# THIS IS NOT UP TO DATE - DO NOT USE
 # CFF_analysis_via_GENESIS
 
 ## Contents:
