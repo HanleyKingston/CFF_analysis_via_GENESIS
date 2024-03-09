@@ -1,4 +1,4 @@
-# THIS IS NOT UP TO DATE - DO NOT USE
+# THIS IS NOT UP TO DATE - Refer to README on Beluga Server
 # CFF_analysis_via_GENESIS
 
 ## Contents:
